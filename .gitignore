@@ -1,0 +1,9 @@
+target/
+.build/
+.env
+application-local.properties
+backend/application-local.properties
+.idea/
+*.iml
+*.log
+

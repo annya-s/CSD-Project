@@ -1,0 +1,8 @@
+# Save a copy as application-local.properties inside backend/.
+# This local file is ignored by Git. Never commit real database credentials.
+DB_URL=jdbc:postgresql://YOUR-SESSION-POOLER-HOST:5432/postgres?sslmode=require
+DB_USERNAME=postgres.YOUR-PROJECT-REF
+DB_PASSWORD=YOUR-DATABASE-PASSWORD
+
+# Only use false for local HTTP. Use HTTPS and true when deployed.
+COOKIE_SECURE=false
