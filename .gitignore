@@ -7,3 +7,4 @@ backend/application-local.properties
 *.iml
 *.log
 
+personal/
