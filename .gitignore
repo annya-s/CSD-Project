@@ -1,9 +1,10 @@
 target/
 .build/
+node_modules/
 .env
 application-local.properties
 backend/application-local.properties
 .idea/
 *.iml
 *.log
-
+.openai
