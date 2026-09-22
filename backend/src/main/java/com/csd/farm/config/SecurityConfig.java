@@ -21,7 +21,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/index.html", "/app.js", "/styles.css", "/favicon.svg", "/error").permitAll()
+                        // Page shells are public; their data still requires an authenticated API request.
+                        .requestMatchers("/", "/index.html", "/error", "/styles.css", "/favicon.svg",
+                                "/login.html", "/dashboard.html", "/crop-details.html", "/new-entry.html",
+                                "/api.js", "/login.js", "/dashboard.js", "/crop-details.js", "/new-entry.js").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/csrf").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
                         .anyRequest().authenticated())

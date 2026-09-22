@@ -24,6 +24,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -68,6 +69,25 @@ class FarmIntegrationTest {
         assertThat(passwords.matches(PASSWORD, hash)).isTrue();
         mvc.perform(get("/api/auth/me").session(login("charlie")))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.displayName").value("Charlie"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"/", "/index.html"})
+    void homepageRedirectsToSeparateLoginPage(String path) throws Exception {
+        mvc.perform(get(path))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/login.html"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "/login.html", "/dashboard.html", "/crop-details.html", "/new-entry.html",
+            "/api.js", "/login.js", "/dashboard.js", "/crop-details.js", "/new-entry.js"
+    })
+    void pageShellsAndScriptsLoadBeforeLogin(String path) throws Exception {
+        // Page scripts must load so they can direct logged-out visitors to login.
+        // The existing anonymous-request test separately verifies the API stays protected.
+        mvc.perform(get(path)).andExpect(status().isOk());
     }
 
     @Test

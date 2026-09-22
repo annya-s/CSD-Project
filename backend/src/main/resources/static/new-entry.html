@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#495f49">
+    <title>Dome · Add a crop</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/styles.css">
+    <script type="module" src="/new-entry.js"></script>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/dashboard.html" aria-label="Dome home">dome<span class="brand-leaf" aria-hidden="true">↗</span></a>
+        <nav id="navigation" aria-label="Main navigation">
+            <a href="/dashboard.html" class="overview-link">Overview</a>
+            <span id="welcome"></span>
+        </nav>
+        <button id="logout" class="text-button" type="button">Log out</button>
+    </header>
+    <main id="main">
+        <p id="global-message" role="alert" hidden></p>
+        <section id="entry-page" class="page workspace" hidden aria-labelledby="entry-title">
+            <a class="back-link" href="/dashboard.html">← Back to overview</a>
+            <div class="entry-layout">
+                <div><span class="small-label">A new beginning</span><h1 id="entry-title" tabindex="-1">What’s growing?</h1>
+                    <p class="intro-copy">Save a planting record for your farm. You can plant the same crop again at a different time.</p>
+                    <p class="field-hint">Planting time uses your device’s local timezone.</p>
+                </div>
+                <form id="entry-form" class="entry-form">
+                    <label for="crop-type">Crop</label>
+                    <select id="crop-type" required><option value="">Choose a crop</option></select>
+                    <label for="planted-at">Date and time planted</label>
+                    <input id="planted-at" type="datetime-local" step="1" required>
+                    <div class="coordinate-fields">
+                        <div><label for="latitude">Latitude</label><input id="latitude" type="number" min="-90" max="90" step="0.000001" placeholder="e.g. 1.352100" required></div>
+                        <div><label for="longitude">Longitude</label><input id="longitude" type="number" min="-180" max="180" step="0.000001" placeholder="e.g. 103.819800" required></div>
+                    </div>
+                    <p class="field-hint">Use decimal coordinates for the crop’s location.</p>
+                    <p id="entry-error" class="form-error" role="alert" hidden></p>
+                    <div class="form-actions"><button id="entry-submit" class="primary" type="submit">Save crop entry</button><a href="/dashboard.html">Cancel</a></div>
+                </form>
+            </div>
+        </section>
+        <p id="loading" class="loading" role="status">Loading…</p>
+        <noscript><p class="loading">Please enable JavaScript to use your farm dashboard.</p></noscript>
+    </main>
+    <footer>Made for a clearer view of your farm.</footer>
+</body>
+</html>

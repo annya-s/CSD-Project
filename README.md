@@ -138,16 +138,42 @@ timestamps include a `+` timezone offset.
 
 ## Code map
 
+Each screen has its own HTML file (layout) and JavaScript file (behaviour), all
+inside `backend/src/main/resources/static`. No Node.js or frontend build is needed.
+
+| Screen | HTML | JavaScript | Main backend requests |
+| --- | --- | --- | --- |
+| Login and sign-up | `login.html` | `login.js` | `/api/auth/me`, `/api/auth/register`, `/api/auth/login` |
+| Dashboard | `dashboard.html` | `dashboard.js` | `/api/dashboard`, `/api/crop-types` |
+| Crop details | `crop-details.html` | `crop-details.js` | `/api/crops/{cropType}?plantedAt=…`, `/api/crop-types` |
+| Add a crop | `new-entry.html` | `new-entry.js` | `/api/crop-types`, POST `/api/crops` |
+
+The page scripts import `api.js` for shared requests, login checks, logout, and
+small display helpers. All pages share `styles.css`. Each teammate can edit their
+own HTML/JavaScript pair while using the same Java backend.
+
+`/` and the old `/index.html` address redirect to `/login.html`. An already logged-in
+farmer goes straight to the dashboard. A dashboard card links to
+`/crop-details.html?type=POTATO&plantedAt=...`, so refreshing or bookmarking a crop
+works. If login is required, the app returns to that page after login. The former
+combined `index.html` and `app.js` have been replaced by these page files.
+
+For crop-details work, start with `crop-details.html` and `renderDetails()` in
+`crop-details.js`. Its `start()` function requests data from the existing Java
+`CropController.details()` endpoint. Frontend files call API URLs; they do not
+directly import or execute Java files. Photos and health assessment remain the
+same placeholders as before this file reorganisation.
+
 ```text
 backend/
   src/main/java/com/csd/farm/
     auth/                 Farmer accounts and sign-up
-    config/               Session authentication and request security
+    config/               Homepage redirect, session authentication and request security
     crop/                 Crop catalogue, input validation, queries and API
     api/                  Friendly API errors
   src/main/resources/
     db/migration/         Versioned SQL table definitions
-    static/               The four screens; no frontend build needed
+    static/               Four HTML/JS page pairs, shared api.js and styles.css
     application.properties
     application-demo.properties
   src/test/               Integration tests using H2 in PostgreSQL mode
