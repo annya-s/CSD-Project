@@ -19,9 +19,9 @@ const isSignup = ref(false)
 
       <button class="acc-btn">Account</button>
     </header>
-
+    
     <main class="pagebody">
-
+      
       <aside class="infopanel">
         <code>
           I am the infopanel. <br>
