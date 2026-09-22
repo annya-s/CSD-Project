@@ -7,4 +7,4 @@ backend/application-local.properties
 .idea/
 *.iml
 *.log
-.openai
+*.openai
