@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#495f49">
+    <title>Dome · Crop details</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/styles.css">
+    <script type="module" src="/crop-details.js"></script>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/dashboard.html" aria-label="Dome home">dome<span class="brand-leaf" aria-hidden="true">↗</span></a>
+        <nav id="navigation" aria-label="Main navigation">
+            <a href="/dashboard.html" class="overview-link">Overview</a>
+            <span id="welcome"></span>
+        </nav>
+        <button id="logout" class="text-button" type="button">Log out</button>
+    </header>
+    <main id="main">
+        <p id="global-message" role="alert" hidden></p>
+        <section id="detail-page" class="page workspace" hidden aria-labelledby="detail-title">
+            <a class="back-link" href="/dashboard.html">← Back to overview</a>
+            <h1 id="detail-title" tabindex="-1"></h1>
+            <p id="detail-date" class="detail-date"></p>
+            <div class="detail-layout">
+                <div>
+                    <div class="crop-photo-placeholder"><span aria-hidden="true">↗</span><p>No crop photo yet</p></div>
+                    <dl class="location-data"><dt>Latitude</dt><dd id="detail-latitude"></dd><dt>Longitude</dt><dd id="detail-longitude"></dd></dl>
+                    <h2>Notes</h2><p id="detail-note" class="intro-copy"></p>
+                </div>
+                <div class="health-panel">
+                    <h2>Current health overview</h2>
+                    <p class="field-hint">Health score: not available</p>
+                    <dl id="readings" class="readings"></dl>
+                    <h2>Next step</h2><ul id="actions"></ul>
+                    <h2>Current issues</h2><p>Not assessed. Field measurements are needed.</p>
+                </div>
+            </div>
+        </section>
+        <p id="loading" class="loading" role="status">Loading…</p>
+        <noscript><p class="loading">Please enable JavaScript to use your farm dashboard.</p></noscript>
+    </main>
+    <footer>Made for a clearer view of your farm.</footer>
+</body>
+</html>
