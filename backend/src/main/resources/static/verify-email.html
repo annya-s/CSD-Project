@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#495f49">
+    <title>Dome · Verify email</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/styles.css">
+    <script type="module" src="/verify-email.js"></script>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/dashboard.html" aria-label="Dome home">dome<span class="brand-leaf" aria-hidden="true">↗</span></a>
+            dome<span class="brand-leaf" aria-hidden="true">↗</span>
+        </a>
+        <span id="brand-caption">A little clarity for your crops.</span>
+    </header>
+    <main id="main">
+        <p id="global-message" role="alert" hidden></p>
+        <section id="verify-page" class="page auth-layout" aria-labelledby="verify-title">
+            <div class="auth-panel">
+                <span class="small-label">Almost there</span>
+                <h1 id="verify-title">Verify your email.</h1>
+                <p> Enter the six-digit code printed by the server. </p>
+                <form id="verify-form">
+                    <label for="identifier"> Username or email </label>
+                    <input id="identifier" name="identifier" autocomplete="username" required>
+                    <label for="code"> Verification code </label>
+                    <input id="code" name="code" inputmode="numeric" autocomplete="one-time-code"
+                            pattern="[0-9]{6}" maxlength="6" required>
+                    <p id="verify-error" class="form-error" role="alert" hidden> </p>
+                    <button id="verify-submit" class="primary" type="submit"> Verify email  </button>
+                </form>
+            </div>
+        </section>
+    </main>
+    <footer>Made for a clearer view of your farm.</footer>
+</body>
+</html>
