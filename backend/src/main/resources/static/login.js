@@ -1,6 +1,6 @@
 import { $, api, jsonPost, showMessage } from './api.js';
 
-let registering = false;
+let authMode = 'login';
 
 function loginDestination() {
     const next = new URLSearchParams(window.location.search).get('next');
@@ -16,39 +16,105 @@ function loginDestination() {
     return '/dashboard.html';
 }
 
-function setRegistrationMode(enabled) {
-    registering = enabled;
-    $('login-title').textContent = enabled ? 'Start your growing season.' : 'Let’s get you back in the field.';
-    $('auth-description').textContent = enabled ? 'Create an account for your farm.' : 'Log in to your farm overview.';
-    $('display-name-field').hidden = !enabled;
-    $('display-name').required = enabled;
-    $('password').minLength = enabled ? 10 : 1;
-    $('password').autocomplete = enabled ? 'new-password' : 'current-password';
-    $('password-hint').hidden = !enabled;
-    $('auth-submit').textContent = enabled ? 'Create account' : 'Log in';
-    $('auth-toggle').textContent = enabled ? 'Already registered? Log in' : 'Create an account';
+function setAuthMode(mode) {
+    authMode = mode;
+    const login = mode === 'login';
+    const registering = mode === 'register';
+    const forgot = mode === 'forgot';
+    const resetting = mode === 'reset';
+
+    $('login-title').textContent = 
+        login ? 'Start your growing season.' :
+        registering ? 'Let’s get you back in the field.' :
+        forgot ? 'Find your way back in.' :
+        "Choose a new password.";
+    $('auth-description').textContent =
+        login ? 'Log in to your farm overview.' :
+        registering ? 'Create an account for your farm.' :
+        forgot ? 'Enter your email to receive a reset code.' :
+        'Enter the reset code and choose a new password.';    
+    
+    $('username-field').hidden = forgot || resetting;
+    $('password-field').hidden = forgot || resetting;
+    $('username-hint').hidden = forgot || resetting;
+    $('password-hint').hidden = !registering;
+    $('email-field').hidden = login;
+    $('display-name-field').hidden = !registering;
+    $('reset-token-field').hidden = !resetting;
+    $('new-password-field').hidden = !resetting;
+    $('confirm-password-field').hidden = !resetting;
+
+    $('username').required = login || registering;
+    $('password').required = login || registering;
+    $('email').required = !login;
+    $('display-name').required = registering;
+    $('reset-token').required = resetting;
+    $('new-password').required = resetting;
+    $('confirm-password').required = resetting;
+
+    $('password').minLength = registering ? 10 : 1;
+    $('password').autocomplete = registering ? 'new-password' : 'current-password';
+    
+    $('auth-submit').textContent = login ? 'Log in': registering ? 'Create account' : 
+                                   forgot ? 'Send reset code' : 'Reset Password';
+
+    $('auth-toggle').hidden = !(login || registering);
+    $('forgot-password-link').hidden = !login;
+    $('back-to-login').hidden = login;
+
+    $('auth-toggle').textContent = registering ? 'Already registered? Log in' : 'Create an account';
+
     showMessage('auth-error');
 }
 
-$('auth-toggle').addEventListener('click', () => setRegistrationMode(!registering));
+$('auth-toggle').addEventListener('click', () => {
+    setAuthMode(authMode == 'register' ? 'login' : 'register');});
+$('forgot-password-link').addEventListener('click', () => {
+    setAuthMode('forgot');});
+$('back-to-login').addEventListener('click', () => {
+    setAuthMode('login');});
 
 $('auth-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     showMessage('auth-error');
     showMessage('global-message');
-    const username = $('username').value;
+    const username = $('username').value.trim();
     const password = $('password').value;
     $('auth-submit').disabled = true;
     $('auth-toggle').disabled = true;
-    $('auth-submit').textContent = registering ? 'Creating account…' : 'Logging in…';
+    $('forgot-password-link').disabled = true;
+    $('back-to-login').disabled = true;
 
     try {
-        if (registering) {
-            await api('/api/auth/register', jsonPost({ username, password, displayName: $('display-name').value.trim() }));
-            // If login fails, retry login rather than creating the account again.
-            setRegistrationMode(false);
-            $('auth-description').textContent = 'Your account is ready. Log in to continue.';
+        if (authMode == 'register') {
+            const email = $('email').value.trim();
+            const displayName = $('display-name').value.trim();
+            await api('/api/auth/register', jsonPost({
+                username, email, password, displayName}));
+            setAuthMode('login');
+            showMessage('global-message', 'Your account is ready. Log in to continue.');
+            return;
         }
+        if (authMode === 'forgot') {
+            const email = $('email').value.trim();
+            await api('/api/auth/forgot-password', jsonPost({ email }));
+            setAuthMode('reset');
+            showMessage('global-message', 'If that email belongs to an account, a reset code was sent.');
+            return;
+        }
+        if (authMode === 'reset') {
+            const email = $('email').value.trim();
+            const resetToken = $('reset-token').value.trim();
+            const newPassword = $('new-password').value;
+            const confirmPassword = $('confirm-password').value;
+            if (newPassword !== confirmPassword)
+                throw new Error('The passwords do not match.');
+            await api('/api/auth/reset-password', jsonPost({
+                email, code: resetToken, password: newPassword}));
+            showMessage('global-message', 'Your password was reset. You can now log in.');
+            return;
+        }
+
         await api('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -60,7 +126,8 @@ $('auth-form').addEventListener('submit', async (event) => {
     } finally {
         $('auth-submit').disabled = false;
         $('auth-toggle').disabled = false;
-        $('auth-submit').textContent = registering ? 'Create account' : 'Log in';
+        $('forgot-password-link').disabled = false;
+        $('back-to-login').disabled = false;
     }
 });
 
@@ -77,4 +144,5 @@ async function start() {
     }
 }
 
+setAuthMode('login');
 start();
