@@ -15,10 +15,23 @@ cd backend
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=demo"
 ```
 
-Open <http://localhost:8080>, create an account, and add a crop. This explicit demo
+Open <http://127.0.0.1:8080>, create an account, and add a crop. This explicit demo
 profile uses an **in-memory H2 database**: accounts and entries disappear when
 the app stops. No demo passwords or farmer records are seeded. On macOS/Linux,
 use `sh ./mvnw` instead of `.\mvnw.cmd`.
+
+If an older demo server starts rejecting crop entries after it has been running
+for a while, restart it with the updated project. H2 is pinned to 2.5.250 to fix
+[H2 issue #4302](https://github.com/h2database/h2database/issues/4302): the old
+version could reject valid crop types after a database connection closed.
+Restarting the in-memory demo also clears its accounts and entries.
+
+## Crop growing-condition research
+
+See [the crop reference guide](docs/crop-growing-conditions.md) for all ten crops:
+weather, temperature, air humidity, soil pH, soil moisture, and annual rainfall,
+with direct sources and guidance on interpreting the units. These references
+are research for the crop-details feature; they are not yet live assessment rules.
 
 ## Connect your Supabase PostgreSQL database
 
@@ -193,7 +206,10 @@ cd backend
 
 Tests cover registration and password hashing, login/logout, real CSRF tokens,
 validation, database round-trips, crop details, duplicate keys, timezone
-equivalence, and separation between farmers. The packaged app is
+equivalence, and separation between farmers. `CropDatabaseTest` also closes the
+connection that created the tables, then saves all ten crop types using fresh
+connections. This catches the demo database regression without a long wait.
+The packaged app is
 `backend/target/farm-0.0.1-SNAPSHOT.jar` and can run with
 `java -jar target/farm-0.0.1-SNAPSHOT.jar` from the `backend` directory after
 configuring Supabase.
