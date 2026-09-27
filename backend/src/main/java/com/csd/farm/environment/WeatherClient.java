@@ -21,7 +21,7 @@ public class WeatherClient {
             .queryParam("longitude", longitude)
             .queryParam("timezone", timeZone)
             .queryParam("daily", "sunshine_duration")
-            .queryParam("hourly", "temperature_2m,soil_moisture_3_to_9cm")
+            .queryParam("hourly", "temperature_2m,soil_moisture_3_to_9cm,vapour_pressure_deficit")
             .build()).retrieve();
         return response.body(OpenMeteoResponse.class);
     }

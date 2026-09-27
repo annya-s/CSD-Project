@@ -38,6 +38,7 @@ public class WeatherService {
             LocalDateTime dateTime = LocalDateTime.parse(res.hourly.time.get(i));
             Double temperature = res.hourly.temperature_2m.get(i);
             Double soilMoisture = res.hourly.soil_moisture_3_to_9cm.get(i);
+            Double vapourPressureDeficit = res.hourly.vapour_pressure_deficit.get(i);
 
             LocalDate date = dateTime.toLocalDate();
             int dateIndex = res.daily.time.indexOf(date.toString());
@@ -46,7 +47,8 @@ public class WeatherService {
             readings.add(new EnvironmentReading(
                 dateTime, 
                 temperature, 
-                soilMoisture, 
+                soilMoisture,
+                vapourPressureDeficit,
                 date, 
                 sunshineDuration)
             );

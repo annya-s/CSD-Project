@@ -13,6 +13,7 @@ public record EnvironmentReading(
     LocalDateTime dateTime,
     Double temperature,
     Double soilMoisture,
+    Double vapourPressureDeficit,
     LocalDate date,
     Double sunshineDuration
 ) {}

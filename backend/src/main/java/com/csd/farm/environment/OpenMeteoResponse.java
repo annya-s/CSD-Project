@@ -19,6 +19,7 @@ public class OpenMeteoResponse {
         public List<String> time;
         public List<Double> temperature_2m;
         public List<Double> soil_moisture_3_to_9cm;
+        public List<Double> vapour_pressure_deficit;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
