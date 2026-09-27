@@ -3,13 +3,16 @@ package com.csd.farm.environment;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.stereotype.Service;
 
-
+/** In charge of packaging the returned data from the (multiple) external API calls into EnvironmentReading(s)
+ * 
+ *  Sends the result back to WeatherController
+ */
 @Service
 public class WeatherService {
     private final WeatherClient weatherClient;
@@ -18,36 +21,43 @@ public class WeatherService {
         this.weatherClient = weatherClient;
     }
 
-    public WeatherClient.OpenMeteoResponse fetchData(double latitude, double longitude) {
-        return weatherClient.fetchMeteoData(latitude, longitude);
-    }
+    public List<EnvironmentReading> getAllReadings(double latitude, double longitude) throws NoSuchElementException {
+        List<EnvironmentReading> readings = new ArrayList<>();
 
-    public EnvironmentReading getLatestReading(WeatherClient.OpenMeteoResponse res) {
-        LocalTime currentTime = LocalTime.now(ZoneOffset.UTC);
-        int currentHour = currentTime.getHour();
-        
-        List<String> hourlyTimes = res.hourly.time;
-        List<Double> temperatures = res.hourly.temperature_2m;
-        List<Double> soilMoistures = res.hourly.soil_moisture_3_to_9cm;
+        OpenMeteoResponse res = weatherClient.fetchMeteoData(latitude, longitude);
 
-        List<String> dailyTimes = res.daily.time;
-        List<Double> dailySunshineDuration = res.daily.sunshine_duration;
-
-        if (hourlyTimes == null || hourlyTimes.isEmpty()) {
+        if (res.hourly.time == null || res.hourly.time.isEmpty()) {
             throw new NoSuchElementException("No hourly data returned from Open-Meteo");
         }
 
-        if (dailyTimes == null || dailyTimes.isEmpty()) {
+        if (res.daily.time == null || res.daily.time.isEmpty()) {
             throw new NoSuchElementException("No daily data returned from Open-Meteo");
         }
+        
+        for (int i = 0; i < res.hourly.time.size(); i++) {
+            LocalDateTime dateTime = LocalDateTime.parse(res.hourly.time.get(i));
+            Double temperature = res.hourly.temperature_2m.get(i);
+            Double soilMoisture = res.hourly.soil_moisture_3_to_9cm.get(i);
 
-        return new EnvironmentReading(
-            LocalDateTime.parse(hourlyTimes.get(currentHour)),
-            temperatures.get(currentHour),
-            soilMoistures.get(currentHour),
-            LocalDate.parse(dailyTimes.get(0)),
-            dailySunshineDuration.get(0)
-        );
+            LocalDate date = dateTime.toLocalDate();
+            int dateIndex = res.daily.time.indexOf(date.toString());
+            Double sunshineDuration = res.daily.sunshine_duration.get(dateIndex);
+
+            readings.add(new EnvironmentReading(
+                dateTime, 
+                temperature, 
+                soilMoisture, 
+                date, 
+                sunshineDuration)
+            );
+        }
+        return readings;
+    }
+
+    public EnvironmentReading getLatestReading(double latitude, double longitude) {
+        int currentHour = LocalTime.now().getHour();
+
+        return getAllReadings(latitude, longitude).get(currentHour);
     }
 }
 
