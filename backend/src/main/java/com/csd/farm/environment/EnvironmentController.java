@@ -9,16 +9,16 @@ import org.springframework.web.bind.annotation.RestController;
  *  i.e Getting them their readings
  */
 @RestController
-public class WeatherController {
-    private final WeatherService weatherService;
+public class EnvironmentController {
+    private final EnvironmentService envService;
 
-    public WeatherController(WeatherService weatherService) {
-        this.weatherService = weatherService;
+    public EnvironmentController(EnvironmentService envService) {
+        this.envService = envService;
     }
 
     @GetMapping("/api/environment/latest")
     public EnvironmentReading getLatestEnvironnmentReading(@RequestParam double latitude, @RequestParam double longitude) {
-        return weatherService.getLatestReading(latitude, longitude);
+        return envService.getLatestReading(latitude, longitude);
     }
 }
 

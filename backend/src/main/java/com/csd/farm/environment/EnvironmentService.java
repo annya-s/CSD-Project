@@ -14,17 +14,17 @@ import org.springframework.stereotype.Service;
  *  Sends the result back to WeatherController
  */
 @Service
-public class WeatherService {
-    private final WeatherClient weatherClient;
+public class EnvironmentService {
+    private final EnvironmentClient envClient;
 
-    public WeatherService(WeatherClient weatherClient) {
-        this.weatherClient = weatherClient;
+    public EnvironmentService(EnvironmentClient envClient) {
+        this.envClient = envClient;
     }
 
-    public List<EnvironmentReading> getAllReadings(double latitude, double longitude) throws NoSuchElementException {
+    public List<EnvironmentReading> getAllReadings(double latitude, double longitude) throws RuntimeException {
         List<EnvironmentReading> readings = new ArrayList<>();
 
-        OpenMeteoResponse res = weatherClient.fetchMeteoData(latitude, longitude);
+        OpenMeteoResponse res = envClient.fetchMeteoData(latitude, longitude);
 
         if (res.hourly.time == null || res.hourly.time.isEmpty()) {
             throw new NoSuchElementException("No hourly data returned from Open-Meteo");

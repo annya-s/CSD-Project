@@ -10,7 +10,7 @@ import org.springframework.web.client.RestClient;
  *  Returns their data to WeatherService
  */
 @Component
-public class WeatherClient {
+public class EnvironmentClient {
     public OpenMeteoResponse fetchMeteoData(double latitude, double longitude) {
         RestClient restClient = RestClient.create("https://api.open-meteo.com");
         String timeZone = ZoneId.systemDefault().toString();

@@ -4,15 +4,13 @@ import java.util.List;
 
 public class EnvironmentTest {
     public static void main(String[] args) {
-        WeatherClient wClient = new WeatherClient();
-        WeatherService wService = new WeatherService(wClient);
+        EnvironmentClient envClient = new EnvironmentClient();
+        EnvironmentService envService = new EnvironmentService(envClient);
 
-        List<EnvironmentReading> allReadings = wService.getAllReadings(52.52, 13.41);
+        List<EnvironmentReading> allReadings = envService.getAllReadings(52.52, 13.41);
         System.out.println(allReadings);
 
-        EnvironmentReading latestReading = wService.getLatestReading(52.52, 13.41);
-        System.out.println(latestReading + "\n");
-        
-        
+        EnvironmentReading latestReading = envService.getLatestReading(52.52, 13.41);
+        System.out.println(latestReading);
     }
 }
