@@ -7,7 +7,7 @@ import org.springframework.web.client.RestClient;
 
 /** In charge of making the (multiple, if applicable) external API calls
  * 
- *  Returns their data to WeatherService
+ *  Returns their data to EnvironmentService
  */
 @Component
 public class EnvironmentClient {

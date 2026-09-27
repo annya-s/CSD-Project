@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /** Mimics the JSON response of OpenMeteo
  * 
- *  This class will auto-convert the values returned by OpenMeteo to the correct data type
+ *  This class will auto-convert the values returned by OpenMeteo to the correct data types
  * 
- *  Only used by WeatherService to organise these readings into an EnvironmentReading object
+ *  Only used by EnvironmentService to organise its readings into an EnvironmentReading object
  */
 public class OpenMeteoResponse {
     public HourlyBlock hourly;

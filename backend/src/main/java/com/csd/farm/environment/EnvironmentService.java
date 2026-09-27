@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 /** In charge of packaging the returned data from the (multiple) external API calls into EnvironmentReading(s)
  * 
- *  Sends the result back to WeatherController
+ *  Sends the result back to EnvironmentController
  */
 @Service
 public class EnvironmentService {
