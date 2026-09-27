@@ -73,14 +73,59 @@ export function formatDate(value) {
     }).format(new Date(value));
 }
 
-export function metric(name, value = 'Not measured') {
+export function metric(name, value = 'Not assessed', status = 'NOT_ASSESSED') {
     const row = node('div', undefined, 'metric');
     const description = node('dd');
     const dot = node('span', undefined, 'status-dot');
+    dot.dataset.status = status;
     dot.setAttribute('aria-hidden', 'true');
     description.append(dot, document.createTextNode(value));
     row.append(node('dt', name), description);
     return row;
+}
+
+export function readingMetric(reading, showRange = false) {
+    const labels = {
+        NOT_ASSESSED: 'Not assessed',
+        BELOW_RANGE: 'Below reference range',
+        WITHIN_RANGE: 'Within reference range',
+        ABOVE_RANGE: 'Above reference range'
+    };
+    const value = reading.value === null ? '' : `${new Intl.NumberFormat(undefined, {
+        maximumFractionDigits: reading.name === 'Soil moisture' ? 3 : 2
+    }).format(reading.value)} ${reading.unit} · `;
+    const row = metric(reading.name, value + (labels[reading.status] || 'Not assessed'), reading.status);
+    if (showRange && reading.referenceRange) {
+        const { minimum, maximum } = reading.referenceRange;
+        row.querySelector('dd').append(node('small', `Reference: ${minimum}–${maximum} ${reading.unit}`, 'reference-range'));
+    }
+    return row;
+}
+
+export function weatherCaption(weather, source, message) {
+    const provider = source === 'OPEN_METEO' ? 'Open-Meteo weather model' : 'Manually supplied weather';
+    const caption = weather
+        ? `${provider} · ${weather.date} (${weather.timezone}). Daily averages and sunshine total; not field sensor measurements.`
+        : 'No weather readings available.';
+    return message ? `${caption} ${message}` : caption;
+}
+
+// Refresh assessments while visible. The backend reuses API results for up to 15 minutes.
+export function refreshPeriodically(refresh) {
+    let loading = false;
+    const timer = setInterval(async () => {
+        if (document.hidden || loading) return;
+        loading = true;
+        try {
+            await refresh();
+            showMessage('global-message');
+        } catch (error) {
+            showPageError(error);
+        } finally {
+            loading = false;
+        }
+    }, 60000);
+    window.addEventListener('pagehide', () => clearInterval(timer), { once: true });
 }
 
 // Recheck login when Back restores a page from the browser's memory cache.

@@ -31,7 +31,9 @@ Restarting the in-memory demo also clears its accounts and entries.
 See [the crop reference guide](docs/crop-growing-conditions.md) for all ten crops:
 weather, temperature, air humidity, soil pH, soil moisture, and annual rainfall,
 with direct sources and guidance on interpreting the units. These references
-are research for the crop-details feature; they are not yet live assessment rules.
+include the approved prototype temperature and sunlight comparison rules. See
+[the crop-health integration guide](docs/crop-health-integration.md) for the simple
+Java code map and the request format for your API-fetching teammate.
 
 ## Connect your Supabase PostgreSQL database
 
@@ -103,10 +105,15 @@ The ten hardcoded choices are **Potato, Sugar cane, Apple, Rice, Wheat, Maize,
 Tomato, Carrot, Lettuce, and Soybean**. These are choices in the crop catalogue,
 not ten fabricated plantings. New accounts start with an empty dashboard.
 
-Health readings, scores, weather, photos and AI/chatbot services have no supplied
-data source. The UI explicitly shows **Not measured** / **Not assessed**. Dashboard
-summaries are deterministic text, not AI output. No agronomic readings or advice
-are invented.
+The crop assessment compares Open-Meteo daily temperature and sunshine against the
+hardcoded references. Humidity and soil moisture remain **Not assessed**, even if
+readings are supplied. Pages fetch yesterday's weather for each planting's coordinates,
+reuse results for 15 minutes, and label their source and date. Soil water is displayed
+as percent by volume, not percent depleted. Missing data shows **Not assessed**;
+API outages show a warning and only verified API history may be used as a fallback.
+The demo profile still fetches real weather; it only changes database storage.
+Photos, health scores and AI/chatbot services remain unimplemented.
+Dashboard summaries and recommendations use simple rules, not AI output.
 
 ## API
 
@@ -127,6 +134,8 @@ The included frontend does this automatically.
 | GET | `/api/crops` | This farmer's entries |
 | POST | `/api/crops` | Save an entry |
 | GET | `/api/crops/{cropType}?plantedAt=…` | Details for an owned entry |
+| POST | `/api/crops/{cropType}/weather?plantedAt=…` | Manual readings, only when `WEATHER_API_ENABLED=false` |
+| GET | `/api/environment/latest?latitude=…&longitude=…` | Teammate's existing hourly environment endpoint |
 
 Example new-entry body:
 
@@ -174,8 +183,9 @@ combined `index.html` and `app.js` have been replaced by these page files.
 For crop-details work, start with `crop-details.html` and `renderDetails()` in
 `crop-details.js`. Its `start()` function requests data from the existing Java
 `CropController.details()` endpoint. Frontend files call API URLs; they do not
-directly import or execute Java files. Photos and health assessment remain the
-same placeholders as before this file reorganisation.
+directly import or execute Java files. `CropHealthService.assess()` now supplies
+the condition comparisons; photos remain placeholders. Both pages refresh saved
+assessments every 60 seconds while visible.
 
 ```text
 backend/

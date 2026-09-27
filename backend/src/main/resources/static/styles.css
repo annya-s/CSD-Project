@@ -74,6 +74,12 @@ input::placeholder { color: #5d6a5b; opacity: 1; }
 .metric { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 7px 0; }
 .metric dd { margin: 0; color: var(--muted); font-size: .8rem; }
 .status-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #87957f; margin-right: 6px; }
+.status-dot[data-status="WITHIN_RANGE"] { background: #397647; }
+.status-dot[data-status="BELOW_RANGE"], .status-dot[data-status="ABOVE_RANGE"] { background: #b87818; }
+.reference-range { display: block; margin-top: 4px; }
+.attention-label, .health-panel .attention-label { color: #8b3e16; font-weight: 600; margin: 12px 0; }
+.metric dt { flex-shrink: 0; }
+.metric dd { text-align: right; overflow-wrap: anywhere; }
 .card-footer { display: block; padding-top: 15px; color: var(--green); font-size: .8rem; }
 .empty-state { text-align: center; padding: 40px 20px; }
 .empty-state p { margin: 0 auto 24px; color: var(--muted); max-width: 49ch; }
