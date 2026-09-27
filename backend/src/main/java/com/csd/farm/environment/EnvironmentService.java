@@ -22,6 +22,10 @@ public class EnvironmentService {
     }
 
     public List<EnvironmentReading> getAllReadings(double latitude, double longitude) throws RuntimeException {
+        if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+            throw new IllegalArgumentException("Invalid longitude/latitude inputs");
+        }
+
         List<EnvironmentReading> readings = new ArrayList<>();
 
         OpenMeteoResponse res = envClient.fetchMeteoData(latitude, longitude);
