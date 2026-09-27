@@ -19,6 +19,8 @@
 
     <properties>
         <java.version>17</java.version>
+        <!-- Fix H2 #4302: crop CHECK constraints fail after a connection closes. -->
+        <h2.version>2.5.250</h2.version>
     </properties>
 
     <dependencies>
