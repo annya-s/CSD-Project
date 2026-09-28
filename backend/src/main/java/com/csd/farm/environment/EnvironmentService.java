@@ -9,6 +9,8 @@ import java.util.NoSuchElementException;
 
 import org.springframework.stereotype.Service;
 
+import com.csd.farm.crop.CropRepository;
+
 /** In charge of packaging the returned data from the (multiple) external API calls into EnvironmentReading(s)
  * 
  *  Sends the result back to EnvironmentController
@@ -16,12 +18,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class EnvironmentService {
     private final EnvironmentClient envClient;
+    private final CropRepository cropRepo;
 
-    public EnvironmentService(EnvironmentClient envClient) {
+    public EnvironmentService(EnvironmentClient envClient, CropRepository cropRepo) {
         this.envClient = envClient;
+        this.cropRepo = cropRepo;
+
     }
 
+    // TODO: Change parameter to ONLY "int cropId"
+    // When DB gets integrated
     public List<EnvironmentReading> getAllReadings(double latitude, double longitude) throws RuntimeException {
+        // TODO: Get longitude/latitude from DB
+        // CropEntry crop = cropRepo.getCrop(cropId);
+        // double latitude = crop.latitude;
+        // double longitude = crop.longitude;
+
         if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
             throw new IllegalArgumentException("Invalid longitude/latitude inputs");
         }
@@ -60,9 +72,11 @@ public class EnvironmentService {
         return readings;
     }
 
+    // TODO: Change the parameter to ONLY "int cropId"
     public EnvironmentReading getLatestReading(double latitude, double longitude) {
         int currentHour = LocalTime.now().getHour();
 
+        // TODO: Change these arguments to cropId
         return getAllReadings(latitude, longitude).get(currentHour);
     }
 }
