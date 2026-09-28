@@ -40,8 +40,8 @@ class CropDatabaseTest {
         UUID farmerId = UUID.randomUUID();
         try {
             jdbc.sql("""
-                    INSERT INTO farm.farmer_account (id, username, display_name, password_hash)
-                    VALUES (?, 'test_farmer', 'Test farmer', 'unused-test-hash')
+                    INSERT INTO farm.farmer_account (id, username, email, display_name, password_hash)
+                    VALUES (?, 'test_farmer', 'test-farmer@example.com', 'Test farmer', 'unused-test-hash')
                     """).param(farmerId).update();
 
             for (CropType type : CropType.values()) {
