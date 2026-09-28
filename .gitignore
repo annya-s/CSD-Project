@@ -8,3 +8,4 @@ backend/application-local.properties
 *.iml
 *.log
 *.openai
+*.class
