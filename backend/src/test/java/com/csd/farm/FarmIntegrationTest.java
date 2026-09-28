@@ -165,7 +165,7 @@ class FarmIntegrationTest {
         mvc.perform(get("/api/crops/POTATO").session(freshSession).param("plantedAt", PLANTED_AT))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.entry.latitude").value(1.3521))
-                .andExpect(jsonPath("$.readings[0].status").value("NOT_MEASURED"))
+                .andExpect(jsonPath("$.readings[0].status").value("NOT_ASSESSED"))
                 .andExpect(jsonPath("$.healthScore").isEmpty());
     }
 
@@ -244,6 +244,109 @@ class FarmIntegrationTest {
         return (MockHttpSession) mvc.perform(post("/api/auth/login").with(csrf())
                         .param("username", username).param("password", PASSWORD))
                 .andExpect(status().isNoContent()).andReturn().getRequest().getSession();
+    }
+
+    private static final String WEATHER_JSON = """
+            {"date":"2026-01-12","timezone":"Asia/Singapore","temperatureMeanC":30,
+             "sunshineDurationSeconds":18000,"humidityMeanPercent":82,"soilMoistureMeanM3M3":0.25}
+            """;
+
+    @Test
+    void weatherUpdatesAppearInDetailsAndDashboardAndCanClearOldFlags() throws Exception {
+        MockHttpSession session = login("alice");
+        createCrop(session, CROP_JSON);
+        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf())
+                        .param("plantedAt", "2026-01-10T16:30:00+08:00")
+                        .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.needsAttention").value(true))
+                .andExpect(jsonPath("$.readings[0].status").value("ABOVE_RANGE"))
+                .andExpect(jsonPath("$.readings[1].status").value("NOT_ASSESSED"))
+                .andExpect(jsonPath("$.readings[2].status").value("NOT_ASSESSED"))
+                .andExpect(jsonPath("$.readings[3].value").value(5))
+                .andExpect(jsonPath("$.issues.length()").value(2));
+        mvc.perform(get("/api/dashboard").session(login("alice")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.crops[0].needsAttention").value(true))
+                .andExpect(jsonPath("$.crops[0].weather.date").value("2026-01-12"));
+        mvc.perform(get("/api/crops/POTATO").session(session).param("plantedAt", PLANTED_AT))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.weather.humidityMeanPercent").value(82));
+
+        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf())
+                        .param("plantedAt", PLANTED_AT).contentType(MediaType.APPLICATION_JSON)
+                        .content(WEATHER_JSON.replace(":30", ":20").replace("18000", "25200")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.needsAttention").value(false))
+                .andExpect(jsonPath("$.issues.length()").value(0));
+        mvc.perform(get("/api/dashboard").session(session))
+                .andExpect(jsonPath("$.crops[0].needsAttention").value(false));
+    }
+
+    @Test
+    void weatherUpdatesRequireLoginCsrfAndOwnership() throws Exception {
+        MockHttpSession alice = login("alice");
+        createCrop(alice, CROP_JSON);
+        mvc.perform(post("/api/crops/POTATO/weather").with(csrf()).param("plantedAt", PLANTED_AT)
+                        .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/crops/POTATO/weather").session(alice).param("plantedAt", PLANTED_AT)
+                        .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
+                .andExpect(status().isForbidden());
+        MockHttpSession bob = login("bob");
+        mvc.perform(post("/api/crops/POTATO/weather").session(bob).with(csrf()).param("plantedAt", PLANTED_AT)
+                        .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
+                .andExpect(status().isNotFound());
+        createCrop(bob, CROP_JSON);
+        mvc.perform(post("/api/crops/POTATO/weather").session(bob).with(csrf()).param("plantedAt", PLANTED_AT)
+                        .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
+                .andExpect(status().isOk());
+        mvc.perform(get("/api/crops/POTATO").session(alice).param("plantedAt", PLANTED_AT))
+                .andExpect(jsonPath("$.weather").isEmpty())
+                .andExpect(jsonPath("$.needsAttention").value(false));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"negativeSun", "longSun", "humidity", "soil", "temperature", "zone", "future", "today", "missingDate"})
+    void invalidDailyWeatherIsRejected(String invalidField) throws Exception {
+        MockHttpSession session = login("alice");
+        createCrop(session, CROP_JSON);
+        String json = switch (invalidField) {
+            case "negativeSun" -> WEATHER_JSON.replace("18000", "-1");
+            case "longSun" -> WEATHER_JSON.replace("18000", "86401");
+            case "humidity" -> WEATHER_JSON.replace(":82", ":101");
+            case "soil" -> WEATHER_JSON.replace("0.25", "25");
+            case "temperature" -> WEATHER_JSON.replace(":30", ":101");
+            case "zone" -> WEATHER_JSON.replace("Asia/Singapore", "Invalid/Timezone");
+            case "future" -> WEATHER_JSON.replace("2026-01-12", "2999-01-12");
+            case "today" -> WEATHER_JSON.replace("2026-01-12",
+                    java.time.LocalDate.now(java.time.ZoneId.of("Asia/Singapore")).toString());
+            default -> WEATHER_JSON.replace("\"2026-01-12\"", "null");
+        };
+        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf()).param("plantedAt", PLANTED_AT)
+                        .contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void olderWeatherCannotOverwriteNewerAndMissingValuesClearThePreviousSnapshot() throws Exception {
+        MockHttpSession session = login("alice");
+        createCrop(session, CROP_JSON);
+        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf()).param("plantedAt", PLANTED_AT)
+                        .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
+                .andExpect(status().isOk());
+        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf()).param("plantedAt", PLANTED_AT)
+                        .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON.replace("2026-01-12", "2026-01-11")))
+                .andExpect(status().isConflict());
+        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf()).param("plantedAt", PLANTED_AT)
+                        .contentType(MediaType.APPLICATION_JSON).content("""
+                                {"date":"2026-01-13","timezone":"Asia/Singapore"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.weather.temperatureMeanC").isEmpty())
+                .andExpect(jsonPath("$.weather.sunshineDurationSeconds").isEmpty())
+                .andExpect(jsonPath("$.readings[0].status").value("NOT_ASSESSED"))
+                .andExpect(jsonPath("$.needsAttention").value(false));
     }
 
     private void createCrop(MockHttpSession session, String json) throws Exception {

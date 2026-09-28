@@ -1,4 +1,4 @@
-import { $, api, requireFarmer, showPageError, node, formatDate, metric } from './api.js';
+import { $, api, requireFarmer, showPageError, node, formatDate, readingMetric, weatherCaption, refreshPeriodically } from './api.js';
 
 function renderDashboard(data, cropTypes) {
     $('summary').textContent = data.summary;
@@ -14,8 +14,10 @@ function renderDashboard(data, cropTypes) {
         const date = node('time', `Planted ${formatDate(crop.plantedAt)}`);
         date.dateTime = crop.plantedAt;
         card.append(date);
+        if (crop.needsAttention) card.append(node('p', 'Needs attention', 'attention-label'));
+        card.append(node('p', weatherCaption(crop.weather, crop.weatherSource, crop.weatherMessage), 'field-hint'));
         const readings = node('dl');
-        ['Water', 'Soil moisture', 'UV exposure', 'Fertilizer'].forEach((name) => readings.append(metric(name)));
+        crop.readings.forEach((reading) => readings.append(readingMetric(reading)));
         card.append(readings, node('span', 'View planting details →', 'card-footer'));
         $('crop-grid').append(card);
     }
@@ -31,6 +33,7 @@ async function start() {
         renderDashboard(dashboard, cropTypes);
         $('loading').hidden = true;
         $('dashboard-page').hidden = false;
+        refreshPeriodically(async () => renderDashboard(await api('/api/dashboard'), cropTypes));
     } catch (error) {
         showPageError(error);
     }

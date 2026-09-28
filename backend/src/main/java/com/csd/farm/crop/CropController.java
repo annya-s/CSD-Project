@@ -1,6 +1,7 @@
 package com.csd.farm.crop;
 
 import java.security.Principal;
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.csd.farm.auth.FarmerRepository;
+import com.csd.farm.crop.CropHealthService.Reading;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -28,10 +30,18 @@ public class CropController {
 
     private final CropRepository crops;
     private final FarmerRepository farmers;
+    private final CropWeatherRepository weatherReadings;
+    private final CropHealthService health;
+    private final CropWeatherService weatherService;
 
-    public CropController(CropRepository crops, FarmerRepository farmers) {
+    public CropController(CropRepository crops, FarmerRepository farmers,
+                          CropWeatherRepository weatherReadings, CropHealthService health,
+                          CropWeatherService weatherService) {
         this.crops = crops;
         this.farmers = farmers;
+        this.weatherReadings = weatherReadings;
+        this.health = health;
+        this.weatherService = weatherService;
     }
 
     @GetMapping("/crop-types")
@@ -48,11 +58,20 @@ public class CropController {
 
     @GetMapping("/dashboard")
     public Dashboard dashboard(Principal principal) {
-        List<CropEntry> entries = list(principal);
+        UUID owner = farmerId(principal);
+        List<DashboardCrop> entries = crops.findAllForFarmer(owner).stream().map(entry -> {
+            var result = weatherService.load(owner, entry);
+            DailyWeather weather = result.weather();
+            var assessment = health.assess(entry.cropType(), weather);
+            return new DashboardCrop(entry.cropType(), entry.plantedAt(), entry.latitude(), entry.longitude(),
+                    weather, assessment.readings(), assessment.needsAttention(), result.source(), result.message());
+        }).toList();
+        long attentionCount = entries.stream().filter(DashboardCrop::needsAttention).count();
         String entryLabel = entries.size() == 1 ? " crop entry." : " crop entries.";
         String summary = entries.isEmpty()
                 ? "Add your first crop to start your farm overview."
-                : "You have " + entries.size() + entryLabel + " Health readings are not available yet.";
+                : "You have " + entries.size() + entryLabel + " " + attentionCount
+                    + " flagged for review based on the available daily readings. Humidity and soil moisture are not assessed.";
         return new Dashboard(summary, entries);
     }
 
@@ -70,19 +89,38 @@ public class CropController {
             Principal principal,
             @PathVariable CropType cropType,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime plantedAt) {
-        CropEntry entry = crops.findForFarmer(farmerId(principal), cropType, normalizeTime(plantedAt))
+        UUID owner = farmerId(principal);
+        CropEntry entry = crops.findForFarmer(owner, cropType, normalizeTime(plantedAt))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Crop entry not found."));
+        var result = weatherService.load(owner, entry);
+        DailyWeather weather = result.weather();
+        var assessment = health.assess(cropType, weather);
+        return new CropDetails(entry, null, assessment.readings(), assessment.recommendedActions(),
+                "These are preliminary comparisons of daily weather, not a diagnosis or a growth prediction. "
+                + "Sunlight bands are estimates, not damage limits. Humidity and soil moisture are not assessed. "
+                + "Open-Meteo soil readings represent the 3–9 cm layer; their percentage is water by volume, not available water depleted.",
+                assessment.issues(), assessment.needsAttention(), weather, result.source(), result.message());
+    }
 
-        // The mockups show sensor readings, but no sensor or AI service has been supplied yet.
-        return new CropDetails(entry, null, List.of(
-                new Reading("Water", null, "%", "NOT_MEASURED"),
-                new Reading("Soil moisture", null, "%", "NOT_MEASURED"),
-                new Reading("UV exposure", null, "UV index", "NOT_MEASURED"),
-                new Reading("Fertilizer", null, null, "NOT_MEASURED"),
-                new Reading("Soil pH", null, "pH", "NOT_MEASURED"),
-                new Reading("Temperature", null, "°C", "NOT_MEASURED")),
-                List.of("Record field measurements before making care decisions."),
-                "Health, weather, crop photos, and chatbot services are not connected yet.");
+    @PostMapping("/crops/{cropType}/weather")
+    public CropDetails updateWeather(
+            Principal principal,
+            @PathVariable CropType cropType,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime plantedAt,
+            @Valid @RequestBody DailyWeather weather) {
+        UUID owner = farmerId(principal);
+        OffsetDateTime plantingTime = normalizeTime(plantedAt);
+        crops.findForFarmer(owner, cropType, plantingTime)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Crop entry not found."));
+        if (weatherService.isEnabled()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Open-Meteo fetching is enabled. Manual weather updates are disabled.");
+        }
+        weather.validateCompletedDay();
+        if (!weatherReadings.save(owner, cropType, plantingTime, weather)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A newer weather day is already saved for this crop.");
+        }
+        return details(principal, cropType, plantingTime);
     }
 
     private UUID farmerId(Principal principal) {
@@ -96,10 +134,15 @@ public class CropController {
 
     public record CropOption(String code, String name) { }
 
-    public record Dashboard(String summary, List<CropEntry> crops) { }
+    public record Dashboard(String summary, List<DashboardCrop> crops) { }
 
-    public record Reading(String name, Double value, String unit, String status) { }
+    public record DashboardCrop(CropType cropType, OffsetDateTime plantedAt,
+                                BigDecimal latitude, BigDecimal longitude, DailyWeather weather,
+                                List<Reading> readings, boolean needsAttention,
+                                String weatherSource, String weatherMessage) { }
 
     public record CropDetails(CropEntry entry, Integer healthScore, List<Reading> readings,
-                              List<String> recommendedActions, String note) { }
+                              List<String> recommendedActions, String note, List<String> issues,
+                              boolean needsAttention, DailyWeather weather,
+                              String weatherSource, String weatherMessage) { }
 }
