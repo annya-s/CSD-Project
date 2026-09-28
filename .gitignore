@@ -1,4 +1,4 @@
-target/
+ target/
 .build/
 node_modules/
 .env
@@ -8,3 +8,4 @@ backend/application-local.properties
 *.iml
 *.log
 *.openai
+*.class
