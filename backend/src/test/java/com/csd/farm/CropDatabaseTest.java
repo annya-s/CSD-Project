@@ -32,16 +32,16 @@ class CropDatabaseTest {
                 statement.execute("CREATE SCHEMA farm");
             }
             ScriptUtils.executeSqlScript(connection,
-                    new ClassPathResource("db/migration/V1__create_farm_tables.sql"));
+                    new ClassPathResource("db/demo/schema.sql"));
         }
 
         var jdbc = JdbcClient.create(new DriverManagerDataSource(url, "sa", ""));
         var crops = new CropRepository(jdbc);
-        UUID farmerId = UUID.randomUUID();
+        Long farmerId = 1L;
         try {
             jdbc.sql("""
-                    INSERT INTO farm.farmer_account (id, username, display_name, password_hash)
-                    VALUES (?, 'test_farmer', 'Test farmer', 'unused-test-hash')
+                    INSERT INTO public."USERS" ("User_ID", "User_Name", "User_Email", "Password_Hash")
+                    VALUES (?, 'test_farmer', 'test@example.com', 'unused-test-hash')
                     """).param(farmerId).update();
 
             for (CropType type : CropType.values()) {
@@ -62,3 +62,5 @@ class CropDatabaseTest {
         }
     }
 }
+
+

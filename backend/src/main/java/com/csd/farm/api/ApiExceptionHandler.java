@@ -19,7 +19,7 @@ public class ApiExceptionHandler {
     @ExceptionHandler(DuplicateKeyException.class)
     public ResponseEntity<Map<String, String>> duplicate() {
         return error(HttpStatus.CONFLICT,
-                "That username or crop entry already exists. Use a different username or planting time.");
+                "That username, email, or crop entry already exists.");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -43,3 +43,4 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(status).body(Map.of("message", message));
     }
 }
+
