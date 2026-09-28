@@ -10,13 +10,13 @@ C:\Users\dayan\Desktop\CSD\CSD-Project\backend\src\main\java\com\csd\farm\crop\C
 C:\Users\dayan\Desktop\CSD\CSD-Project\backend\src\main\java\com\csd\farm\crop\CropConditions.java
 C:\Users\dayan\Desktop\CSD\CSD-Project\backend\src\main\java\com\csd\farm\crop\CropController.java
 C:\Users\dayan\Desktop\CSD\CSD-Project\backend\src\main\java\com\csd\farm\crop\CropEntry.java
+C:\Users\dayan\Desktop\CSD\CSD-Project\backend\src\main\java\com\csd\farm\crop\CropForecast.java
 C:\Users\dayan\Desktop\CSD\CSD-Project\backend\src\main\java\com\csd\farm\crop\CropHealthService.java
 C:\Users\dayan\Desktop\CSD\CSD-Project\backend\src\main\java\com\csd\farm\crop\CropRepository.java
 C:\Users\dayan\Desktop\CSD\CSD-Project\backend\src\main\java\com\csd\farm\crop\CropType.java
 C:\Users\dayan\Desktop\CSD\CSD-Project\backend\src\main\java\com\csd\farm\crop\CropWeatherRepository.java
 C:\Users\dayan\Desktop\CSD\CSD-Project\backend\src\main\java\com\csd\farm\crop\CropWeatherService.java
 C:\Users\dayan\Desktop\CSD\CSD-Project\backend\src\main\java\com\csd\farm\crop\DailyWeather.java
-C:\Users\dayan\Desktop\CSD\CSD-Project\backend\src\main\java\com\csd\farm\environment\DailyEnvironmentResponse.java
 C:\Users\dayan\Desktop\CSD\CSD-Project\backend\src\main\java\com\csd\farm\environment\EnvironmentClient.java
 C:\Users\dayan\Desktop\CSD\CSD-Project\backend\src\main\java\com\csd\farm\environment\EnvironmentController.java
 C:\Users\dayan\Desktop\CSD\CSD-Project\backend\src\main\java\com\csd\farm\environment\EnvironmentReading.java

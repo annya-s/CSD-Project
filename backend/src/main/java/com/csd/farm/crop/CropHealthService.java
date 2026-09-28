@@ -22,7 +22,8 @@ public class CropHealthService {
         Reading sunshineReading = compare("Sunlight", sunshineHours, "hours/day", conditions.sunshineHours());
         List<Reading> readings = List.of(
                 temperatureReading,
-                new Reading("Humidity", weather == null ? null : weather.humidityMeanPercent(), "%", "NOT_ASSESSED", null),
+                new Reading("Vapour pressure deficit", weather == null ? null : weather.vapourPressureDeficitMeanKpa(),
+                        "kPa", "NOT_ASSESSED", null),
                 new Reading("Soil moisture", soilPercent, "% by volume", "NOT_ASSESSED", null),
                 sunshineReading);
 
@@ -43,10 +44,10 @@ public class CropHealthService {
             actions.add("Sunshine is above the reference band. Do not add shade solely because of this result; check temperature and the crop first.");
         }
         if (temperature == null || sunshineHours == null) {
-            actions.add("Supply the missing completed-day weather readings to assess temperature and sunlight.");
+            actions.add("Daily weather values are missing or incomplete. Refresh the forecast before assessing temperature and sunlight.");
         }
         if (actions.isEmpty()) {
-            actions.add("Continue monitoring. Temperature and sunlight are within their reference ranges; humidity and soil moisture remain unassessed.");
+            actions.add("Continue monitoring. Temperature and sunlight are within their reference ranges; vapour pressure deficit and soil moisture remain unassessed.");
         }
 
         return new Assessment(readings, List.copyOf(issues), List.copyOf(actions), !issues.isEmpty());
