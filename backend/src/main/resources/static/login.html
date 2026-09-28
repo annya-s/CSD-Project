@@ -12,14 +12,14 @@
 <body>
     <header class="topbar">
         <a class="brand" href="/dashboard.html" aria-label="Dome home">dome<span class="brand-leaf" aria-hidden="true">↗</span></a>
-        <span id="brand-caption">A little clarity for your crops.</span>
+        <span id="brand-caption">A little clarity for your crops.</span>    
     </header>
     <main id="main">
         <p id="global-message" role="alert" hidden></p>
         <section id="login-page" class="page login-layout" hidden aria-labelledby="login-title">
             <div class="login-intro">
                 <span class="small-label">Your farm, in view</span>
-                <h1>Good growing starts<br>with a clear picture.</h1>
+                <h1>Good growing starts with a clear picture.</h1>
                 <p>Keep your planting records in one place. See what you’ve planted, where it’s growing, and when it went into the ground.</p>
                 <div class="preview" aria-label="Example crop entry">
                     <div class="preview-heading"><strong>Potato</strong><span>Example entry</span></div>
@@ -32,26 +32,73 @@
                 <h2 id="login-title">Let’s get you<br>back in the field.</h2>
                 <p id="auth-description">Log in to your farm overview.</p>
                 <form id="auth-form">
-                    <div id="display-name-field" hidden>
+                    <div id="username-field" class="input-field">
+                        <label for="username">Username</label>
+                        <input id="username" name="username" autocomplete="username" minlength="3"
+                                maxlength="40" pattern="[a-z0-9_]{3,40}" aria-describedby="username-hint" placeholder=" ">
+                    </div>
+                    <p class="field-hint" id="username-hint">3–40 lowercase letters, numbers, or underscores.</p>
+                    <div id="password-field" class="input-field">
+                        <label for="password">Password</label>
+                        <input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" placeholder=" ">
+                    </div>
+                    <p id="password-hint" class="field-hint" hidden>Use at least 10 characters.</p>
+                    <div id="email-field" hidden class="input-field">
+                        <label for="email">Email</label>
+                        <input id="email" name="email" type="email" autocomplete="email" maxlength="254">
+                    </div><div id="display-name-field" class="input-field" hidden>
                         <label for="display-name">Your name</label>
                         <input id="display-name" name="displayName" autocomplete="name" maxlength="80">
                     </div>
-                    <label for="username">Username</label>
-                    <input id="username" name="username" autocomplete="username" required minlength="3"
-                           maxlength="40" pattern="[a-z0-9_]{3,40}" aria-describedby="username-hint">
-                    <p class="field-hint" id="username-hint">3–40 lowercase letters, numbers, or underscores.</p>
-                    <label for="password">Password</label>
-                    <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="128">
-                    <p id="password-hint" class="field-hint" hidden>Use at least 10 characters.</p>
+                    <div id="reset-token-field" class="input-field" hidden>
+                        <label for="reset-token">Reset code</label>
+                        <input id="reset-token" name="resetToken" type="text" autocomplete="one-time-code">
+                    </div>
+                    <div id="new-password-field" class="input-field" hidden>
+                        <label for="new-password">New password</label>
+                        <input id="new-password" name="newPassword" type="password" autocomplete="new-password" maxlength="128">
+                    </div>
+                    <div id="confirm-password-field" class="input-field" hidden>
+                        <label for="confirm-password">Confirm new password</label>
+                        <input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" maxlength="128">
+                    </div>
                     <p id="auth-error" class="form-error" role="alert" hidden></p>
+                    <!-- <div id="forgot-password-link"> <a href="/forgot-password.html"> Forgot your password? </a> </div> -->
                     <button id="auth-submit" class="primary" type="submit">Log in</button>
                     <button id="auth-toggle" class="secondary" type="button">Create an account</button>
+                    <button id="forgot-password-link" class="secondary" type="button">Forgot password?</button>
+                    <button id="back-to-login" class="secondary" type="button" hidden>Back to login</button>
                 </form>
             </div>
         </section>
         <p id="loading" class="loading" role="status">Loading…</p>
         <noscript><p class="loading">Please enable JavaScript to use your farm dashboard.</p></noscript>
     </main>
-    <footer>Made for a clearer view of your farm.</footer>
+    <footer id="site-footer">
+        <p class="footer-tagline">Made for a clearer view of your farm.</p>
+        <ul class="bottom-bar">
+            <!-- <li>
+                <a href="https://x.com/" target="_blank" rel="noopener noreferrer">
+                    <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24"> <use href="/icons.svg#x-icon"></use> </svg>
+                    <span>X.com</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://bsky.app/" target="_blank" rel="noopener noreferrer">
+                    <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24"> <use href="/icons.svg#bluesky-icon"></use> </svg>
+                    <span>Bluesky</span>
+                </a>
+            </li> -->
+            <li>
+                <a href="https://github.com/annya-s/CSD-Project" target="_blank" rel="noopener noreferrer">
+                    <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24">
+                        <use href="/icons.svg#github-icon"></use>
+                    </svg>
+                    <span>GitHub</span>
+                </a>
+            </li>
+        </ul>
+    </footer>
+  </div>
 </body>
 </html>
