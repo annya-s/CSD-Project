@@ -48,17 +48,22 @@ class FarmIntegrationTest {
     void createFarmers() {
         jdbc.sql("DELETE FROM farm.crop_entry").update();
         jdbc.sql("DELETE FROM farm.farmer_account").update();
+        jdbc.sql("DELETE FROM farm.account_token").update();
+        
         String hash = passwords.encode(PASSWORD);
-        farmers.save(new Farmer(UUID.randomUUID(), "alice", "Alice"), hash);
-        farmers.save(new Farmer(UUID.randomUUID(), "bob", "Bob"), hash);
+        farmers.save(new Farmer(UUID.randomUUID(), 
+				"alice", "alice@example.com", "Alice", false), hash);
+        farmers.save(new Farmer(UUID.randomUUID(), 
+				"bob", "bob@example.com", "Bob", false), hash);
     }
 
     @Test
     void registrationStoresHashedPasswordAndSupportsLogin() throws Exception {
         mvc.perform(post("/api/auth/register").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON).content("""
-                                {"username":"charlie","displayName":"Charlie","password":"a-long-test-password"}
-                                """))
+								{"username": "charlie", "email": "charlie@example.com",
+								"displayName": "Charlie", "password": "a-long-test-password"}
+								"""))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.username").value("charlie"))
                 .andExpect(jsonPath("$.password").doesNotExist());
@@ -94,16 +99,17 @@ class FarmIntegrationTest {
     void duplicateUsernameIsRejected() throws Exception {
         mvc.perform(post("/api/auth/register").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON).content("""
-                                {"username":"alice","displayName":"Other Alice","password":"a-long-test-password"}
-                                """))
+								{"username": "alice", "email": "other-alice@example.com",
+								"displayName": "Other Alice", "password": "a-long-test-password"}
+								"""))
                 .andExpect(status().isConflict());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "{\"username\":\"A\",\"displayName\":\"Alice\",\"password\":\"a-long-test-password\"}",
-            "{\"username\":\"valid_name\",\"displayName\":\"  \",\"password\":\"a-long-test-password\"}",
-            "{\"username\":\"valid_name\",\"displayName\":\"Alice\",\"password\":\"short\"}"
+            "{\"username\":\"A\",\"email\":\"a@example.com\",\"displayName\":\"Alice\",\"password\":\"a-long-test-password\"}",
+			"{\"username\":\"valid_name\",\"email\":\"valid@example.com\",\"displayName\":\"  \",\"password\":\"a-long-test-password\"}",
+			"{\"username\":\"valid_name\",\"email\":\"valid@example.com\",\"displayName\":\"Alice\",\"password\":\"short\"}"
     })
     void invalidRegistrationIsRejected(String json) throws Exception {
         mvc.perform(post("/api/auth/register").with(csrf())
