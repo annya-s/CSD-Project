@@ -9,21 +9,19 @@ import java.util.NoSuchElementException;
 
 import org.springframework.stereotype.Service;
 
-import com.csd.farm.crop.CropRepository;
-
 /** In charge of packaging the returned data from the (multiple) external API calls into EnvironmentReading(s)
  * 
  *  Sends the result back to EnvironmentController
  */
 @Service
 public class EnvironmentService {
+    // TODO: add the CropRepo or whatever to get latitude/longitude from DB
     private final EnvironmentClient envClient;
-    private final CropRepository cropRepo;
+    //private final CropRepository cropRepo;
 
-    public EnvironmentService(EnvironmentClient envClient, CropRepository cropRepo) {
+    public EnvironmentService(EnvironmentClient envClient) {
         this.envClient = envClient;
-        this.cropRepo = cropRepo;
-
+        //this.cropRepo = cropRepo;
     }
 
     // TODO: Change parameter to ONLY "int cropId"
