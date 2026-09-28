@@ -39,6 +39,7 @@ function setAuthMode(mode) {
     $('username-hint').hidden = forgot || resetting;
     $('password-hint').hidden = !registering;
     $('email-field').hidden = login;
+    $('display-name-field').hidden = !registering;
     $('reset-token-field').hidden = !resetting;
     $('new-password-field').hidden = !resetting;
     $('confirm-password-field').hidden = !resetting;
@@ -46,6 +47,7 @@ function setAuthMode(mode) {
     $('username').required = login || registering;
     $('password').required = login || registering;
     $('email').required = !login;
+    $('display-name').required = registering;
     $('reset-token').required = resetting;
     $('new-password').required = resetting;
     $('confirm-password').required = resetting;
@@ -86,8 +88,9 @@ $('auth-form').addEventListener('submit', async (event) => {
     try {
         if (authMode == 'register') {
             const email = $('email').value.trim();
+            const displayName = $('display-name').value.trim();
             await api('/api/auth/register', jsonPost({
-                username, email, password}));
+                username, email, password, displayName}));
             setAuthMode('login');
             showMessage('global-message', 'Your account is ready. Log in to continue.');
             return;
