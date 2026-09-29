@@ -1,3 +1,7 @@
+# Updated Supabase integration
+
+Start with [SUPABASE-SETUP.md](SUPABASE-SETUP.md). It supersedes the database, registration, and demo instructions below. Do not run legacy SQL against your existing Supabase table.
+
 # CSD Project — crop records
 
 A small Spring Boot application based on the four supplied mockups: login/sign-up,
@@ -223,3 +227,4 @@ The packaged app is
 `backend/target/farm-0.0.1-SNAPSHOT.jar` and can run with
 `java -jar target/farm-0.0.1-SNAPSHOT.jar` from the `backend` directory after
 configuring Supabase.
+

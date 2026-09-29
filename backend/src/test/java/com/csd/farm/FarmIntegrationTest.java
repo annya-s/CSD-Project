@@ -47,14 +47,14 @@ class FarmIntegrationTest {
     @BeforeEach
     void createFarmers() {
         jdbc.sql("DELETE FROM farm.crop_entry").update();
-        jdbc.sql("DELETE FROM farm.farmer_account").update();
+        jdbc.sql("DELETE FROM public.\"USERS\"").update();
         jdbc.sql("DELETE FROM farm.account_token").update();
         
         String hash = passwords.encode(PASSWORD);
-        farmers.save(new Farmer(UUID.randomUUID(), 
-				"alice", "alice@example.com", "Alice", false), hash);
-        farmers.save(new Farmer(UUID.randomUUID(), 
-				"bob", "bob@example.com", "Bob", false), hash);
+        farmers.save(new Farmer(null, 
+				"alice", "alice@example.com", false), hash);
+        farmers.save(new Farmer(null, 
+				"bob", "bob@example.com", false), hash);
     }
 
     @Test
@@ -62,20 +62,72 @@ class FarmIntegrationTest {
         mvc.perform(post("/api/auth/register").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON).content("""
 								{"username": "charlie", "email": "charlie@example.com",
-								"displayName": "Charlie", "password": "a-long-test-password"}
+								"password": "a-long-test-password"}
 								"""))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.username").value("charlie"))
                 .andExpect(jsonPath("$.password").doesNotExist());
 
-        String hash = jdbc.sql("SELECT password_hash FROM farm.farmer_account WHERE username = 'charlie'")
+        String hash = jdbc.sql("SELECT \"Password_Hash\" FROM public.\"USERS\" WHERE \"User_Name\" = 'charlie'")
                 .query(String.class).single();
         assertThat(hash).isNotEqualTo(PASSWORD);
         assertThat(passwords.matches(PASSWORD, hash)).isTrue();
         mvc.perform(get("/api/auth/me").session(login("charlie")))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.displayName").value("Charlie"));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.username").value("charlie"));
     }
 
+    @Test
+    void duplicateEmailIsRejectedWithoutLeavingAnAccount() throws Exception {
+        mvc.perform(post("/api/auth/register").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON).content("""
+                {"username":"another_alice","email":"alice@example.com","password":"a-long-test-password"}
+                """))
+                .andExpect(status().isConflict());
+        assertThat(farmers.findByUsername("another_alice")).isEmpty();
+    }
+
+    @Test
+    void verificationAndResetUpdateTheSameSupabaseMappedAccount() throws Exception {
+        var farmer = farmers.findByUsername("alice").orElseThrow();
+        assertThat(farmer.id()).isGreaterThan((long) Integer.MAX_VALUE);
+        var digest = java.security.MessageDigest.getInstance("SHA-256");
+        String codeHash = java.util.HexFormat.of().formatHex(
+                digest.digest("123456".getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        jdbc.sql("""
+                INSERT INTO farm.account_token (id, farmer_id, purpose, token_hash, expires_at)
+                VALUES (:id, :farmer, 'EMAIL_VERIFY', :hash, :expires)
+                """)
+                .param("id", UUID.randomUUID()).param("farmer", farmer.id())
+                .param("hash", codeHash).param("expires", java.time.OffsetDateTime.now().plusHours(1)).update();
+        mvc.perform(post("/api/auth/verify-email").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"username\":\"alice\",\"code\":\"123456\"}"))
+                .andExpect(status().isNoContent());
+        assertThat(farmers.findByUsername("alice").orElseThrow().emailVerified()).isTrue();
+        jdbc.sql("DELETE FROM farm.account_token").update();
+        jdbc.sql("""
+                INSERT INTO farm.account_token (id, farmer_id, purpose, token_hash, expires_at)
+                VALUES (:id, :farmer, 'PASSWORD_RESET', :hash, :expires)
+                """)
+                .param("id", UUID.randomUUID()).param("farmer", farmer.id())
+                .param("hash", codeHash).param("expires", java.time.OffsetDateTime.now().plusHours(1)).update();
+        mvc.perform(post("/api/auth/reset-password").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON).content("""
+                {"email":"alice@example.com","code":"123456","password":"a-new-long-password"}
+                """))
+                .andExpect(status().isNoContent());
+        mvc.perform(post("/api/auth/login").with(csrf())
+                .param("username", "alice").param("password", PASSWORD))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/auth/login").with(csrf())
+                .param("username", "alice").param("password", "a-new-long-password"))
+                .andExpect(status().isNoContent());
+        mvc.perform(post("/api/auth/reset-password").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON).content("""
+                {"email":"alice@example.com","code":"123456","password":"another-long-password"}
+                """))
+                .andExpect(status().isBadRequest());
+    }
     @ParameterizedTest
     @ValueSource(strings = {"/", "/index.html"})
     void homepageRedirectsToSeparateLoginPage(String path) throws Exception {
@@ -108,7 +160,7 @@ class FarmIntegrationTest {
     @ParameterizedTest
     @ValueSource(strings = {
             "{\"username\":\"A\",\"email\":\"a@example.com\",\"displayName\":\"Alice\",\"password\":\"a-long-test-password\"}",
-			"{\"username\":\"valid_name\",\"email\":\"valid@example.com\",\"displayName\":\"  \",\"password\":\"a-long-test-password\"}",
+			"{\"username\":\"valid_name\",\"email\":\"invalid-email\",\"password\":\"a-long-test-password\"}",
 			"{\"username\":\"valid_name\",\"email\":\"valid@example.com\",\"displayName\":\"Alice\",\"password\":\"short\"}"
     })
     void invalidRegistrationIsRejected(String json) throws Exception {
@@ -355,3 +407,7 @@ class FarmIntegrationTest {
                 .andExpect(status().isCreated());
     }
 }
+
+
+
+

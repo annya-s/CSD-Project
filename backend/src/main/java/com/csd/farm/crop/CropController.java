@@ -7,7 +7,7 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
+
 
 import com.csd.farm.auth.FarmerRepository;
 import com.csd.farm.crop.CropHealthService.Reading;
@@ -124,7 +124,7 @@ public class CropController {
         return details(principal, cropType, plantingTime);
     }
 
-    private UUID farmerId(Principal principal) {
+    private Long farmerId(Principal principal) {
         // Never accept a farmer ID supplied by the browser for ownership decisions.
         return farmers.findByUsername(principal.getName()).orElseThrow().id();
     }
@@ -147,3 +147,4 @@ public class CropController {
                               boolean needsAttention, DailyWeather weather,
                               String weatherSource, String weatherMessage) { }
 }
+
