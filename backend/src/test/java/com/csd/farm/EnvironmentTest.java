@@ -1,6 +1,10 @@
-package com.csd.farm.environment;
+package com.csd.farm;
 
 import java.util.List;
+
+import com.csd.farm.environment.EnvironmentClient;
+import com.csd.farm.environment.EnvironmentReading;
+import com.csd.farm.environment.EnvironmentService;
 
 public class EnvironmentTest {
     public static void main(String[] args) {
