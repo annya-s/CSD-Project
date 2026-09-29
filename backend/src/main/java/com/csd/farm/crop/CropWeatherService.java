@@ -34,7 +34,7 @@ public class CropWeatherService {
             return new WeatherResult(readings.find(owner, crop.cropType(), crop.plantedAt()).orElse(null),
                     "MANUAL", "Automatic weather fetching is disabled. Any supplied readings are manual.");
         }
-        Location location = new Location(crop.latitude().doubleValue(), crop.longitude().doubleValue());
+        Location location = new Location(crop.latitude(), crop.longitude());
         // EnvironmentClient requests the server's timezone, so use the same calendar day here.
         ZoneId zone = ZoneId.systemDefault();
         LocalDate today = LocalDate.now(zone);

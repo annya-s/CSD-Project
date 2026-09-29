@@ -41,7 +41,7 @@ public class CropHealthService {
             actions.add("Check for shading and monitor sunshine over the next few days. One cloudy day does not establish crop damage.");
         } else if (sunshineReading.status().equals("ABOVE_RANGE")) {
             // Above the estimated band is informational; longer sunshine alone is not harmful.
-            actions.add("Sunshine is above the reference band. Do not add shade solely because of this result; check temperature and the crop first.");
+            actions.add("Sunshine is above the reference band. Do not add shade solely because of this result; check temperature and the crop first. Longer sunshine alone is not harmful.");
         }
         if (temperature == null || sunshineHours == null) {
             actions.add("Daily weather values are missing or incomplete. Refresh the forecast before assessing temperature and sunlight.");
