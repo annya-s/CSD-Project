@@ -4,7 +4,6 @@ import java.sql.Types;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -18,7 +17,7 @@ public class CropWeatherRepository {
         this.jdbc = jdbc;
     }
 
-    public Optional<DailyWeather> find(UUID farmerId, CropType cropType, OffsetDateTime plantedAt) {
+    public Optional<DailyWeather> find(Long farmerId, CropType cropType, OffsetDateTime plantedAt) {
         return jdbc.sql("""
                 SELECT weather_date, weather_timezone, temperature_mean_c, sunshine_duration_seconds,
                        humidity_mean_percent, soil_moisture_mean_m3m3
@@ -39,15 +38,15 @@ public class CropWeatherRepository {
     }
 
     // Replace the day's complete snapshot, including nulls. Older days cannot overwrite newer data.
-    public boolean save(UUID farmerId, CropType cropType, OffsetDateTime plantedAt, DailyWeather weather) {
+    public boolean save(Long farmerId, CropType cropType, OffsetDateTime plantedAt, DailyWeather weather) {
         return save(farmerId, cropType, plantedAt, weather, "MANUAL");
     }
 
-    public boolean saveFromApi(UUID farmerId, CropType cropType, OffsetDateTime plantedAt, DailyWeather weather) {
+    public boolean saveFromApi(Long farmerId, CropType cropType, OffsetDateTime plantedAt, DailyWeather weather) {
         return save(farmerId, cropType, plantedAt, weather, "OPEN_METEO");
     }
 
-    public Optional<DailyWeather> findFromApi(UUID farmerId, CropType cropType, OffsetDateTime plantedAt) {
+    public Optional<DailyWeather> findFromApi(Long farmerId, CropType cropType, OffsetDateTime plantedAt) {
         String source = jdbc.sql("""
                 SELECT weather_source FROM farm.crop_entry
                 WHERE farmer_id = :farmerId AND crop_type = :cropType AND planted_at = :plantedAt
@@ -57,7 +56,7 @@ public class CropWeatherRepository {
         return source.equals("OPEN_METEO") ? find(farmerId, cropType, plantedAt) : Optional.empty();
     }
 
-    private boolean save(UUID farmerId, CropType cropType, OffsetDateTime plantedAt, DailyWeather weather, String source) {
+    private boolean save(Long farmerId, CropType cropType, OffsetDateTime plantedAt, DailyWeather weather, String source) {
         return jdbc.sql("""
                 UPDATE farm.crop_entry
                 SET weather_date = :date, weather_timezone = :timezone,

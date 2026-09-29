@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.csd.farm.environment.EnvironmentService;
@@ -29,7 +28,7 @@ public class CropWeatherService {
         this.enabled = enabled;
     }
 
-    public WeatherResult load(UUID owner, CropEntry crop) {
+    public WeatherResult load(Long owner, CropEntry crop) {
         if (!enabled) {
             return new WeatherResult(readings.find(owner, crop.cropType(), crop.plantedAt()).orElse(null),
                     "MANUAL", "Automatic weather fetching is disabled. Any supplied readings are manual.");

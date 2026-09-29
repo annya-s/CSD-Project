@@ -5,7 +5,6 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import com.csd.farm.auth.FarmerRepository;
 import com.csd.farm.crop.CropResponses.CropDetails;
@@ -52,7 +51,7 @@ public class CropService {
     }
 
     public Dashboard dashboard(String username) {
-        UUID owner = farmerId(username);
+        Long owner = farmerId(username);
         List<DashboardCrop> entries = crops.findAllForFarmer(owner).stream()
                 .map(entry -> dashboardCrop(owner, entry))
                 .toList();
@@ -66,7 +65,7 @@ public class CropService {
     }
 
     public CropEntry create(String username, CreateCropRequest request) {
-        UUID owner = farmerId(username);
+        Long owner = farmerId(username);
         CropEntry entry = new CropEntry(request.cropType(), normalizeTime(request.plantedAt()),
                 request.latitude(), request.longitude());
         crops.save(owner, entry);
@@ -74,14 +73,14 @@ public class CropService {
     }
 
     public CropDetails details(String username, CropType cropType, OffsetDateTime plantedAt) {
-        UUID owner = farmerId(username);
+        Long owner = farmerId(username);
         CropEntry entry = findCrop(owner, cropType, normalizeTime(plantedAt));
         return cropDetails(owner, entry);
     }
 
     public CropDetails updateWeather(String username, CropType cropType,
                                      OffsetDateTime plantedAt, DailyWeather weather) {
-        UUID owner = farmerId(username);
+        Long owner = farmerId(username);
         OffsetDateTime plantingTime = normalizeTime(plantedAt);
         CropEntry entry = findCrop(owner, cropType, plantingTime);
         if (weatherService.isEnabled()) {
@@ -96,7 +95,7 @@ public class CropService {
         return cropDetails(owner, entry);
     }
 
-    private DashboardCrop dashboardCrop(UUID owner, CropEntry entry) {
+    private DashboardCrop dashboardCrop(Long owner, CropEntry entry) {
         var result = weatherService.load(owner, entry);
         DailyWeather weather = result.weather();
         var assessment = health.assess(entry.cropType(), weather);
@@ -104,7 +103,7 @@ public class CropService {
                 weather, assessment.readings(), assessment.needsAttention(), result.source(), result.message());
     }
 
-    private CropDetails cropDetails(UUID owner, CropEntry entry) {
+    private CropDetails cropDetails(Long owner, CropEntry entry) {
         var result = weatherService.load(owner, entry);
         DailyWeather weather = result.weather();
         var assessment = health.assess(entry.cropType(), weather);
@@ -113,12 +112,12 @@ public class CropService {
                 weather, result.source(), result.message());
     }
 
-    private CropEntry findCrop(UUID owner, CropType cropType, OffsetDateTime plantedAt) {
+    private CropEntry findCrop(Long owner, CropType cropType, OffsetDateTime plantedAt) {
         return crops.findForFarmer(owner, cropType, plantedAt)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Crop entry not found."));
     }
 
-    private UUID farmerId(String username) {
+    private Long farmerId(String username) {
         // The controller supplies the authenticated username, never a farmer ID from the request body.
         return farmers.findByUsername(username).orElseThrow().id();
     }
