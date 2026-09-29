@@ -1,6 +1,5 @@
 package com.csd.farm;
 
-import java.math.BigDecimal;
 import java.sql.DriverManager;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -47,7 +46,7 @@ class CropDatabaseTest {
             for (CropType type : CropType.values()) {
                 crops.save(farmerId, new CropEntry(type,
                         OffsetDateTime.parse("2026-01-10T08:30:00Z"),
-                        BigDecimal.ONE, BigDecimal.ONE));
+                        1.0, 1.0));
             }
             assertThat(crops.findAllForFarmer(farmerId)).hasSize(10);
 
