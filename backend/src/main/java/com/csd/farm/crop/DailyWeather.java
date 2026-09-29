@@ -11,7 +11,7 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-// One complete local day's API data, not a current reading or a future forecast.
+// Daily averages and a sunshine total. Automatic data is today's full-day forecast.
 // Null means unavailable. Never substitute zero for missing API values.
 public record DailyWeather(
         @NotNull LocalDate date,
@@ -19,7 +19,16 @@ public record DailyWeather(
         @DecimalMin("-100") @DecimalMax("100") Double temperatureMeanC,
         @DecimalMin("0") @DecimalMax("86400") Double sunshineDurationSeconds,
         @DecimalMin("0") @DecimalMax("100") Double humidityMeanPercent,
-        @DecimalMin("0") @DecimalMax("1") Double soilMoistureMeanM3M3) {
+        @DecimalMin("0") @DecimalMax("1") Double soilMoistureMeanM3M3,
+        @DecimalMin("0") Double vapourPressureDeficitMeanKpa) {
+
+    // Existing database snapshots do not contain VPD. Do not infer it from humidity.
+    public DailyWeather(LocalDate date, String timezone, Double temperatureMeanC,
+                        Double sunshineDurationSeconds, Double humidityMeanPercent,
+                        Double soilMoistureMeanM3M3) {
+        this(date, timezone, temperatureMeanC, sunshineDurationSeconds, humidityMeanPercent,
+                soilMoistureMeanM3M3, null);
+    }
 
     public void validateCompletedDay() {
         ZoneId zone;

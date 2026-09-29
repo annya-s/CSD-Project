@@ -38,7 +38,8 @@ class LiveWeatherIntegrationTest {
     @Test
     void ownedPagesFetchApiDataPersistItsSourceAndRejectManualReplacement() throws Exception {
         UUID owner = UUID.randomUUID();
-        farmers.save(new Farmer(owner, "live_weather_test", "Live test"), passwords.encode("test-weather-password"));
+        farmers.save(new Farmer(owner, "live_weather_test", "live-weather@example.com", "Live test", false),
+                passwords.encode("test-weather-password"));
         MockHttpSession session = (MockHttpSession) mvc.perform(post("/api/auth/login").with(csrf())
                         .param("username", "live_weather_test").param("password", "test-weather-password"))
                 .andExpect(status().isNoContent()).andReturn().getRequest().getSession();
