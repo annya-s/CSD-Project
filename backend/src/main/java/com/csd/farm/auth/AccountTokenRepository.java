@@ -14,7 +14,7 @@ public class AccountTokenRepository {
     public enum Purpose {
         EMAIL_VERIFY, PASSWORD_RESET
     }
-    public record UsableToken(UUID id, UUID farmerId) {
+    public record UsableToken(UUID id, Long farmerId) {
     }
 
     private final JdbcClient jdbc;
@@ -24,7 +24,7 @@ public class AccountTokenRepository {
     }
         
     // store new email verify / password reset proof
-    public void save(UUID id, UUID farmerId,
+    public void save(UUID id, Long farmerId,
             Purpose purpose, String tokenHash,
             OffsetDateTime expiresAt) {
 
@@ -55,7 +55,7 @@ public class AccountTokenRepository {
                 .param("purpose", purpose.name())
                 .query((row, number) -> new UsableToken(
                         row.getObject("id", UUID.class),
-                        row.getObject("farmer_id", UUID.class)))
+                        row.getLong("farmer_id")))
                 .optional();
     }
 
@@ -71,7 +71,7 @@ public class AccountTokenRepository {
     }
 
     // invalidate prev token issued before new token is created
-    public void invalidateUnused(UUID farmerId, Purpose purpose) {
+    public void invalidateUnused(Long farmerId, Purpose purpose) {
         jdbc.sql("""
                 UPDATE farm.account_token
                 SET used_at = CURRENT_TIMESTAMP

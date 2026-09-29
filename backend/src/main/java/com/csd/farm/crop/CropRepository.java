@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+
 
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -19,7 +19,7 @@ public class CropRepository {
         this.jdbc = jdbc;
     }
 
-    public void save(UUID farmerId, CropEntry crop) {
+    public void save(Long farmerId, CropEntry crop) {
         jdbc.sql("""
                 INSERT INTO farm.crop_entry (farmer_id, crop_type, planted_at, latitude, longitude)
                 VALUES (:farmerId, :cropType, :plantedAt, :latitude, :longitude)
@@ -32,7 +32,7 @@ public class CropRepository {
                 .update();
     }
 
-    public List<CropEntry> findAllForFarmer(UUID farmerId) {
+    public List<CropEntry> findAllForFarmer(Long farmerId) {
         return jdbc.sql("""
                 SELECT crop_type, planted_at, latitude, longitude
                 FROM farm.crop_entry
@@ -44,7 +44,7 @@ public class CropRepository {
                 .list();
     }
 
-    public Optional<CropEntry> findForFarmer(UUID farmerId, CropType cropType, OffsetDateTime plantedAt) {
+    public Optional<CropEntry> findForFarmer(Long farmerId, CropType cropType, OffsetDateTime plantedAt) {
         return jdbc.sql("""
                 SELECT crop_type, planted_at, latitude, longitude
                 FROM farm.crop_entry
@@ -65,3 +65,4 @@ public class CropRepository {
                 row.getDouble("longitude"));
     }
 }
+

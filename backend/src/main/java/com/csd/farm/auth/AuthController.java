@@ -1,7 +1,7 @@
 package com.csd.farm.auth;
 
 import java.security.Principal;
-import java.util.UUID;
+
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -42,15 +43,15 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
+    @Transactional
     public Farmer register(@Valid @RequestBody Registration request) {
         Farmer farmer = new Farmer( 
-                UUID.randomUUID(),
+                null,
                 request.username(), 
                 request.email(),
-                request.displayName().strip(), 
                 false);
     
-        farmers.save(farmer, passwords.encode(request.password()));
+        farmer = farmers.save(farmer, passwords.encode(request.password()));
         accountTokens.issueEmailVerificationCode(farmer);
         return farmer;
     }
@@ -112,8 +113,7 @@ public class AuthController {
                     regexp = "[a-z0-9_]{3,40}", 
                     message = "Use 3–40 lowercase letters, numbers, or underscores.") 
             String username,
-            @NotBlank @Email String email,
-            @NotBlank @Size(max = 80) String displayName,
+            @NotBlank @Email @Size(max = 254) String email,
             @NotBlank @Size(min = 10, max = 128) String password) {
     }
     public record VerifyEmailRequest(
@@ -129,3 +129,5 @@ public class AuthController {
     }
 
 }
+
+

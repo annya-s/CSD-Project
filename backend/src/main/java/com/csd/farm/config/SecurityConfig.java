@@ -24,7 +24,7 @@ public class SecurityConfig {
 			// Page shells are public; their data still requires an authenticated API request.
 			.requestMatchers("/", "/index.html", "/error", 
 					"/styles.css", "/favicon.svg", "/api.js", 
-					"/login.html", "/login.js", "/verify-email.html",
+					"/login.html", "/login.js", "/verify-email.html", "/verify-email.js",
 					"/dashboard.html", "/dashboard.js", 
 					"/crop-details.html", "/crop-details.js", 
 					"/new-entry.html", "/new-entry.js", 
@@ -33,7 +33,7 @@ public class SecurityConfig {
 			.requestMatchers(HttpMethod.GET, 
 					"/api/auth/csrf", "/api/auth/verify-email").permitAll()
 			.requestMatchers(HttpMethod.POST, 
-					"/api/auth/register", "/api/auth/login", 
+					"/api/auth/register", "/api/auth/login", "/api/auth/verify-email", 
 					"/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
 			.anyRequest().authenticated())
 		// Spring Security keeps CSRF protection and rotates the session on login.
@@ -68,3 +68,4 @@ public class SecurityConfig {
 	return http.build();
     }
 }
+

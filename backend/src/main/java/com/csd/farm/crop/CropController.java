@@ -67,3 +67,4 @@ public class CropController {
         return cropService.updateWeather(principal.getName(), cropType, plantedAt, weather);
     }
 }
+

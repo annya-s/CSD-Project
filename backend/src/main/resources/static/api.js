@@ -26,7 +26,7 @@ export function jsonPost(body) {
 // Used by dashboard.js, crop-details.js, and new-entry.js before loading data.
 export async function requireFarmer() {
     const farmer = await api('/api/auth/me');
-    $('welcome').textContent = `Welcome, ${farmer.displayName}`;
+    $('welcome').textContent = `Welcome, ${farmer.username}`;
     $('logout').addEventListener('click', async () => {
         $('logout').disabled = true;
         try {
@@ -132,3 +132,4 @@ export function refreshPeriodically(refresh) {
 window.addEventListener('pageshow', (event) => {
     if (event.persisted) window.location.reload();
 });
+

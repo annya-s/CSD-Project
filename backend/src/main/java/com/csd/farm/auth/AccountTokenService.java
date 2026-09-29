@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AccountTokenService {
@@ -49,8 +50,9 @@ public class AccountTokenService {
                             + farmer.username() + ": " + code);
     }
 
+    @Transactional
     public boolean verifyEmailCode(
-            UUID farmerId, String submittedCode) {
+            Long farmerId, String submittedCode) {
 
         if (submittedCode == null || submittedCode.isBlank())
             return false;
@@ -89,6 +91,7 @@ public class AccountTokenService {
                         + farmer.username() + ": " + code);
     }
 
+    @Transactional
     public boolean resetPassword(
             String email, String submittedCode, String newPassword) {
 
@@ -125,3 +128,4 @@ public class AccountTokenService {
         }
     }
 }
+
