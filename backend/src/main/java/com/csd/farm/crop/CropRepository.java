@@ -61,7 +61,7 @@ public class CropRepository {
         return new CropEntry(
                 CropType.valueOf(row.getString("crop_type")),
                 row.getObject("planted_at", OffsetDateTime.class),
-                row.getBigDecimal("latitude"),
-                row.getBigDecimal("longitude"));
+                row.getDouble("latitude"),
+                row.getDouble("longitude"));
     }
 }
