@@ -13,7 +13,7 @@ public record CreateCropRequest(
         @NotNull CropType cropType,
         @NotNull @PastOrPresent OffsetDateTime plantedAt,
         @NotNull @DecimalMin("-90") @DecimalMax("90")
-        @Digits(integer = 3, fraction = 6) BigDecimal latitude,
+        @Digits(integer = 3, fraction = 6) double latitude,
         @NotNull @DecimalMin("-180") @DecimalMax("180")
-        @Digits(integer = 3, fraction = 6) BigDecimal longitude) {
+        @Digits(integer = 3, fraction = 6) double longitude) {
 }

@@ -26,7 +26,14 @@
             <p id="detail-date" class="detail-date"></p>
             <div class="detail-layout">
                 <div>
-                    <div class="crop-photo-placeholder"><span aria-hidden="true">↗</span><p>No crop photo yet</p></div>
+                    <figure class="crop-photo">
+                        <img id="crop-photo" alt="" decoding="async" hidden>
+                        <p id="crop-photo-unavailable" hidden>Reference photo unavailable.</p>
+                        <figcaption>
+                            <p>Reference photo — not a photo of your planting.</p>
+                            <p id="crop-photo-credit"></p>
+                        </figcaption>
+                    </figure>
                     <dl class="location-data"><dt>Latitude</dt><dd id="detail-latitude"></dd><dt>Longitude</dt><dd id="detail-longitude"></dd></dl>
                     <h2>Notes</h2><p id="detail-note" class="intro-copy"></p>
                 </div>

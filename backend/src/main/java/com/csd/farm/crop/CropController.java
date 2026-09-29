@@ -71,7 +71,7 @@ public class CropController {
         String summary = entries.isEmpty()
                 ? "Add your first crop to start your farm overview."
                 : "You have " + entries.size() + entryLabel + " " + attentionCount
-                    + " flagged for review based on the available daily readings. Vapour pressure deficit and soil moisture are not assessed.";
+                    + " flagged for review based on the available daily readings. Vapour pressure deficit and soil moisture are not assessed for now.";
         return new Dashboard(summary, entries);
     }
 
@@ -96,10 +96,10 @@ public class CropController {
         DailyWeather weather = result.weather();
         var assessment = health.assess(cropType, weather);
         return new CropDetails(entry, null, assessment.readings(), assessment.recommendedActions(),
-                "These are preliminary comparisons of daily weather, not a diagnosis or a growth prediction. "
-                + "Automatic readings use today's full-day forecast in the server's timezone. "
-                + "Sunlight bands are estimates, not damage limits. Vapour pressure deficit and soil moisture are not assessed. "
-                + "Open-Meteo soil readings represent the 3–9 cm layer; their percentage is water by volume, not available water depleted.",
+                "These are preliminary comparisons of daily weather. "
+                + "Automatic readings use today's full-day forecast in your timezone. "
+                + "Sunlight bands are estimates, not damage limits. Vapour pressure deficit and soil moisture are not assessed yet. "
+                + "The soil readings represent the 3–9 cm layer; their percentage is water by volume, not available water depleted.",
                 assessment.issues(), assessment.needsAttention(), weather, result.source(), result.message());
     }
 
