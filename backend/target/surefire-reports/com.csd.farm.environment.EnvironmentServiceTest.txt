@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.csd.farm.environment.EnvironmentServiceTest
--------------------------------------------------------------------------------
-Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.243 s -- in com.csd.farm.environment.EnvironmentServiceTest
