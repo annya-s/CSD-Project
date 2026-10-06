@@ -40,7 +40,7 @@ public record DailyWeather(
     }
 
     /**
-     * Checks if the DaulyWeather instance is valid by ensuring the timezone is correct and
+     * Checks if the DailyWeather instance is valid by ensuring the timezone is correct and
      * that it represents a date before the current day.
      * @throws ResponseStatusException If timezone is invalid or date of instance is before current day.
      */
