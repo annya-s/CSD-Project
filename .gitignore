@@ -7,4 +7,7 @@ node_modules/
 *.log
 *.openai
 *.class
-*.class
+AGENTS.md
+DESIGN.md
+PRODUCT.md
+SUPABASE-SETUP.md
