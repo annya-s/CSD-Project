@@ -15,10 +15,18 @@ public enum CropType {
 
     private final String displayName;
 
+    /**
+     * The single constructor for a CropType.
+     * @param displayName String representing the name of a crop.
+     */
     CropType(String displayName) {
         this.displayName = displayName;
     }
 
+    /**
+     * Returns the name of the crop as a String.
+     * @return The name of the crop as a String.
+     */
     public String displayName() {
         return displayName;
     }
