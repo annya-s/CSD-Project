@@ -21,6 +21,15 @@ final class CropForecast {
      */
     private CropForecast() { }
 
+    /**
+     * Converts a set of environment readings for a time zone into a DailyWeather instance.
+     * 
+     * @param readings The list of environment readings.
+     * @param day The day of the readings.
+     * @param zone The time zone.
+     * @return A DailyWeather instance representing the weather conditions for the day.
+     * @throws IllegalStateException When readings are unavailable or missing.
+     */
     static DailyWeather forDay(List<EnvironmentReading> readings, LocalDate day, ZoneId zone) {
         if (readings == null) {
             throw new IllegalStateException("No weather forecast was returned.");
@@ -50,6 +59,15 @@ final class CropForecast {
                 vapourPressureDeficit);
     }
 
+    /**
+     * Checks if the readings represent all hours in the day. Returns false if not enough readings
+     * or if readings do not match the hours of the day.
+     * 
+     * @param readings The list of environment readings.
+     * @param day The day of the readings.
+     * @param zone The time zone.
+     * @return Whether it correctly rperesents every hour.
+     */
     private static boolean hasEveryHour(List<EnvironmentReading> readings, LocalDate day, ZoneId zone) {
         long hoursInDay = Duration.between(day.atStartOfDay(zone), day.plusDays(1).atStartOfDay(zone)).toHours();
         if (readings.size() != hoursInDay) return false;
@@ -67,6 +85,16 @@ final class CropForecast {
         return true;
     }
 
+    /**
+     * Returns the mean of a list of environment readings' values.
+     * Returns null if any reading or the mean itself is not valid.
+     * 
+     * @param readings The list of environment readings.
+     * @param valueOf The function that assigns a value to an enviornment reading.
+     * @param minimum The lower bound.
+     * @param maximum The upper bound.
+     * @return The mean of all environment readings' values.
+     */
     private static Double mean(List<EnvironmentReading> readings,
                                Function<EnvironmentReading, Double> valueOf,
                                double minimum, double maximum) {
@@ -80,6 +108,13 @@ final class CropForecast {
         return Double.isFinite(average) ? average : null;
     }
 
+    /**
+     * Checks if a value is valid, meaning it falls within the bound and is a finite floating value.
+     * @param value The value.
+     * @param minimum The lower bound.
+     * @param maximum The upper bound.
+     * @return Whether the valud is valid.
+     */
     private static boolean valid(Double value, double minimum, double maximum) {
         return value != null && Double.isFinite(value) && value >= minimum && value <= maximum;
     }

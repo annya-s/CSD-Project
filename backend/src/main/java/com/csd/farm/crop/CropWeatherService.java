@@ -29,6 +29,13 @@ public class CropWeatherService {
         this.enabled = enabled;
     }
 
+    /**
+     * Loads a report of the day's weather for a farmer's crop.
+     * 
+     * @param owner The Id of the farmer.
+     * @param crop The type of crop.
+     * @return A WeatherResult instance representing the day's weather report.
+     */
     public WeatherResult load(Long owner, CropEntry crop) {
         if (!enabled) {
             return new WeatherResult(readings.find(owner, crop.cropType(), crop.plantedAt()).orElse(null),
@@ -67,11 +74,20 @@ public class CropWeatherService {
         return new WeatherResult(saved, saved == null ? "UNAVAILABLE" : "OPEN_METEO", message);
     }
 
+    /**
+     * Returns whether the service is enabled.
+     * @return Whether service is enabled.
+     */
     public boolean isEnabled() {
         return enabled;
     }
 
+    // Represents a weather report for the day along with a message.
     public record WeatherResult(DailyWeather weather, String source, String message) { }
+
+    // Represents a location in the world.
     private record Location(double latitude, double longitude) { }
+
+    // Represents a saved state of weather conditions with a limited existence duration.
     private record CachedWeather(DailyWeather weather, Instant expiresAt) { }
 }
