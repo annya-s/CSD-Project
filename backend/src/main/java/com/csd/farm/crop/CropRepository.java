@@ -10,11 +10,12 @@ import java.util.Optional;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
-@Repository
+
 /**
  * Represents a repository where each entry represents a future harvest of crops
  * that a farmer has planted.
  */
+@Repository
 public class CropRepository {
 
     private final JdbcClient jdbc;

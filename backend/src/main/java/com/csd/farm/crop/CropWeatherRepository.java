@@ -8,15 +8,30 @@ import java.util.Optional;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Represents a repository where each entry represents a day's
+ * weather and its conditions.
+ */
 @Repository
 public class CropWeatherRepository {
 
     private final JdbcClient jdbc;
 
+    /**
+     * Singular constructor for a CropWeatherRepository.
+     * @param jdbc The JdbcCilent linked to this repository.
+     */
     public CropWeatherRepository(JdbcClient jdbc) {
         this.jdbc = jdbc;
     }
 
+    /**
+     * Reads for a specific daily weather condition for a farmer's crop harvest.
+     * @param farmerId The Id of the farmer.
+     * @param cropType The type of crop.
+     * @param plantedAt Data and time when crop was planted.
+     * @return A DailyWeather instance representing the weather for the day. May not exist.
+     */
     public Optional<DailyWeather> find(Long farmerId, CropType cropType, OffsetDateTime plantedAt) {
         return jdbc.sql("""
                 SELECT weather_date, weather_timezone, temperature_mean_c, sunshine_duration_seconds,
@@ -37,15 +52,37 @@ public class CropWeatherRepository {
                 .optional();
     }
 
-    // Replace the day's complete snapshot, including nulls. Older days cannot overwrite newer data.
+    /**
+     * Updates and replaces the day's complete snapshot, including nulls. Older days cannot overwrite newer data.
+     * @param farmerId The Id of the farmer.
+     * @param cropType The type of crop.
+     * @param plantedAt Date and time when crop was planted.
+     * @param weather Daily weather of the day.
+     * @return Whether operation is successful.
+     */
     public boolean save(Long farmerId, CropType cropType, OffsetDateTime plantedAt, DailyWeather weather) {
         return save(farmerId, cropType, plantedAt, weather, "MANUAL");
     }
 
+    /**
+     * Updates and replaces the day's complete snapshot using the OpenMeteo API.
+     * @param farmerId The Id of the farmer.
+     * @param cropType The type of crop.
+     * @param plantedAt Date and time when crop was planted.
+     * @param weather Daily weather of the day.
+     * @return Whether operation is successful.
+     */
     public boolean saveFromApi(Long farmerId, CropType cropType, OffsetDateTime plantedAt, DailyWeather weather) {
         return save(farmerId, cropType, plantedAt, weather, "OPEN_METEO");
     }
 
+    /**
+     * Reads from the OpenMeteo API to find the daily weather conditions for a farmer's specifc crop harvest.
+     * @param farmerId The Id of the farmer.
+     * @param cropType The type of crop.
+     * @param plantedAt Data and time when crop was planted.
+     * @return A DailyWeather instance representing the weather for the day. May not exist.
+     */
     public Optional<DailyWeather> findFromApi(Long farmerId, CropType cropType, OffsetDateTime plantedAt) {
         String source = jdbc.sql("""
                 SELECT weather_source FROM farm.crop_entry
@@ -56,6 +93,15 @@ public class CropWeatherRepository {
         return source.equals("OPEN_METEO") ? find(farmerId, cropType, plantedAt) : Optional.empty();
     }
 
+    /**
+     * Updates the repository for a specific entry.
+     * @param farmerId The Id of the farmer.
+     * @param cropType The type of crop.
+     * @param plantedAt Date and time when crop was planted.
+     * @param weather Daily weather of the day.
+     * @param source String representing where the source of the weather conditions is from.
+     * @return Whether operation was successful.
+     */
     private boolean save(Long farmerId, CropType cropType, OffsetDateTime plantedAt, DailyWeather weather, String source) {
         return jdbc.sql("""
                 UPDATE farm.crop_entry

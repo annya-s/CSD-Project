@@ -9,6 +9,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class CropHealthService {
 
+    /**
+     * Returns an assessment of a crop's health in the day's current weather conditions.
+     * @param cropType The type of crop.
+     * @param weather The weather conditions to compare to.
+     * @return An Assessment instance representing the health of the crop.
+     */
     public Assessment assess(CropType cropType, DailyWeather weather) {
         var conditions = CropConditions.forCrop(cropType);
         Double temperature = weather == null ? null : weather.temperatureMeanC();
@@ -53,6 +59,14 @@ public class CropHealthService {
         return new Assessment(readings, List.copyOf(issues), List.copyOf(actions), !issues.isEmpty());
     }
 
+    /**
+     * Returns a reading of whether a specific condition is within the range.
+     * @param name Name of the reading.
+     * @param value The value to compare to the range.
+     * @param unit The unit of measurement.
+     * @param range The range to be compared to.
+     * @return A Reading instance representing a reading of whether the condition is within optimal range.
+     */
     private Reading compare(String name, Double value, String unit, Range range) {
         String status = "NOT_ASSESSED";
         if (value != null) {
@@ -67,8 +81,10 @@ public class CropHealthService {
         return new Reading(name, value, unit, status, range);
     }
 
+    // Represents a reading of a crop harvest's specific condition in comparison to the optimum range.
     public record Reading(String name, Double value, String unit, String status, Range referenceRange) { }
 
+    // Represents an assessment for a specific crop harvest, alongside how to rectify any issues.
     public record Assessment(List<Reading> readings, List<String> issues,
                              List<String> recommendedActions, boolean needsAttention) { }
 }
