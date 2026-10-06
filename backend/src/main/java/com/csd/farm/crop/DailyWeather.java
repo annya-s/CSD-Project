@@ -22,7 +22,16 @@ public record DailyWeather(
         @DecimalMin("0") @DecimalMax("1") Double soilMoistureMeanM3M3,
         @DecimalMin("0") Double vapourPressureDeficitMeanKpa) {
 
-    // Existing database snapshots do not contain VPD. Do not infer it from humidity.
+    /**
+     * Constructor for a DailyWeather report from the database. Since it has no VPD,
+     * we assume it to be null and pass to the other constructor.
+     * @param date The date.
+     * @param timezone The timezone.
+     * @param temperatureMeanC The average temperature.
+     * @param sunshineDurationSeconds Total sunshine duration in seconds.
+     * @param humidityMeanPercent Average humidity in percent.
+     * @param soilMoistureMeanM3M3 Average soil moisture.
+     */
     public DailyWeather(LocalDate date, String timezone, Double temperatureMeanC,
                         Double sunshineDurationSeconds, Double humidityMeanPercent,
                         Double soilMoistureMeanM3M3) {
@@ -30,6 +39,11 @@ public record DailyWeather(
                 soilMoistureMeanM3M3, null);
     }
 
+    /**
+     * Checks if the DailyWeather instance is valid by ensuring the timezone is correct and
+     * that it represents a date before the current day.
+     * @throws ResponseStatusException If timezone is invalid or date of instance is before current day.
+     */
     public void validateCompletedDay() {
         ZoneId zone;
         try {

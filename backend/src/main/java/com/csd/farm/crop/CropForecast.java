@@ -9,9 +9,16 @@ import java.util.function.Function;
 
 import com.csd.farm.environment.EnvironmentReading;
 
-// Adapts the environment team's hourly data without changing their API code.
+/**
+ * Represents a forecast of weather readings using a crop's specific area as a timezone.
+ * 
+ * Adapts the environment team's hourly data without changing their API code.
+ */ 
 final class CropForecast {
 
+    /**
+     * Default constructor.
+     */
     private CropForecast() { }
 
     static DailyWeather forDay(List<EnvironmentReading> readings, LocalDate day, ZoneId zone) {
