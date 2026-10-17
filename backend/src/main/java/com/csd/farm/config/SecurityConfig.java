@@ -24,7 +24,7 @@ public class SecurityConfig {
 			// Page shells are public; their data still requires an authenticated API request.
 			.requestMatchers("/", "/index.html", "/error", 
 					"/styles.css", "/favicon.svg", "/api.js", 
-					"/login.html", "/login.js", "/verify-email.html", "/verify-email.js",
+					"/login.html", "/login.js", "/account.html", "/account.js",
 					"/dashboard.html", "/dashboard.js", 
 					"/crop-details.html", "/crop-details.js", 
 					"/new-entry.html", "/new-entry.js", 

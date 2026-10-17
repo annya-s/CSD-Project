@@ -27,6 +27,12 @@ export function jsonPost(body) {
 export async function requireFarmer() {
     const farmer = await api('/api/auth/me');
     $('welcome').textContent = `Welcome, ${farmer.username}`;
+    const badge = node('span',
+        farmer.emailVerified ? 'Verified' : 'Unverified',
+        farmer.emailVerified ? 'badge verified' : 'badge unverified'
+    );
+    $('welcome').append(' ', badge);
+
     $('logout').addEventListener('click', async () => {
         $('logout').disabled = true;
         try {

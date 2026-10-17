@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#495f49">
+    <title>Dome · Account</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/styles.css">
+    <script type="module" src="/account.js"></script>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/dashboard.html" aria-label="Dome home">dome<span class="brand-leaf" aria-hidden="true">↗</span></a>
+        <nav id="navigation" aria-label="Main navigation">
+            <a href="/dashboard.html" class="overview-link">Overview</a>
+            <span id="welcome"></span>
+        </nav>
+        <details>
+            <summary class="text-button">Account</summary>
+            <div>
+                <a href="/account.html" class="text-button">Manage account</a>
+                <button id="logout" class="text-button" type="button">Log out</button>
+            </div>
+        </details>
+    </header>
+    <main id="main">
+        <p id="global-message" role="alert" hidden></p>
+
+        <section id="account-page" class="page account" hidden aria-labelledby="account-title">
+            <section class="section">
+                <h2>Username</h2>
+                <div class="input-field">
+                    <label for="username">Username</label>
+                    <input id="username" type="text" autocomplete="username" disabled>
+                </div>
+                <p class="field-hint">Username cannot be changed.</p>
+            </section>
+
+            <section class="section">
+                <h2>Email</h2>
+                <div class="email-row">
+                    <span id="email" class="email"></span>
+                    <span id="email-status" class="status"></span>
+                </div>
+                <button id="change-email" class="secondary" type="button">Change email</button>
+            </section>
+
+            <section id="verify-email-section" class="section" hidden>
+                <h2>Verify email</h2>
+                <p id="verify-email-description" class="section-description"></p>
+    
+                <div class="input-field">
+                    <label for="verification-code">Verification code</label>
+                    <input id="verification-code" type="text" inputmode="numeric"
+                        autocomplete="one-time-code" maxlength="6" placeholder=" ">
+                </div>
+
+                <div class="button-row">
+                    <button id="verify-email" class="primary" type="button">Verify email</button>
+                    <button id="resend-code" class="secondary" type="button">Resend code</button>
+                </div>
+            </section>
+
+            <section id="password-section" class="section" hidden>
+                <h2>Password</h2>
+
+                <form id="password-form">
+                    <div class="input-field">
+                        <label for="current-password">Current password</label>
+                        <input id="current-password" type="password"
+                            autocomplete="current-password" maxlength="128">
+                    </div>
+
+                    <div class="input-field">
+                        <label for="new-password">New password</label>
+                        <input id="new-password" type="password"
+                            autocomplete="new-password" maxlength="128">
+                    </div>
+
+                    <div class="input-field">
+                        <label for="confirm-password">Confirm new password</label>
+                        <input id="confirm-password" type="password"
+                            autocomplete="new-password" maxlength="128">
+                    </div>
+
+                    <p id="password-error" class="form-error" role="alert" hidden></p>
+
+                    <button id="update-password" class="primary" type="submit">
+                        Update password
+                    </button>
+                </form>
+            </section>
+        </section>
+
+        <p id="loading" class="loading" role="status">Loading…</p>
+
+        <noscript>
+            <p class="loading">Please enable JavaScript to manage your account.</p>
+        </noscript>
+    </main>
+    
+    <footer id="site-footer">
+        <p class="footer-tagline">Made for a clearer view of your farm.</p>
+        <ul class="bottom-bar">
+            <!-- <li>
+                <a href="https://x.com/" target="_blank" rel="noopener noreferrer">
+                    <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24"> <use href="/icons.svg#x-icon"></use> </svg>
+                    <span>X.com</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://bsky.app/" target="_blank" rel="noopener noreferrer">
+                    <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24"> <use href="/icons.svg#bluesky-icon"></use> </svg>
+                    <span>Bluesky</span>
+                </a>
+            </li> -->
+            <li>
+                <a href="https://github.com/annya-s/CSD-Project" target="_blank" rel="noopener noreferrer">
+                    <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24">
+                        <use href="/icons.svg#github-icon"></use>
+                    </svg>
+                    <span>GitHub</span>
+                </a>
+            </li>
+        </ul>
+    </footer></body>
+</html>

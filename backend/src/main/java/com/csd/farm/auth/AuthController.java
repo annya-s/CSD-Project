@@ -62,6 +62,14 @@ public class AuthController {
                 principal.getName()).orElseThrow();
     }
 
+    @PostMapping("/verification-code")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resendVerificationCode(Principal principal) {
+        Farmer farmer = farmers.findByUsername(principal.getName()).orElseThrow();
+
+        accountTokens.issueEmailVerificationCode(farmer);
+    }
+
     @PostMapping("/verify-email")
     public ResponseEntity<Void> verifyEmail(
             @RequestBody VerifyEmailRequest request) {

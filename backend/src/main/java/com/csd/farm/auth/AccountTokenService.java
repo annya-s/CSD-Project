@@ -34,6 +34,9 @@ public class AccountTokenService {
     // Later delivery behavior: send this same code by email.
     public void issueEmailVerificationCode(Farmer farmer) {
         
+        tokens.invalidateUnused(farmer.id(),
+            AccountTokenRepository.Purpose.EMAIL_VERIFY);
+
         String code = "%06d".formatted(
                 random.nextInt(1_000_000));
 
