@@ -43,4 +43,3 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(status).body(Map.of("message", message));
     }
 }
-

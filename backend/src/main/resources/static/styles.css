@@ -202,3 +202,5 @@ footer { display: flex; align-items: center; justify-content: space-between; min
     color: inherit;
     overflow-wrap: anywhere;
 }
+
+#map { height: 180px; }

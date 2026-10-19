@@ -35,6 +35,10 @@ $('entry-form').addEventListener('submit', async (event) => {
     }
 });
 
+function loadMap() {
+    var map = L.map("map").setView([46.96, -123.35], 13);
+}
+
 async function start() {
     try {
         await requireFarmer();
@@ -48,6 +52,7 @@ async function start() {
         $('planted-at').value = localDateTime();
         $('loading').hidden = true;
         $('entry-page').hidden = false;
+        loadMap();
     } catch (error) {
         showPageError(error);
     }
