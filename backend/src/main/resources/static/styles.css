@@ -105,7 +105,13 @@ input::placeholder { color: #5d6a5b; opacity: 1; }
 .back-link { display: inline-block; margin-bottom: 34px; font-size: .9rem; }
 .entry-layout { display: grid; grid-template-columns: 1fr 1.1fr; gap: 90px; }
 .intro-copy { color: var(--muted); max-width: 40ch; }
-.entry-form { padding: 5px 32px 32px; background: white; border-radius: 16px; }
+.entry-form { 
+    padding: 5px 32px 32px; 
+    background: white; 
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+}
 .coordinate-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .form-actions { display: flex; gap: 24px; align-items: center; margin-top: 30px; }
 .detail-date { color: var(--muted); margin-bottom: 32px; }
@@ -203,4 +209,8 @@ footer { display: flex; align-items: center; justify-content: space-between; min
     overflow-wrap: anywhere;
 }
 
-#map { height: 180px; }
+#map { 
+    height: 350px;
+    width: 100%;
+    margin-top: 3%;
+}
