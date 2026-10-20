@@ -68,9 +68,11 @@ class CropHealthServiceTest {
     }
 
     @Test
-    void humidityAndSoilMoistureStayUnassessedEvenWhenValuesArePresent() {
+    void vpdAndSoilMoistureStayUnassessedEvenWhenValuesArePresent() {
         var result = health.assess(CropType.SUGAR_CANE, weather(30.0, 28800.0));
-        assertThat(result.readings().get(1).value()).isEqualTo(82.0);
+        assertThat(result.readings().get(1).name()).isEqualTo("Vapour pressure deficit");
+        assertThat(result.readings().get(1).value()).isEqualTo(1.2);
+        assertThat(result.readings().get(1).unit()).isEqualTo("kPa");
         assertThat(result.readings().get(2).value()).isEqualTo(25.0);
         assertThat(result.readings().get(2).unit()).isEqualTo("% by volume");
         assertThat(result.readings().get(1).status()).isEqualTo("NOT_ASSESSED");
@@ -81,6 +83,6 @@ class CropHealthServiceTest {
 
     private DailyWeather weather(Double temperature, Double sunshineSeconds) {
         return new DailyWeather(LocalDate.of(2026, 1, 11), "Asia/Singapore",
-                temperature, sunshineSeconds, 82.0, 0.25);
+                temperature, sunshineSeconds, 82.0, 0.25, 1.2);
     }
 }
