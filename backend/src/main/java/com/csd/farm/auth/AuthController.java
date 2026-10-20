@@ -49,6 +49,7 @@ public class AuthController {
                 null,
                 request.username(), 
                 request.email(),
+                false,
                 false);
     
         farmer = farmers.save(farmer, passwords.encode(request.password()));
@@ -81,7 +82,6 @@ public class AuthController {
         }
         if (farmer == null && request.email() != null
                 && !request.email().isBlank()) {
-
             farmer = farmers.findByEmail(request.email().trim()).orElse(null);
         }        
         if (farmer == null)
@@ -114,6 +114,18 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/two-factor")
+    public ResponseEntity<Void> setTwoFactor(
+            @RequestBody TwoFactorToggle request, Principal principal) {
+
+        Farmer farmer = farmers.findByUsername(principal.getName()).orElseThrow();
+        if (request.enabled() && !farmer.emailVerified())
+            return ResponseEntity.badRequest().build();
+
+        farmers.setTwoFactorEnabled(farmer.id(), request.enabled());
+        return ResponseEntity.noContent().build();
+    }
+
 
 
     public record Registration(
@@ -134,6 +146,9 @@ public class AuthController {
             @Email @NotBlank String email,
             @NotBlank @Size(min = 6, max = 6) String code,
             @NotBlank @Size(min = 10, max = 128) String password) {
+    }
+    public record TwoFactorToggle(
+            boolean enabled) {
     }
 
 }

@@ -11,6 +11,7 @@ CREATE TABLE farm.account_status (
     farmer_id BIGINT PRIMARY KEY 
         REFERENCES public."USERS"("User_ID") ON DELETE CASCADE,
     email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    two_factor_enabled BOOLEAN NOT NULL DEFAULT FALSE,
     auth_provider VARCHAR(20) NOT NULL DEFAULT 'local'
 );
 
@@ -19,8 +20,8 @@ CREATE TABLE farm.account_token (
     farmer_id BIGINT NOT NULL
         REFERENCES public."USERS"("User_ID") ON DELETE CASCADE,
     purpose VARCHAR(30) NOT NULL
-        CHECK (purpose IN ('EMAIL_VERIFY', 'PASSWORD_RESET')),
-    token_hash VARCHAR(128) NOT NULL UNIQUE,
+        CHECK (purpose IN ('EMAIL_VERIFY', 'PASSWORD_RESET', 'LOGIN_2FA')),
+    token_hash VARCHAR(128) NOT NULL,
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
     used_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL

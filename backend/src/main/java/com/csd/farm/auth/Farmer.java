@@ -7,7 +7,8 @@ public record Farmer(
         Long id, 
         String username, 
         String email, 
-        boolean emailVerified) {
+        boolean emailVerified,
+        boolean twoFactorEnabled) {
 }
 
 

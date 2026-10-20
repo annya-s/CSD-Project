@@ -12,7 +12,7 @@ public class AccountTokenRepository {
 
     
     public enum Purpose {
-        EMAIL_VERIFY, PASSWORD_RESET
+        EMAIL_VERIFY, PASSWORD_RESET, LOGIN_2FA
     }
     public record UsableToken(UUID id, Long farmerId) {
     }
@@ -43,14 +43,15 @@ public class AccountTokenRepository {
 
     // find token that match token_hash & purpose & unused & unexpired.
     //      else ret Optional.empty()
-    public Optional<UsableToken> findUsable(
-            String tokenHash, Purpose purpose) {
+    public Optional<UsableToken> findUsableFor(
+            Long farmerId, String tokenHash, Purpose purpose) {
 
         return jdbc.sql("""
                 SELECT id, farmer_id FROM farm.account_token
-                WHERE token_hash = :tokenHash   AND purpose = :purpose
+                WHERE farmer_id = :farmerId AND token_hash = :tokenHash AND purpose = :purpose
                   AND used_at IS NULL AND expires_at > CURRENT_TIMESTAMP
                 """)
+                .param("farmerId", farmerId)
                 .param("tokenHash", tokenHash)
                 .param("purpose", purpose.name())
                 .query((row, number) -> new UsableToken(
@@ -64,7 +65,7 @@ public class AccountTokenRepository {
         jdbc.sql("""
                 UPDATE farm.account_token
                 SET used_at = CURRENT_TIMESTAMP
-                WHERE id = :tokenId     AND used_at IS NULL
+                WHERE id = :tokenId AND used_at IS NULL
                 """)
                 .param("tokenId", tokenId)
                 .update();
@@ -76,7 +77,7 @@ public class AccountTokenRepository {
                 UPDATE farm.account_token
                 SET used_at = CURRENT_TIMESTAMP
                 WHERE farmer_id = :farmerId 
-                  AND purpose = :purpose    AND used_at IS NULL
+                  AND purpose = :purpose AND used_at IS NULL
                 """)
                 .param("farmerId", farmerId)
                 .param("purpose", purpose.name())

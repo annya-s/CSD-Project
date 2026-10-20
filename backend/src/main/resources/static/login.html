@@ -59,6 +59,11 @@
                         <label for="confirm-password">Confirm new password</label>
                         <input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" maxlength="128">
                     </div>
+                    <div id="two-factor-field" class="input-field" hidden>
+                        <label for="two-factor-code">Login code</label>
+                        <input id="two-factor-code" name="twoFactorCode" type="text" inputmode="numeric"
+                            autocomplete="one-time-code" maxlength="6" placeholder=" ">
+                    </div>
                     <p id="auth-error" class="form-error" role="alert" hidden></p>
                     <!-- <div id="forgot-password-link"> <a href="/forgot-password.html"> Forgot your password? </a> </div> -->
                     <button id="auth-submit" class="primary" type="submit">Log in</button>

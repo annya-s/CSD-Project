@@ -14,6 +14,20 @@ function updateAccountPage() {
         $('verify-email-description').textContent = `A 6-digit verification code was sent to ${account.email}.`;
     }
     $('password-section').hidden = false;
+
+    const twoFactor = Boolean(account.twoFactorEnabled);
+    $('two-factor-section').hidden = false;
+    $('two-factor-status').textContent = 
+        !verified ? 
+            'Verify your email to enable two-factor authentication.'
+            : twoFactor
+                ? 'Two-factor authentication is on. A code is emailed when you log in.'
+                : 'Two-factor authentication is off.';
+
+    const toggle = $('two-factor-toggle');
+    toggle.textContent = twoFactor ? 'Turn off' : 'Turn on';
+    toggle.dataset.enabled = twoFactor;
+    toggle.disabled = !verified; // greyed out until the email is verified
 }
 
 $('verify-email').addEventListener('click', async () => {
@@ -66,6 +80,24 @@ $('password-form').addEventListener('submit', async event => {
         showMessage('password-error', error.message);
     } finally {
         $('update-password').disabled = false;
+    }
+});
+
+$('two-factor-toggle').addEventListener('click', async () => {
+    showMessage('global-message');
+
+    const toggle = $('two-factor-toggle');
+    const enable = toggle.dataset.enabled !== 'true';
+
+    toggle.disabled = true;
+    try {
+        await api('/api/auth/two-factor', jsonPost({ enabled: enable }));
+        showMessage('global-message', 
+                    'Two-factor authentication is ' + (enable ? 'on.' : 'off.'));
+        await start(); // reloads account, which re-renders the section
+    } catch (error) {
+        showMessage('global-message', error.message);
+        toggle.disabled = false;
     }
 });
 

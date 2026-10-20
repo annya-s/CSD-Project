@@ -8,6 +8,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import org.springframework.security.core.context.SecurityContextHolder; // [2FA] new import
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository; // [2FA] new import
+import com.csd.farm.auth.AccountTokenService; // [2FA] new import
+
 @Configuration
 public class SecurityConfig {
 
@@ -18,7 +22,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+			HttpSecurity http, AccountTokenService accTokens) throws Exception {
 	http
 		.authorizeHttpRequests(auth -> auth
 			// Page shells are public; their data still requires an authenticated API request.
@@ -39,7 +44,29 @@ public class SecurityConfig {
 		// Spring Security keeps CSRF protection and rotates the session on login.
 		.formLogin(login -> login
 			.loginProcessingUrl("/api/auth/login")
-			.successHandler((request, response, authentication) -> response.setStatus(204))
+			// .successHandler((request, response, authentication) -> response.setStatus(204))
+			.successHandler((request, response, authentication) -> {
+                String step = accTokens.loginStep(
+                        authentication.getName(), request.getParameter("code"));
+
+                // user doesn't use 2fa, or inputted correct code
+                if (step.equals("none") || step.equals("ok")) {
+                    response.setStatus(204);
+                    return;
+                }
+                // missing or wrong code : undo the login Spring just made.
+                SecurityContextHolder.clearContext();
+                request.getSession().removeAttribute(
+                        HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+                response.setContentType("application/json");
+                if (step.equals("sent")) {
+                    response.setStatus(200);
+                    response.getWriter().write("{\"twoFactorRequired\":true}");
+                } else {
+                    response.setStatus(401);
+                    response.getWriter().write("{\"message\":\"That code is incorrect or expired.\"}");
+                }
+            })
 			.failureHandler((request, response, exception) -> {
 			    response.setStatus(401);
 			    response.setContentType("application/json");

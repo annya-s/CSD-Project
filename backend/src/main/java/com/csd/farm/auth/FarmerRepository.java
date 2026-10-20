@@ -54,17 +54,19 @@ public class FarmerRepository implements UserDetailsService {
         Long farmerId = key.longValue();
         jdbc.sql("INSERT INTO farm.account_status (farmer_id, email_verified) VALUES (:id, FALSE)")
                 .param("id", farmerId).update();
-        return new Farmer(farmerId, farmer.username(), farmer.email(), false);
+        return new Farmer(farmerId, farmer.username(), farmer.email(), false, false);
     }
     private String select() {
         return "SELECT u." + id + " AS id, u." + name + " AS username, u." + email
-                + " AS email, COALESCE(s.email_verified, FALSE) AS email_verified FROM " + table
+                + " AS email, COALESCE(s.email_verified, FALSE) AS email_verified,"
+                + " COALESCE(s.two_factor_enabled, FALSE) AS two_factor_enabled FROM " + table
                 + " u LEFT JOIN farm.account_status s ON s.farmer_id = u." + id;
     }
 
     private Farmer map(ResultSet row, int number) throws SQLException {
         return new Farmer(row.getLong("id"), row.getString("username"),
-                row.getString("email"), row.getBoolean("email_verified"));
+                row.getString("email"), row.getBoolean("email_verified"),
+                row.getBoolean("two_factor_enabled"));
     }
 
     public Optional<Farmer> findByUsername(String username) {
@@ -81,6 +83,11 @@ public class FarmerRepository implements UserDetailsService {
         jdbc.sql("UPDATE farm.account_status SET email_verified = TRUE WHERE farmer_id = :id")
                 .param("id", farmerId).update();
     }
+   
+    public void setTwoFactorEnabled(Long farmerId, boolean enabled) {
+        jdbc.sql("UPDATE farm.account_status SET two_factor_enabled = :enabled WHERE farmer_id = :id")
+                .param("id", farmerId).param("enabled", enabled).update();
+    } 
 
     public void updatePassword(Long farmerId, String passwordHash) {
         jdbc.sql("UPDATE " + table + " SET " + hash + " = :hash WHERE " + id + " = :id")
