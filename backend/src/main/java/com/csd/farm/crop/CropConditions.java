@@ -5,8 +5,8 @@ import java.util.Map;
 // Temporary reference data. Later, this lookup can read from Supabase instead.
 // Sources and assumptions: docs/crop-growing-conditions.md.
 public final class CropConditions {
-    private static final double temperatureTolerance = 10.0;
-    private static final double sunshineHoursTolerance = 10.0;
+    private static final double temperatureTolerance = 0.1;
+    private static final double sunshineHoursTolerance = 0.1;
 
     // Represents the optimal growing conditions of a set list of crops. 
     private static final Map<CropType, Conditions> CONDITIONS = Map.of(
