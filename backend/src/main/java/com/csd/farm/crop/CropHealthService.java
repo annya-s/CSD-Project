@@ -35,20 +35,37 @@ public class CropHealthService {
 
         List<String> issues = new ArrayList<>();
         List<String> actions = new ArrayList<>();
-        if (temperatureReading.status().equals("BELOW_RANGE")) {
-            issues.add("Daily mean temperature is below this crop's reference range.");
-            actions.add("Check temperatures at the crop and inspect for cold stress. Consider suitable protection if cold conditions persist.");
-        } else if (temperatureReading.status().equals("ABOVE_RANGE")) {
-            issues.add("Daily mean temperature is above this crop's reference range.");
-            actions.add("Check temperatures at the crop and inspect for heat stress. Check soil water before deciding whether to irrigate.");
+
+        switch (temperatureReading.status()) {
+            case "BELOW_RANGE_SEVERE":
+                break;
+            case "BELOW_RANGE":
+                issues.add("Daily mean temperature is below this crop's reference range.");
+                actions.add("Check temperatures at the crop and inspect for cold stress. Consider suitable protection if cold conditions persist.");
+                break;
+            case "ABOVE_RANGE":
+                issues.add("Daily mean temperature is above this crop's reference range.");
+                actions.add("Check temperatures at the crop and inspect for heat stress. Check soil water before deciding whether to irrigate.");
+                break;
+            case "ABOVE_RANGE_SEVERE":
+                break;
+            default:
         }
-        if (sunshineReading.status().equals("BELOW_RANGE")) {
-            issues.add("Daily sunshine is below this crop's estimated reference range.");
-            actions.add("Check for shading and monitor sunshine over the next few days. One cloudy day does not establish crop damage.");
-        } else if (sunshineReading.status().equals("ABOVE_RANGE")) {
-            // Above the estimated band is informational; longer sunshine alone is not harmful.
-            actions.add("Sunshine is above the reference band. Do not add shade solely because of this result; check temperature and the crop first. Longer sunshine alone is not harmful.");
+
+        switch (sunshineReading.status()) {
+            case "BELOW_RANGE_SEVERE":
+                break;
+            case "BELOW_RANGE":
+                issues.add("Daily sunshine is below this crop's estimated reference range.");
+                actions.add("Check for shading and monitor sunshine over the next few days. One cloudy day does not establish crop damage.");
+            case "ABOVE_RANGE":
+                actions.add("Continue monitoring. Temperature and sunlight are within their reference ranges; vapour pressure deficit and soil moisture remain unassessed.");
+                break;
+            case "ABOVE_RANGE_SEVERE":
+                break;
+            default:
         }
+
         if (temperature == null || sunshineHours == null) {
             actions.add("Daily weather values are missing or incomplete. Refresh the forecast before assessing temperature and sunlight.");
         }
@@ -68,16 +85,28 @@ public class CropHealthService {
      * @return A Reading instance representing a reading of whether the condition is within optimal range.
      */
     private Reading compare(String name, Double value, String unit, Range range) {
-        String status = "NOT_ASSESSED";
-        if (value != null) {
-            if (value < range.minimum()) {
-                status = "BELOW_RANGE";
-            } else if (value > range.maximum()) {
-                status = "ABOVE_RANGE";
-            } else {
-                status = "WITHIN_RANGE";
-            }
+
+        if (value == null) {
+            return new Reading(name, value, unit, "NOT_ASSESSED", range);
         }
+
+        String status;
+        if (value < range.minimum()) {
+            if (value < range.minimum() * (1 - range.tolerance())) {
+                status = "BELOW_RANGE_SEVERE";
+            } else {
+                status = "BELOW_RANGE";
+            }
+        } else if (value > range.maximum()) {
+            if (value > range.maximum() * (1 + range.tolerance())) {
+                status = "ABOVE_RANGE_SEVERE";
+            } else {
+                status = "ABOVE_RANGE";
+            }
+        } else {
+            status = "WITHIN_RANGE";
+        }
+
         return new Reading(name, value, unit, status, range);
     }
 
