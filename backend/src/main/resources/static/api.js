@@ -87,16 +87,19 @@ export function metric(name, value = 'Not assessed', status = 'NOT_ASSESSED') {
 export function readingMetric(reading, showRange = false) {
     const labels = {
         NOT_ASSESSED: 'Not assessed',
+        BELOW_RANGE_SEVERE: 'Significantly below reference range',
         BELOW_RANGE: 'Below reference range',
         WITHIN_RANGE: 'Within reference range',
-        ABOVE_RANGE: 'Above reference range'
+        ABOVE_RANGE: 'Above reference range',
+        ABOVE_RANGE_SEVERE: 'Significantly above reference range'
     };
+
     const value = reading.value === null ? '' : `${new Intl.NumberFormat(undefined, {
         maximumFractionDigits: reading.name === 'Soil moisture' ? 3 : 2
     }).format(reading.value)} ${reading.unit} · `;
     const row = metric(reading.name, value + (labels[reading.status] || 'Not assessed'), reading.status);
     if (showRange && reading.referenceRange) {
-        const { minimum, maximum } = reading.referenceRange;
+        const { minimum, maximum, tolerance } = reading.referenceRange;
         row.querySelector('dd').append(node('small', `Reference: ${minimum}–${maximum} ${reading.unit}`, 'reference-range'));
     }
     return row;
