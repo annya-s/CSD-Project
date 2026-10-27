@@ -38,6 +38,8 @@ public class CropHealthService {
 
         switch (temperatureReading.status()) {
             case "BELOW_RANGE_SEVERE":
+                issues.add("Daily mean temperature is significantly below this crop's reference range.");
+                actions.add("Closely monitor temperatures for next few days. Add any preventative measures for cold temperatures quickly.");
                 break;
             case "BELOW_RANGE":
                 issues.add("Daily mean temperature is below this crop's reference range.");
@@ -48,20 +50,28 @@ public class CropHealthService {
                 actions.add("Check temperatures at the crop and inspect for heat stress. Check soil water before deciding whether to irrigate.");
                 break;
             case "ABOVE_RANGE_SEVERE":
+                issues.add("Daily mean temperature is significantly above this crop's reference range.");
+                actions.add("Heavily consider irrigation to reduce thec crop's temperature. Ensure the crop's temperature lowers in the next few days.");
                 break;
             default:
+                break;
         }
 
         switch (sunshineReading.status()) {
             case "BELOW_RANGE_SEVERE":
+                issues.add("Daily sunshine is significantly below this crop's estimated reference range.");
+                actions.add("Closely monitor sunshine over next few days, and prepare for a long-term deficiency of sunshine.");
                 break;
             case "BELOW_RANGE":
                 issues.add("Daily sunshine is below this crop's estimated reference range.");
                 actions.add("Check for shading and monitor sunshine over the next few days. One cloudy day does not establish crop damage.");
+                break;
             case "ABOVE_RANGE":
                 actions.add("Continue monitoring. Temperature and sunlight are within their reference ranges; vapour pressure deficit and soil moisture remain unassessed.");
                 break;
             case "ABOVE_RANGE_SEVERE":
+                issues.add("Daily sunshine is significantly above this crop's estimated reference range.");
+                actions.add("Closely monitor sunshine over next few days, and possibly take corrective actions to reduce sunshine.");
                 break;
             default:
         }

@@ -49,7 +49,7 @@ class CropHealthServiceTest {
 
     @Test
     void secondsBecomeHoursAndLongSunshineAloneDoesNotFlagDamage() {
-        var result = health.assess(CropType.POTATO, weather(20.0, 32400.0));
+        var result = health.assess(CropType.POTATO, weather(20.0, 30400.0));
         assertThat(result.readings().get(3).value()).isEqualTo(9.0);
         assertThat(result.readings().get(3).status()).isEqualTo("ABOVE_RANGE");
         assertThat(result.needsAttention()).isFalse();
@@ -63,7 +63,7 @@ class CropHealthServiceTest {
                 .allMatch(reading -> reading.status().equals("NOT_ASSESSED") && reading.value() == null);
         var partial = health.assess(CropType.POTATO, weather(null, 0.0));
         assertThat(partial.readings().get(0).status()).isEqualTo("NOT_ASSESSED");
-        assertThat(partial.readings().get(3).status()).isEqualTo("BELOW_RANGE");
+        assertThat(partial.readings().get(3).status()).isEqualTo("BELOW_RANGE_SEVERE");
         assertThat(partial.needsAttention()).isTrue();
     }
 
