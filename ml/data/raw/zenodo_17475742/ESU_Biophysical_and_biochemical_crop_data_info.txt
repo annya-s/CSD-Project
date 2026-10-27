@@ -1,0 +1,29 @@
+Column name	Description
+Point_X_UTM34	The X coordinate (easting) of the center of the ESU (ESU is a 20 m x 20 m plot) in projection Universal Transverse Mercator (UTM) zone 34, datum WGS84, EPSG code: 32634
+Point_Y_UTM34	The Y coordinate (northing) of the center of the ESU (ESU is a 20 m x 20 m plot) in projection Universal Transverse Mercator (UTM) zone 34, datum WGS84, EPSG code: 32634
+ESU_ID	A unique identifier of the ESU (ESU is a 20 m x 20 m plot)
+Campaign	Month and year of a field campaign
+LP80_date	"The date (YYYY-MM-DD) on which the measurements with the AccuPAR LP-80 were taken; AccuPAR LP-80 measurements include LAI, fIPAR, fAPAR, fCover; this date apply also for the chlorophyll content measurements "
+LP80_DOY	"The Day of Year on which the measurements with the AccuPAR LP-80 were taken; AccuPAR LP-80 measurements include LAI, fIPAR, fAPAR, fCover; this DOY apply also for the chlorophyll content measurements  "
+LP80_ext_sen	"Indicates if external sensor was used during AccuPAR LP-80 measurements (""yes"" or ""no"")"
+LP80_conditions	Description of the meteorological conditions during AccuPAR LP-80 measurements
+LAI_mean	Leaf area index, mean value
+LAI_std	Leaf area index, standard deviation
+fIPAR_mean	fraction of Intercepted Photosynthetically Active Radiation, mean value
+fIPAR_std	fraction of Intercepted Photosynthetically Active Radiation, standard deviation
+fAPAR_mean	fraction of Absorbed Photosynthetically Active Radiation, mean value
+fAPAR_std	fraction of Absorbed Photosynthetically Active Radiation, standard deviation
+fCover_mean	Vegetation cover fraction, mean value
+fCover_std	Vegetation cover fraction, standard deviation
+CC_mean	Leaf chlorophyll content in microgram per square centimeter, mean value
+CC_std	Leaf chlorophyll content in microgram per square centimeter, standard deviation
+Biological_yield	Biological yield in kg/ha
+AGB_N_date	Date of collecting the above ground biomass and nitrogen samples
+AGBd_wheat	Dry above ground biomass of winter wheat in g/m^2
+AGBd_weeds	Dry above ground biomass of weeds in g/m^2
+AGBf_wheat	Fresh above ground biomass of winter wheat in g/m^2
+AGBf_weeds	Fresh above ground biomass of weeds in g/m^2
+N_concentration_wheat	Nitrogen concentration in winter wheat in %
+N_concentration_weeds	Nitrogen concentration in weeds in %
+N_uptake_wheat	Nitrogen uptake of winter wheat in g N/m^2
+N_uptake_weeds	Nitrogen uptake of weeds in g N/m^2

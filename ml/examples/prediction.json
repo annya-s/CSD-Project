@@ -1,0 +1,54 @@
+{
+  "schema_version": "wheat-prediction-v1",
+  "kind": "DRY_ABOVEGROUND_BIOMASS",
+  "status": "EXPERIMENTAL",
+  "validation_status": "EXPERIMENTAL",
+  "prediction_date": "2017-04-24",
+  "input_through_date": "2017-04-23",
+  "value": 152.0214375104618,
+  "unit": "g/m2",
+  "interval": null,
+  "confidence": null,
+  "model_version": "wheat-biomass-v1",
+  "selected_model": "catboost",
+  "model_sha256": "119f394fe730c23d914555e1c8fe6a36a376495bd90460ceafc3b828bd74d486",
+  "feature_profile": "ifs-soil-0-7-v1",
+  "input_hash": "fe57152caee37cf7c24945681c5d0971034bac8ab6b0511a923bea3b1dd43054",
+  "farmer_id": null,
+  "crop_type": "WHEAT",
+  "planted_at": null,
+  "created_at": "2026-10-27T09:00:03.972888+00:00",
+  "support_reasons": [
+    "LIMITED_REGIONAL_VALIDATION",
+    "RETROSPECTIVE_WEATHER_INPUTS",
+    "WEATHER_IMPROVEMENT_NOT_ESTABLISHED"
+  ],
+  "features": {
+    "days_since_sowing": 203,
+    "temperature_mean_7d": 7.797619047619047,
+    "temperature_mean_14d": 10.761309523809524,
+    "vpd_mean_7d": 0.3816666666666667,
+    "vpd_mean_14d": 0.5772023809523809,
+    "soil_moisture_mean_7d": 0.3015654761904762,
+    "soil_moisture_mean_14d": 0.23447619047619048,
+    "sunshine_hours_mean_7d": 8.248579365079365,
+    "sunshine_hours_mean_14d": 10.31251507936508
+  },
+  "advice": [
+    {
+      "code": "FIELD_CHECK",
+      "message": "Compare this estimate with dated field observations. Weather alone cannot establish crop health or identify the cause of poor growth."
+    },
+    {
+      "code": "TEMPERATURE_REFERENCE",
+      "evidence": "BROAD_ECOLOGICAL_REFERENCE",
+      "message": "The recent average temperature is outside the broad 15–23°C wheat reference. Check crop stage and local guidance before taking action; this is not a damage threshold.",
+      "source": "https://ecocrop.apps.fao.org/ecocrop/srv/en/dataSheet?id=2114"
+    },
+    {
+      "code": "CHECK_ROOT_ZONE",
+      "message": "Confirm moisture in the crop's root zone and consider recent rain and irrigation before watering. The model's shallow soil estimate is not an irrigation prescription."
+    }
+  ],
+  "id": "661c7793-3f15-5d74-8bea-6be88efffc69"
+}

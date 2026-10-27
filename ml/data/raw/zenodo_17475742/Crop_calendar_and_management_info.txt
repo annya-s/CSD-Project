@@ -1,0 +1,31 @@
+Column name	Description
+Unit_ID	Unique identifier of the Unit (Unit is a single winter wheat field)
+Unit	Unit number
+Area	Unit area in ha
+Soil	Soil types in the Unit
+Land_category 	Land category
+Predecessor	Predecessor
+Variety	Winter wheat variety
+Sowing_date	Sowing date YYYY-MM-DD
+Sowing _norm	Sowing  norm in seeds per square meter
+Sowing _notes	Other notes regarding the sowing practices
+Germination	Date (YYYY-MM-DD) on which most of the crop is already in development stage germination Z0 to Z1  
+Main_stem_leaf	Date (YYYY-MM-DD)on which most of the crop is already in development stage main stem leaf production Z1
+Three_leaves	Date (YYYY-MM-DD) on which most of the crop is already in development stage three leafs emerged Z13
+Tiller_production_1	Date (YYYY-MM-DD) on which most of the crop is already in development stage tiller production Z21 to Z22
+Restoration	Date (YYYY-MM-DD) on which most of the crop already resumes its vegetation after wintering
+Tiller_production_2	Date (YYYY-MM-DD) on which most of the crop is already in development stage tiller production Z22 to Z26
+Stem_elongation	Date (YYYY-MM-DD) on which most of the crop is already in development stage stem elongation Z31 to Z34
+Heading	Date (YYYY-MM-DD) on which most of the crop is already in development stage heading Z5
+Anthesis	Date (YYYY-MM-DD) on which most of the crop is already in development stage anthesis Z6
+Grain_milk	Date (YYYY-MM-DD) on which most of the crop is already in development stage grain milk Z7
+Grain_dough	Date (YYYY-MM-DD) on which most of the crop is already in development stage grain dough Z8
+Ripening	Date (YYYY-MM-DD) on which most of the crop is already in development stage ripening Z9
+Harvesting_date	Harvesting date YYYY-MM-DD
+Yield	Yield in kg/ha
+Preparation	Pre-sowing preparation: date and type
+Fertilization	Fertilization: date, type, and amount
+Spring_fertilization	Spring fertilization: date, type, and amount
+Protection_1	First plant protection measures: date, type, and amount
+Protection_2	Second plant protection measures: date, type, and amount
+Protection_3	Third plant protection measures: date, type, and amount

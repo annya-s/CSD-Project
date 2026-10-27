@@ -9,3 +9,5 @@ node_modules/
 *.class
 *.md
 !README.md
+*.pyc
+.venv/

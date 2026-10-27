@@ -1,0 +1,20 @@
+# Scope all development and generated artifacts to this directory.
+.venv/
+.cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.env
+build/
+dist/
+data/raw/*
+!data/raw/zenodo_17475742/
+data/synthetic/
+artifacts/
+predictions/
+.test-tmp/
+ml/
+# The repository ignores Markdown globally; keep ML documentation reviewable.
+!*.md
+!**/*.md

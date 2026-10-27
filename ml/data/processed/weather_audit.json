@@ -1,0 +1,94 @@
+{
+  "profile": "ifs-soil-0-7-v1",
+  "observations": 198,
+  "eligible": 178,
+  "usable": 178,
+  "rejections": [
+    {
+      "visit_id": "nov2016_1_1",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_1_4",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_1_6",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_1_7",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_2_1",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_2_2",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_2_3",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_2_4",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_2_5",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_2_6",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_3_1",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_3_2",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_4_1",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_4_3",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_4_4",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_4_5",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_5_2",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_5_4",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_5_5",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    },
+    {
+      "visit_id": "nov2016_5_6",
+      "reason": "BEFORE_PROFILE_COVERAGE"
+    }
+  ],
+  "provider": "https://archive-api.open-meteo.com/v1/archive",
+  "license_url": "https://open-meteo.com/en/terms",
+  "normalization": "UTC padded query; exact IANA local-day hours; daily sunshine is sum of hourly sunshine",
+  "raw_provider_response_preserved": true,
+  "retrospective_not_historical_issue_time_data": true,
+  "source_mode": "STATIC_LOCAL_FILES_ONLY"
+}

@@ -1,0 +1,8 @@
+{
+  "source_mode": "STATIC_LOCAL_FILES_ONLY",
+  "observations": 198,
+  "weather_windows": 178,
+  "weather_snapshot_sha256": "b4d2b617b2bd19523d7b12eab21e5f66a9bce99d7127e86e56dda28e70fccbc1",
+  "feature_rows": 178,
+  "synthetic_scenarios": 1000
+}

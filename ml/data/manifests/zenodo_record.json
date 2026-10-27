@@ -1,0 +1,533 @@
+{
+  "created": "2025-10-31T14:00:48.265134+00:00",
+  "modified": "2026-02-09T07:34:45.575199+00:00",
+  "id": 17475742,
+  "conceptrecid": "17475741",
+  "doi": "10.5281/zenodo.17475742",
+  "conceptdoi": "10.5281/zenodo.17475741",
+  "doi_url": "https://doi.org/10.5281/zenodo.17475742",
+  "metadata": {
+    "title": "In-situ and UAV dataset with crop and soil parameters obtained from winter wheat fields",
+    "doi": "10.5281/zenodo.17475742",
+    "publication_date": "2025-10-31",
+    "description": "<p><span lang=\"EN-US\">This dataset was created as a result of two seasons of ground observation and measurements conducted on commercial winter wheat fields in Zlatia test site, Bulgaria. The study was part of the TS2AgroBg project (&ldquo;Testing Sentinel-2 vegetation indices for the assessment of the state of winter crops in Bulgaria&rdquo;) funded by the European Space Agency (Contract </span>№ <span lang=\"EN-US\">4000117474/16/NL/NDe) under the Plan for European Cooperating States. The aim of the field campaigns was to collect in-situ data for different biophysical, biochemical, phenological, and other crop and soil parameters that characterize and affect the crop status and the spectral reflectance of the crop-soil system. The data were used to calibrate and validate empirical models for prediction and mapping of important crop parameters, such as leaf area index, biomass, chlorophyll content, etc., based on spectral data from the Sentinel-2 satellites. In addition, a methodology for integral assessment of crop status based on a combination of such parameters was developed. The dataset consists of two main parts. The first part contains data collected from 20 m by 20 m plots (Elementary Sampling Units, ESUs), includes the following parameters:</span></p>\n<ul>\n<li><span lang=\"EN-US\">Leaf Area Index (LAI);</span></li>\n<li><span lang=\"EN-US\">Fraction of Absorbed Photosynthetically Active Radiation (fAPAR);</span></li>\n<li><span lang=\"EN-US\">Fraction of Intercepted Photosynthetically Active Radiation (fIPAR);</span></li>\n<li><span lang=\"EN-US\">Vegetation cover fraction (fCover);</span></li>\n<li><span lang=\"EN-US\">Chlorophyll Content (CC);</span></li>\n<li><span lang=\"EN-US\">Above ground biomass (AGB): fresh and dry;</span></li>\n<li><span lang=\"EN-US\">Plant nitrogen content;</span></li>\n<li><span lang=\"EN-US\">Biological yield;</span></li>\n<li><span lang=\"EN-US\">Soil moisture content at the surface layer;</span></li>\n<li><span lang=\"EN-US\">Reflectance in the 350 nm to 2500 nm spectral range;</span></li>\n<li><span lang=\"EN-US\">Crop development stage;</span></li>\n<li><span lang=\"EN-US\">Crop density;</span></li>\n<li><span lang=\"EN-US\">Crop height;</span></li>\n<li><span lang=\"EN-US\">Total area coverage;</span></li>\n<li><span lang=\"EN-US\">Assessment score of damages caused by diseases or pests;</span></li>\n<li><span lang=\"EN-US\">Weeds: type, biomass, development stage, height, and overall weed score.</span></li>\n</ul>\n<p><span lang=\"EN-US\">The second part contains auxiliary data, including:</span></p>\n<ul>\n<li><span lang=\"EN-GB\">Soil profile data from four locations within the study fields</span><span lang=\"EN-US\">;</span></li>\n<li><span lang=\"EN-US\">Crop calendar and management information;</span></li>\n<li><span lang=\"EN-US\">Unmanned Aerial Vehicle (UAV) multispectral imagery;</span></li>\n<li><span lang=\"EN-US\">M</span><span lang=\"EN-US\">eteorological data from an automated weather station installed in the study area.</span></li>\n</ul>",
+    "access_right": "open",
+    "creators": [
+      {
+        "name": "Dimitrov, Petar",
+        "affiliation": "Space Research and Technology Institute - Bulgarian Academy of Sciences",
+        "orcid": "0000-0002-4821-8231"
+      },
+      {
+        "name": "Roumenina, Eugenia",
+        "affiliation": "Space Research and Technology Institute - Bulgarian Academy of Sciences",
+        "orcid": "0009-0007-4705-1023"
+      },
+      {
+        "name": "Jelev, Georgi",
+        "affiliation": "Space Research and Technology Institute - Bulgarian Academy of Sciences",
+        "orcid": "0009-0006-5437-1060"
+      },
+      {
+        "name": "Filchev, Lachezar",
+        "affiliation": "Space Research and Technology Institute - Bulgarian Academy of Sciences",
+        "orcid": "0000-0002-6248-0148"
+      },
+      {
+        "name": "Gikov, Alexander",
+        "affiliation": "Space Research and Technology Institute - Bulgarian Academy of Sciences"
+      },
+      {
+        "name": "Kamenova, Ilina",
+        "affiliation": "Space Research and Technology Institute - Bulgarian Academy of Sciences",
+        "orcid": "0000-0003-4607-3064"
+      },
+      {
+        "name": "Ilieva, Iliana",
+        "affiliation": "Space Research and Technology Institute - Bulgarian Academy of Sciences"
+      },
+      {
+        "name": "Ganeva, Dessislava",
+        "affiliation": "Space Research and Technology Institute - Bulgarian Academy of Sciences",
+        "orcid": "0000-0001-9265-9539"
+      },
+      {
+        "name": "Kercheva, Milena",
+        "affiliation": "Institute of Soil Science, Agrotechnologies and Plant Protection \"Nikola Poushkarov\" - Agricultural Academy",
+        "orcid": "0000-0001-9053-5372"
+      },
+      {
+        "name": "Banov, Martin",
+        "affiliation": "Institute of Soil Science, Agrotechnologies and Plant Protection \"Nikola Poushkarov\" - Agricultural Academy",
+        "orcid": "0000-0002-4491-5646"
+      },
+      {
+        "name": "Krasteva, Veneta",
+        "affiliation": "Institute of Soil Science, Agrotechnologies and Plant Protection \"Nikola Poushkarov\" - Agricultural Academy"
+      },
+      {
+        "name": "Kolchakov, Viktor",
+        "affiliation": "Institute of Soil Science, Agrotechnologies and Plant Protection \"Nikola Poushkarov\" - Agricultural Academy",
+        "orcid": "0000-0002-7155-5594"
+      },
+      {
+        "name": "Dimitrov, Emil",
+        "affiliation": "Institute of Soil Science, Agrotechnologies and Plant Protection \"Nikola Poushkarov\" - Agricultural Academy",
+        "orcid": "0000-0001-8820-4689"
+      },
+      {
+        "name": "Miteva, Nevena",
+        "affiliation": "Institute of Soil Science, Agrotechnologies and Plant Protection \"Nikola Poushkarov\" - Agricultural Academy"
+      }
+    ],
+    "keywords": [
+      "UAV",
+      "Winter wheat",
+      "LAI",
+      "Phenology"
+    ],
+    "dates": [
+      {
+        "type": "available",
+        "description": "Publication date"
+      }
+    ],
+    "version": "1.0.0",
+    "references": [
+      "Zadoks, J.C., T.T. Chang, C.F. Konzak. 1974. A decimal code of the growth stages of cereals. Weed Research, 14, 415-421.",
+      "Rousseva, S., Kercheva, M., Shishkov, T., Lair, G.J., Nikolaidis, N.P., Moraetis, D., Krám, P., Bernasconi, S.M., Blum, W.E.H., Menon, M., et al. 2017. Soil Water Characteristics of European SoilTrEC Critical Zone Observatories. In Advances in Agronomy; Academic Press: Cambridge, MA, USA, Volume 142, pp. 29–72.",
+      "van Genuchten, M. T., 1980. A closed-form equation for predicting the hydraulic conductivity of unsaturated soils. Soil Sci. Soc. Am. J. 44, 892–898."
+    ],
+    "language": "eng",
+    "resource_type": {
+      "title": "Dataset",
+      "type": "dataset"
+    },
+    "license": {
+      "id": "cc-by-4.0"
+    },
+    "grants": [
+      {
+        "code": "4000117474/16/NL/NDe",
+        "internal_id": "03wd9za21::4000117474/16/NL/NDe",
+        "funder": {
+          "name": "European Space Agency"
+        },
+        "title": "Testing Sentinel-2 vegetation indices for the assessment of the state of winter crops in Bulgaria"
+      }
+    ],
+    "relations": {
+      "version": [
+        {
+          "index": 0,
+          "is_last": true,
+          "parent": {
+            "pid_type": "recid",
+            "pid_value": "17475741"
+          }
+        }
+      ]
+    },
+    "notes": "<p>This dataset is described in detail in the following publication:</p>\n<p>Dimitrov, P., Roumenina, E., Jelev, G., Filchev, L., Gikov, A., Kamenova, I., Ilieva, I., Ganeva, D., Kercheva, M., Banov, M., Krasteva, V., Kolchakov, V., Dimitrov, E., &amp; Miteva, N. (2026). In Situ Crop and Soil Data and UAV Imagery from Winter Wheat Fields in a Bulgarian Site. Data, 11(2), 35. https://doi.org/10.3390/data11020035</p>",
+    "method": "<p><span lang=\"EN-US\">The study area was located in the Danubian Plain, Bulgaria, near the town of Knezha (43.495&deg;N, 24.081&deg;E). Five field campaigns (November, March, April, May, and June) were conducted during the 2016-2017 agricultural season and two (November and April) during the 2017-2018 agricultural season. Each campaign took four-five days to complete. A hierarchical sampling strategy, consisting of three levels, was adopted: Unit (a single commercial agricultural field), Elementary Sampling Unit (ESU; a 20 &times; 20 m plot), and Elementary Sub-Sampling Unit (ESSU; a particular location in the ESU where measurement is taken). Six Units were selected for sampling during each agricultural season. Different number of ESUs were sampled in each Unit depending of its size and diversity of soils. The location of the ESUs was kept unchanged during the season except in case relocation was needed due to waterlogging. The geographic coordinates were measured each time an ESU was visited, irrespective of whether it was relocated or not and a unique ID assigned to the ESU. Thus, data from each visit are presented as a separate independent record (row) in the dataset. In each ESU there were 3 ESSUs, one at the center and two at opposite corners of the ESU. The biological yield was measured only in the central ESSU. The dataset contains only data averaged at ESU level. Two unique identifiers, Unit_ID and ESU_ID, were used across the dataset's tables, helping identify data records and connect tables. The Unit_ID consists of the season and the Unit number, for instance &ldquo;S16-17_U1&rdquo;, where &ldquo;S16-17&rdquo; is the agricultural season 2016-2017, and &ldquo;U1&rdquo; is Unit 1. The ESU_ID consists of the month and year of the field campaign, the Unit number, and the ESU number, for instance &ldquo;apr2017_1_2&rdquo;, where &ldquo;apr2017&rdquo; is the April 2017 field campaign, &ldquo;1&rdquo; is the Unit number, and &ldquo;2&rdquo; is the ESU number. </span></p>\n<p><span lang=\"EN-US\">The LAI, fIPAR, FAPAR, and fCover were measured using AccuPAR LP-80 ceptometer. The CC was measured using CCM-300. The AGB and plant nitrogen samples were collected from a 1 m x 1 m plot at the central ESSU and 50 cm x 50 cm plots in the other two ESSUs. The nitrogen (N) content of the above-ground organs was determined by the Kjeldahl method and expressed as per-cent of the dry weight. N uptake (g m<sup>-2</sup>) was determined as the product of N content and the dry AGB. Soil moisture content (W) was measured gravimetrically at the surface (0-5 cm) and, in some ESUs, at three additional depths (0-30 cm, 30-60 cm, and 60-100 cm) in 10 cm increments. The data were expressed in percent by mass. Reflectance data was collected using ASD FieldSpec 4 HiRes Field Spectrometer (ASD HH FS4 HiRes). Crop phenology was reported after Zadoks et al. (1974). The damages and weeds status were assessed using five-point rating scales. </span></p>\n<p><span lang=\"EN-US\">The data from the four soil profiles included morphological description of soil horizons, texture (the particle-size distribution was determined by sieving and the pipette method in accordance with ISO 11277-2020), concentration of organic carbon, pH, bulk density, water retention at suctions from 0.25 kPa (pF 0.4) to 33 kPa (pF 2.7), total porosity. Soil water retention curves (pF curves) were obtained during the drainage of the samples by using the suction plate method, pressure membrane apparatus, and desiccators methods, as described in (Rousseva et al., 2017). The field capacity (FC) was estimated by the water content retained at a suction of 10 kPa (pF = 2.0). The wilting point was estimated at a suction 1500 kPa (pF = 4.2). The water retention experimental data at different suctions were approximated with the van Genuchten equation (Van Genuchten, 1980).</span></p>\n<p><span lang=\"EN-US\">The crop calendar and management data included information for the studied winter wheat fields, including soil type, predecessor, pre-sowing preparation, variety, sowing date and norm, dates and type of fertilization, plant protection measures, dates of the main development stages of winter wheat, harvesting date and yield. &nbsp;&nbsp;</span></p>\n<p><span lang=\"EN-US\">Multispectral image mosaics of the studied fields were generated using the fixed-wing drone eBee Ag furnished with Sequoia camera. The camera has Multi-channel sensor with green (550 nm), red (660 nm), red edge (735 nm), and NIR (790 nm) bands.</span></p>\n<p><span lang=\"EN-US\">Meteorological data were collected by an automatic telemetric agro-meteorological station ADCON addVantage Pro6.5 installed in the vicinity of the town of Knezha. The station operated between 30.11.2016 and 22.03.2017 on its initial location (Location 1: 43.521917&deg;N, 24.098848&deg;E) and was later moved to another location, 1.3 km southwards (Location 2: 43.511391&deg;N, 24.092252&deg;E), where it collected data between 26.04.2017 and 3.12.2018. The station was equipped with sensors for air temperature, relative humidity, solar radiation, wind speed, wind direction, rain, PAR, soil moisture and temperature (12 depths between 5 cm and 115 cm at 10 cm intervals). Data from all sensors were recorded at 30 min intervals.</span></p>\n<p><span lang=\"EN-US\">References:</span></p>\n<p><span lang=\"EN-US\">Zadoks, J.C., T.T. Chang, C.F. Konzak. 1974. A decimal code of the growth stages of cereals. Weed Research, 14, 415-421.</span></p>\n<p><span lang=\"EN-US\">Rousseva, S., Kercheva, M., Shishkov, T., Lair, G.J., Nikolaidis, N.P., Moraetis, D., Kr&aacute;m, P., Bernasconi, S.M., Blum, W.E.H., Menon, M., et al. 2017. Soil Water Characteristics of European SoilTrEC Critical Zone Observatories. In Advances in Agronomy; Academic Press: Cambridge, MA, USA, Volume 142, pp. 29&ndash;72.</span></p>\n<p><span lang=\"EN-US\">van Genuchten, M. T., 1980. A closed-form equation for predicting the hydraulic conductivity of unsaturated soils. Soil Sci. Soc. Am. J. 44, 892&ndash;898.</span></p>"
+  },
+  "title": "In-situ and UAV dataset with crop and soil parameters obtained from winter wheat fields",
+  "links": {
+    "self": "https://zenodo.org/api/records/17475742",
+    "self_html": "https://zenodo.org/records/17475742",
+    "preview_html": "https://zenodo.org/records/17475742?preview=1",
+    "doi": "https://doi.org/10.5281/zenodo.17475742",
+    "self_doi": "https://doi.org/10.5281/zenodo.17475742",
+    "self_doi_html": "https://zenodo.org/doi/10.5281/zenodo.17475742",
+    "reserve_doi": "https://zenodo.org/api/records/17475742/draft/pids/doi",
+    "parent": "https://zenodo.org/api/records/17475741",
+    "parent_html": "https://zenodo.org/records/17475741",
+    "parent_doi": "https://doi.org/10.5281/zenodo.17475741",
+    "parent_doi_html": "https://zenodo.org/doi/10.5281/zenodo.17475741",
+    "self_iiif_manifest": "https://zenodo.org/api/iiif/record:17475742/manifest",
+    "self_iiif_sequence": "https://zenodo.org/api/iiif/record:17475742/sequence/default",
+    "files": "https://zenodo.org/api/records/17475742/files",
+    "media_files": "https://zenodo.org/api/records/17475742/media-files",
+    "latest": "https://zenodo.org/api/records/17475742/versions/latest",
+    "latest_html": "https://zenodo.org/records/17475742/latest",
+    "versions": "https://zenodo.org/api/records/17475742/versions",
+    "draft": "https://zenodo.org/api/records/17475742/draft",
+    "access_links": "https://zenodo.org/api/records/17475742/access/links",
+    "access_grants": "https://zenodo.org/api/records/17475742/access/grants",
+    "access_users": "https://zenodo.org/api/records/17475742/access/users",
+    "access_request": "https://zenodo.org/api/records/17475742/access/request",
+    "access": "https://zenodo.org/api/records/17475742/access",
+    "communities": "https://zenodo.org/api/records/17475742/communities",
+    "communities-suggestions": "https://zenodo.org/api/records/17475742/communities-suggestions",
+    "request_deletion": "https://zenodo.org/api/records/17475742/request-deletion",
+    "file_modification": "https://zenodo.org/api/records/17475742/file-modification",
+    "quota_increase": "https://zenodo.org/api/records/17475742/quota-increase",
+    "requests": "https://zenodo.org/api/records/17475742/requests"
+  },
+  "updated": "2026-02-09T07:34:45.575199+00:00",
+  "recid": "17475742",
+  "revision": 8,
+  "files": [
+    {
+      "id": "bc21144d-d46b-4513-873b-7fc798ba399c",
+      "key": "S16-17_U4-5-6_2016-11-10.zip",
+      "size": 2925641320,
+      "checksum": "md5:62145806ab90addd4e38f916b750f2cd",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S16-17_U4-5-6_2016-11-10.zip/content"
+      }
+    },
+    {
+      "id": "1eec153e-a681-489c-937c-747ec64cf1e9",
+      "key": "S16-17_U1-3_2017-03-21.zip",
+      "size": 660285884,
+      "checksum": "md5:5fe882433653a0a00492d76bd1ef8cbf",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S16-17_U1-3_2017-03-21.zip/content"
+      }
+    },
+    {
+      "id": "44bc2b5d-689e-44bf-8585-6ba3d3542274",
+      "key": "S16-17_U4-5-6_2017-04-26.zip",
+      "size": 572274730,
+      "checksum": "md5:87ca57e27165380b2e79ded75bb6ab53",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S16-17_U4-5-6_2017-04-26.zip/content"
+      }
+    },
+    {
+      "id": "27e20168-b78a-40ee-acb9-dbe6450fe2c8",
+      "key": "S16-17_U1-3_2016-11-07.zip",
+      "size": 2742302846,
+      "checksum": "md5:50ddf0f3d5c8a55e657f39418ce126bb",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S16-17_U1-3_2016-11-07.zip/content"
+      }
+    },
+    {
+      "id": "6234f0dc-5774-4a30-b2d5-7963d75969c8",
+      "key": "S16-17_U2_2016-11-11.zip",
+      "size": 1688731090,
+      "checksum": "md5:38946368b71a5b5780bc733467400460",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S16-17_U2_2016-11-11.zip/content"
+      }
+    },
+    {
+      "id": "503d95c6-639f-444a-a750-7abc5c6bce79",
+      "key": "S16-17_U2_2017-03-21.zip",
+      "size": 301737760,
+      "checksum": "md5:d98e04d9d9605dc9259455e1fd22784d",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S16-17_U2_2017-03-21.zip/content"
+      }
+    },
+    {
+      "id": "3c0b2265-5667-411d-9d3e-0f0006e940df",
+      "key": "S16-17_U4-5-6_2017-03-22.zip",
+      "size": 616857097,
+      "checksum": "md5:ae04681643f0c85df97db365cc52b999",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S16-17_U4-5-6_2017-03-22.zip/content"
+      }
+    },
+    {
+      "id": "1c635f2d-8421-498a-abc0-63e7083593b4",
+      "key": "Shapefile_ESUs.zip",
+      "size": 11143,
+      "checksum": "md5:663ddc6ede70a96b80de1ba5fd125893",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/Shapefile_ESUs.zip/content"
+      }
+    },
+    {
+      "id": "da659b3e-7ab8-4b9b-8223-48d5826048bd",
+      "key": "S16-17_U1-3_2017-04-25.zip",
+      "size": 688687548,
+      "checksum": "md5:ed9258c4df49bac5333472f5b9d43489",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S16-17_U1-3_2017-04-25.zip/content"
+      }
+    },
+    {
+      "id": "97819b6e-b28b-469d-a6fa-e2e015452377",
+      "key": "S16-17_U2_2017-04-25.zip",
+      "size": 308084402,
+      "checksum": "md5:6a3dc71864bf6cca5bcc2ddb800d4be3",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S16-17_U2_2017-04-25.zip/content"
+      }
+    },
+    {
+      "id": "83f47ff8-ef77-452d-bf38-def005e555e0",
+      "key": "Soil_profiles_data_info.txt",
+      "size": 3225,
+      "checksum": "md5:3b4de872079791d8cd9ddb789b773105",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/Soil_profiles_data_info.txt/content"
+      }
+    },
+    {
+      "id": "b2b80d3e-3aec-4424-9ea6-696f703e7681",
+      "key": "Soil_profiles_summary_info.txt",
+      "size": 746,
+      "checksum": "md5:2c2131dc394d08a23388262e9dd08a1f",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/Soil_profiles_summary_info.txt/content"
+      }
+    },
+    {
+      "id": "011c1a88-c608-47b7-8002-33a1fddd9977",
+      "key": "Meteo_summary_info.txt",
+      "size": 339,
+      "checksum": "md5:fbeb025b518b3cb1a2b3632369985261",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/Meteo_summary_info.txt/content"
+      }
+    },
+    {
+      "id": "bab483e8-06c9-4461-b3bf-5843b8a164e2",
+      "key": "Meteo_data.txt",
+      "size": 5400242,
+      "checksum": "md5:36e10a3c1a21c4fcba1476a8481cef61",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/Meteo_data.txt/content"
+      }
+    },
+    {
+      "id": "632a4563-8068-4fd0-a13e-74d1882e50aa",
+      "key": "Meteo_summary.txt",
+      "size": 157,
+      "checksum": "md5:2ebb3292476ea2b38c97cce2f0135a64",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/Meteo_summary.txt/content"
+      }
+    },
+    {
+      "id": "36473667-526b-4f6e-8355-0ebb5fd34dea",
+      "key": "ESU_Soil_data.txt",
+      "size": 20339,
+      "checksum": "md5:baa342a32e5cf2daf0ed0eb67d712e85",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/ESU_Soil_data.txt/content"
+      }
+    },
+    {
+      "id": "60e5ecd7-ecb8-41d4-885a-5b0636e6be6e",
+      "key": "ESU_Biophysical_and_biochemical_crop_data_info.txt",
+      "size": 2447,
+      "checksum": "md5:b60056a912e881b617caa6099005759d",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/ESU_Biophysical_and_biochemical_crop_data_info.txt/content"
+      }
+    },
+    {
+      "id": "eb525f77-0c89-41f6-809f-7098e90d6d19",
+      "key": "S16-17_U1-3_2017-05-18.zip",
+      "size": 683297741,
+      "checksum": "md5:5b01d3eea3ed15886588d9e667a5cdd4",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S16-17_U1-3_2017-05-18.zip/content"
+      }
+    },
+    {
+      "id": "d572775c-f5b1-424e-87bd-e9ee88d833db",
+      "key": "Soil_profiles_summary.txt",
+      "size": 544,
+      "checksum": "md5:4a32671d7c25c75199f06a2e7f61c9ce",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/Soil_profiles_summary.txt/content"
+      }
+    },
+    {
+      "id": "8c5a0c7b-7a5f-4556-85e8-1fa2bf17d515",
+      "key": "ESU_Phenological_data.txt",
+      "size": 27197,
+      "checksum": "md5:5e23c232d0f22ebb501fff070752c8ba",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/ESU_Phenological_data.txt/content"
+      }
+    },
+    {
+      "id": "fc61ca03-1831-4da1-9842-3e88cf6fbb88",
+      "key": "S16-17_U2_2017-05-18.zip",
+      "size": 322247203,
+      "checksum": "md5:ae59a58969f04d9ce11622babfeca8ec",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S16-17_U2_2017-05-18.zip/content"
+      }
+    },
+    {
+      "id": "bee86ef2-279b-4772-a728-fd37e6f2064c",
+      "key": "S16-17_U4-5-6_2017-05-15.zip",
+      "size": 603470594,
+      "checksum": "md5:d2675d15982f92ccfd6d36434a73a4d2",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S16-17_U4-5-6_2017-05-15.zip/content"
+      }
+    },
+    {
+      "id": "e8b1b5a3-f667-4a8f-9599-b46f2796e19d",
+      "key": "S17-18_U1_2018-04-03.zip",
+      "size": 365296222,
+      "checksum": "md5:0f1a72da899eaa5ca0ed9af0e16b8d48",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S17-18_U1_2018-04-03.zip/content"
+      }
+    },
+    {
+      "id": "5562c1c3-0399-4a30-af4a-c23259a6e0b7",
+      "key": "ESU_Soil_data_info.txt",
+      "size": 1017,
+      "checksum": "md5:df7e6f2fa6716eb27a36de66f4fc3680",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/ESU_Soil_data_info.txt/content"
+      }
+    },
+    {
+      "id": "d52d4efc-1ad3-40d8-b7f9-48e21e3300ee",
+      "key": "S17-18_U4-5-6_2017-11-10.zip",
+      "size": 428559055,
+      "checksum": "md5:f68c407481e8cc14869f58bb3da9b36e",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S17-18_U4-5-6_2017-11-10.zip/content"
+      }
+    },
+    {
+      "id": "c8246a7c-2131-40d0-8360-311df0c9a0b5",
+      "key": "Crop_calendar_and_management_info.txt",
+      "size": 2169,
+      "checksum": "md5:e079c9f1d6fc7acc964abc467f33a00a",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/Crop_calendar_and_management_info.txt/content"
+      }
+    },
+    {
+      "id": "6f27b7a0-eaf3-4a48-82b3-0764413371f3",
+      "key": "ESU_Field_spectral_data.txt",
+      "size": 1753647,
+      "checksum": "md5:0f5483523d2b49af6a898280b241ace0",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/ESU_Field_spectral_data.txt/content"
+      }
+    },
+    {
+      "id": "e6390977-2ecc-4f8c-a7af-eec77070b214",
+      "key": "ESU_Field_spectral_data_info.txt",
+      "size": 691,
+      "checksum": "md5:666c9617cf695324251409623917f3d3",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/ESU_Field_spectral_data_info.txt/content"
+      }
+    },
+    {
+      "id": "8de69c05-2332-4802-b209-3d022350b17f",
+      "key": "Shapefile_Units.zip",
+      "size": 10575,
+      "checksum": "md5:98d268da9ffbc6dd152c720a18a4f969",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/Shapefile_Units.zip/content"
+      }
+    },
+    {
+      "id": "2126d828-dc9c-4d06-9c70-ef02bdd9c61e",
+      "key": "ESU_Phenological_data_info.txt",
+      "size": 1828,
+      "checksum": "md5:4f62ffe95dc8772e73c6e41c461fdfbb",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/ESU_Phenological_data_info.txt/content"
+      }
+    },
+    {
+      "id": "678099d7-42af-4112-8cb9-1eb4ed5df8e1",
+      "key": "Meteo_data_info.txt",
+      "size": 1577,
+      "checksum": "md5:157c9fa2dd5225a91e705baa53dd434f",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/Meteo_data_info.txt/content"
+      }
+    },
+    {
+      "id": "f78afee7-9469-49e1-8185-7b36ac96e6b8",
+      "key": "S17-18_U2_2018-04-04.zip",
+      "size": 373558152,
+      "checksum": "md5:f5b36279e1ac8432e73384438e42c144",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S17-18_U2_2018-04-04.zip/content"
+      }
+    },
+    {
+      "id": "b9e316bd-5045-4d35-9e61-e1dba50e779b",
+      "key": "S17-18_U4-5-6_2018-04-03.zip",
+      "size": 586253093,
+      "checksum": "md5:612c88bff7e76f157f33a465e60d3d8e",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S17-18_U4-5-6_2018-04-03.zip/content"
+      }
+    },
+    {
+      "id": "ff7e83f7-dfc3-470b-ba8a-d41b65573a42",
+      "key": "S17-18_U3_2018-04-04.zip",
+      "size": 309423435,
+      "checksum": "md5:1b6b1f24be206e9ff0c8c90e6103ed87",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/S17-18_U3_2018-04-04.zip/content"
+      }
+    },
+    {
+      "id": "200071b0-b387-4d3e-a669-0db10722fb99",
+      "key": "Shapefile_Soil_profiles.zip",
+      "size": 3077,
+      "checksum": "md5:a7ca291fb0904da0ca0ecfcb97dede81",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/Shapefile_Soil_profiles.zip/content"
+      }
+    },
+    {
+      "id": "260b946a-3243-4732-a2fb-d2a6403219ab",
+      "key": "Crop_calendar_and_management.txt",
+      "size": 8052,
+      "checksum": "md5:07fe65c070b9960c8519686da77c0015",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/Crop_calendar_and_management.txt/content"
+      }
+    },
+    {
+      "id": "7890e71b-2aa1-4214-a003-c2daca1bb10e",
+      "key": "ESU_Biophysical_and_biochemical_crop_data.txt",
+      "size": 32917,
+      "checksum": "md5:ebc7159363be7fa41395d72537e86846",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/ESU_Biophysical_and_biochemical_crop_data.txt/content"
+      }
+    },
+    {
+      "id": "591544fa-e774-4560-8008-902eac19814c",
+      "key": "Soil_profiles_data.txt",
+      "size": 12025,
+      "checksum": "md5:f9b733c30a6a83aa07e58d843147baaf",
+      "links": {
+        "self": "https://zenodo.org/api/records/17475742/files/Soil_profiles_data.txt/content"
+      }
+    }
+  ],
+  "swh": {},
+  "owners": [
+    {
+      "id": "1446964"
+    }
+  ],
+  "status": "published",
+  "stats": {
+    "downloads": 16309,
+    "unique_downloads": 6217,
+    "views": 1189,
+    "unique_views": 1009,
+    "version_downloads": 16309,
+    "version_unique_downloads": 6217,
+    "version_unique_views": 1009,
+    "version_views": 1189
+  },
+  "state": "done",
+  "submitted": true
+}

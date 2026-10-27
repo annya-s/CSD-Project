@@ -1,0 +1,116 @@
+{
+  "schema_version": "source-manifest-v1",
+  "retrieved_at": "2026-10-27T03:49:14.618346+00:00",
+  "record_url": "https://zenodo.org/records/17475742",
+  "doi": "10.5281/zenodo.17475742",
+  "title": "In-situ and UAV dataset with crop and soil parameters obtained from winter wheat fields",
+  "creators": [
+    {
+      "name": "Dimitrov, Petar",
+      "affiliation": "Space Research and Technology Institute - Bulgarian Academy of Sciences",
+      "orcid": "0000-0002-4821-8231"
+    },
+    {
+      "name": "Roumenina, Eugenia",
+      "affiliation": "Space Research and Technology Institute - Bulgarian Academy of Sciences",
+      "orcid": "0009-0007-4705-1023"
+    },
+    {
+      "name": "Jelev, Georgi",
+      "affiliation": "Space Research and Technology Institute - Bulgarian Academy of Sciences",
+      "orcid": "0009-0006-5437-1060"
+    },
+    {
+      "name": "Filchev, Lachezar",
+      "affiliation": "Space Research and Technology Institute - Bulgarian Academy of Sciences",
+      "orcid": "0000-0002-6248-0148"
+    },
+    {
+      "name": "Gikov, Alexander",
+      "affiliation": "Space Research and Technology Institute - Bulgarian Academy of Sciences"
+    },
+    {
+      "name": "Kamenova, Ilina",
+      "affiliation": "Space Research and Technology Institute - Bulgarian Academy of Sciences",
+      "orcid": "0000-0003-4607-3064"
+    },
+    {
+      "name": "Ilieva, Iliana",
+      "affiliation": "Space Research and Technology Institute - Bulgarian Academy of Sciences"
+    },
+    {
+      "name": "Ganeva, Dessislava",
+      "affiliation": "Space Research and Technology Institute - Bulgarian Academy of Sciences",
+      "orcid": "0000-0001-9265-9539"
+    },
+    {
+      "name": "Kercheva, Milena",
+      "affiliation": "Institute of Soil Science, Agrotechnologies and Plant Protection \"Nikola Poushkarov\" - Agricultural Academy",
+      "orcid": "0000-0001-9053-5372"
+    },
+    {
+      "name": "Banov, Martin",
+      "affiliation": "Institute of Soil Science, Agrotechnologies and Plant Protection \"Nikola Poushkarov\" - Agricultural Academy",
+      "orcid": "0000-0002-4491-5646"
+    },
+    {
+      "name": "Krasteva, Veneta",
+      "affiliation": "Institute of Soil Science, Agrotechnologies and Plant Protection \"Nikola Poushkarov\" - Agricultural Academy"
+    },
+    {
+      "name": "Kolchakov, Viktor",
+      "affiliation": "Institute of Soil Science, Agrotechnologies and Plant Protection \"Nikola Poushkarov\" - Agricultural Academy",
+      "orcid": "0000-0002-7155-5594"
+    },
+    {
+      "name": "Dimitrov, Emil",
+      "affiliation": "Institute of Soil Science, Agrotechnologies and Plant Protection \"Nikola Poushkarov\" - Agricultural Academy",
+      "orcid": "0000-0001-8820-4689"
+    },
+    {
+      "name": "Miteva, Nevena",
+      "affiliation": "Institute of Soil Science, Agrotechnologies and Plant Protection \"Nikola Poushkarov\" - Agricultural Academy"
+    }
+  ],
+  "license": {
+    "id": "cc-by-4.0"
+  },
+  "files": [
+    {
+      "name": "ESU_Biophysical_and_biochemical_crop_data.txt",
+      "url": "https://zenodo.org/records/17475742/files/ESU_Biophysical_and_biochemical_crop_data.txt?download=1",
+      "path": "data\\raw\\zenodo_17475742\\ESU_Biophysical_and_biochemical_crop_data.txt",
+      "bytes": 32917,
+      "sha256": "dca417f499a4b82cb3eed49f0edd9b3991199373e813ed3f565d5a7676fe4301",
+      "published_checksum": "md5:ebc7159363be7fa41395d72537e86846",
+      "published_checksum_verified": true
+    },
+    {
+      "name": "ESU_Biophysical_and_biochemical_crop_data_info.txt",
+      "url": "https://zenodo.org/records/17475742/files/ESU_Biophysical_and_biochemical_crop_data_info.txt?download=1",
+      "path": "data\\raw\\zenodo_17475742\\ESU_Biophysical_and_biochemical_crop_data_info.txt",
+      "bytes": 2447,
+      "sha256": "9a7e02277722f3480dd2daf5dbf20e178dcb3c5640da8e69f1b5837765183185",
+      "published_checksum": "md5:b60056a912e881b617caa6099005759d",
+      "published_checksum_verified": true
+    },
+    {
+      "name": "Crop_calendar_and_management.txt",
+      "url": "https://zenodo.org/records/17475742/files/Crop_calendar_and_management.txt?download=1",
+      "path": "data\\raw\\zenodo_17475742\\Crop_calendar_and_management.txt",
+      "bytes": 8052,
+      "sha256": "f525c8deee257d5cc58ae4cd5b8b774557ebf0db1e468e6147f8494eca86647e",
+      "published_checksum": "md5:07fe65c070b9960c8519686da77c0015",
+      "published_checksum_verified": true
+    },
+    {
+      "name": "Crop_calendar_and_management_info.txt",
+      "url": "https://zenodo.org/records/17475742/files/Crop_calendar_and_management_info.txt?download=1",
+      "path": "data\\raw\\zenodo_17475742\\Crop_calendar_and_management_info.txt",
+      "bytes": 2169,
+      "sha256": "f80f42a65410a9b5716878085b9d24bd49b5ad9d652f6fe05ee70e283f29eb12",
+      "published_checksum": "md5:e079c9f1d6fc7acc964abc467f33a00a",
+      "published_checksum_verified": true
+    }
+  ]
+}

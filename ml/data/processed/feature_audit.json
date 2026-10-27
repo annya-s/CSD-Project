@@ -1,0 +1,23 @@
+{
+  "observations": 198,
+  "feature_rows": 178,
+  "rejected": 20,
+  "features": [
+    "days_since_sowing",
+    "temperature_mean_7d",
+    "temperature_mean_14d",
+    "vpd_mean_7d",
+    "vpd_mean_14d",
+    "soil_moisture_mean_7d",
+    "soil_moisture_mean_14d",
+    "sunshine_hours_mean_7d",
+    "sunshine_hours_mean_14d"
+  ],
+  "profiles": [
+    "ifs-soil-0-7-v1"
+  ],
+  "weather_windows": 178,
+  "weather_grid_cells": 6,
+  "weather_grid_date_groups": 38,
+  "hourly_sunshine_aggregated_in_field_timezone": true
+}

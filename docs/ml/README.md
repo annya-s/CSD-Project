@@ -13,6 +13,8 @@ Prepared 17 October 2026 for **outdoor, soil-grown crops across regions**. This 
 
 ## Main recommendation
 
+**Updated scope, 22 October 2026:** start with the [weather-only wheat implementation roadmap](05-weather-only-implementation-roadmap.md). It identifies the four required dataset files, exact columns and joins, real biomass regression target, source-compatible weather inputs, synthetic scenario generation, and the Python/Java/UI files to create or edit. Pest prediction is excluded from this first version. This update takes precedence over the earlier broad recommendation below.
+
 Start with a **maize growth/yield benchmark** using USDA Bushland and then G2F for broader environments. Assess the Bulgarian wheat data for a separate, limited plant-status experiment. In parallel, collect dated field observations and management actions from app users. Public yield data can teach performance relationships, but cannot establish whether a specific crop is healthy today.
 
 Keep three product claims separate: environmental suitability, estimated observed stress, and future growth/yield. A recommendation also needs its own evidence and applicability checks; a confident risk prediction does not prove a particular intervention will work.

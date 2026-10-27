@@ -1,0 +1,27 @@
+{
+  "source_mode": "STATIC_LOCAL_FILES_ONLY",
+  "files": [
+    {
+      "name": "ESU_Biophysical_and_biochemical_crop_data.txt",
+      "path": "data\\raw\\zenodo_17475742\\ESU_Biophysical_and_biochemical_crop_data.txt",
+      "sha256": "dca417f499a4b82cb3eed49f0edd9b3991199373e813ed3f565d5a7676fe4301"
+    },
+    {
+      "name": "ESU_Biophysical_and_biochemical_crop_data_info.txt",
+      "path": "data\\raw\\zenodo_17475742\\ESU_Biophysical_and_biochemical_crop_data_info.txt",
+      "sha256": "9a7e02277722f3480dd2daf5dbf20e178dcb3c5640da8e69f1b5837765183185"
+    },
+    {
+      "name": "Crop_calendar_and_management.txt",
+      "path": "data\\raw\\zenodo_17475742\\Crop_calendar_and_management.txt",
+      "sha256": "f525c8deee257d5cc58ae4cd5b8b774557ebf0db1e468e6147f8494eca86647e"
+    },
+    {
+      "name": "Crop_calendar_and_management_info.txt",
+      "path": "data\\raw\\zenodo_17475742\\Crop_calendar_and_management_info.txt",
+      "sha256": "f80f42a65410a9b5716878085b9d24bd49b5ad9d652f6fe05ee70e283f29eb12"
+    }
+  ],
+  "record_url": "https://zenodo.org/records/17475742",
+  "verification": "Local content hashes; original downloaded provenance remains in sources.json when present"
+}

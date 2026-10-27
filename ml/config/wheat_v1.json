@@ -1,0 +1,24 @@
+{
+  "schema_version": "wheat-config-v1",
+  "crop": "WINTER_WHEAT",
+  "target": "target_dry_biomass_g_m2",
+  "target_source_column": "AGBd_wheat",
+  "target_unit": "g/m2",
+  "target_date_source_column": "AGB_N_date",
+  "source_crs": "EPSG:32634",
+  "output_crs": "EPSG:4326",
+  "profile": "ifs-soil-0-7-v1",
+  "weather_model": "ecmwf_ifs",
+  "weather_start_date": "2017-01-01",
+  "soil_depth_cm": [0, 7],
+  "timezone": "Europe/Sofia",
+  "history_days": 14,
+  "seed": 42,
+  "campaign_seasons": {
+    "November_2016": "S16-17", "March_2017": "S16-17", "April_2017": "S16-17",
+    "May_2017": "S16-17", "June_2017": "S16-17", "November_2017": "S17-18", "April_2018": "S17-18"
+  },
+  "features": ["days_since_sowing", "temperature_mean_7d", "temperature_mean_14d", "vpd_mean_7d", "vpd_mean_14d", "soil_moisture_mean_7d", "soil_moisture_mean_14d", "sunshine_hours_mean_7d", "sunshine_hours_mean_14d"],
+  "sources": ["https://zenodo.org/records/17475742", "https://open-meteo.com/en/docs/historical-weather-api"],
+  "limitations": ["One Bulgarian trial region", "Measured biomass is not health", "Retrospective modelled weather", "Unobserved management and pest effects"]
+}
