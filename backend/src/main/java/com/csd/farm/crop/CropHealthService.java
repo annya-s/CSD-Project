@@ -47,11 +47,11 @@ public class CropHealthService {
                 break;
             case "ABOVE_RANGE":
                 issues.add("Daily mean temperature is above this crop's reference range.");
-                actions.add("Check temperatures at the crop and inspect for heat stress. Check soil water before deciding whether to irrigate.");
+                actions.add("Check temperature of the crop and inspect for heat stress. Check soil water before deciding whether to irrigate.");
                 break;
             case "ABOVE_RANGE_SEVERE":
                 issues.add("Daily mean temperature is significantly above this crop's reference range.");
-                actions.add("Heavily consider irrigation to reduce thec crop's temperature. Ensure the crop's temperature lowers in the next few days.");
+                actions.add("Heavily consider irrigation to reduce the crop's temperature. Ensure the crop's temperature lowers in the next few days.");
                 break;
             default:
                 break;
