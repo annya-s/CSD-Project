@@ -54,7 +54,8 @@ class CropHealthServiceTest {
         assertThat(result.readings().get(3).status()).isEqualTo("ABOVE_RANGE");
         assertThat(result.needsAttention()).isFalse();
         assertThat(result.issues()).isEmpty();
-        assertThat(result.recommendedActions()).anyMatch(action -> action.contains("Do not add shade solely"));
+        assertThat(result.recommendedActions())
+        .anyMatch(action -> action.contains("Continue monitoring. Temperature and sunlight are within their reference ranges; vapour pressure deficit and soil moisture remain unassessed."));
     }
 
     @Test
