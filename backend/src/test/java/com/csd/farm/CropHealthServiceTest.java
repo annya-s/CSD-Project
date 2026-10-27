@@ -49,8 +49,8 @@ class CropHealthServiceTest {
 
     @Test
     void secondsBecomeHoursAndLongSunshineAloneDoesNotFlagDamage() {
-        var result = health.assess(CropType.POTATO, weather(20.0, 30400.0));
-        assertThat(result.readings().get(3).value()).isEqualTo(9.0);
+        var result = health.assess(CropType.POTATO, weather(20.0, 30600.0));
+        assertThat(result.readings().get(3).value()).isEqualTo(8.5);
         assertThat(result.readings().get(3).status()).isEqualTo("ABOVE_RANGE");
         assertThat(result.needsAttention()).isFalse();
         assertThat(result.issues()).isEmpty();
