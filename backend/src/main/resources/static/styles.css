@@ -99,6 +99,8 @@ input::placeholder { color: #5d6a5b; opacity: 1; }
 .metric dt { flex-shrink: 0; }
 .metric dd { text-align: right; overflow-wrap: anywhere; }
 .card-footer { display: block; padding-top: 15px; color: var(--green); font-size: .8rem; }
+/* [ERD-ALIGNMENT ADDITION] Dashboard delete control. */
+.delete-entry { display: block; min-height: 38px; margin-top: 14px; padding: 7px 12px; border: 1px solid #b65b4c; background: white; color: #8e3c30; font-size: .85rem; }
 .empty-state { text-align: center; padding: 40px 20px; }
 .empty-state p { margin: 0 auto 24px; color: var(--muted); max-width: 49ch; }
 .empty-mark { font-size: 3rem; color: var(--green); display: block; margin-bottom: 12px; }

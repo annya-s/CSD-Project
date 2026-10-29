@@ -49,12 +49,13 @@ class CropHealthServiceTest {
 
     @Test
     void secondsBecomeHoursAndLongSunshineAloneDoesNotFlagDamage() {
-        var result = health.assess(CropType.POTATO, weather(20.0, 32400.0));
-        assertThat(result.readings().get(3).value()).isEqualTo(9.0);
+        var result = health.assess(CropType.POTATO, weather(20.0, 30600.0));
+        assertThat(result.readings().get(3).value()).isEqualTo(8.5);
         assertThat(result.readings().get(3).status()).isEqualTo("ABOVE_RANGE");
         assertThat(result.needsAttention()).isFalse();
         assertThat(result.issues()).isEmpty();
-        assertThat(result.recommendedActions()).anyMatch(action -> action.contains("Do not add shade solely"));
+        assertThat(result.recommendedActions())
+        .anyMatch(action -> action.contains("Continue monitoring. Temperature and sunlight are within their reference ranges; vapour pressure deficit and soil moisture remain unassessed."));
     }
 
     @Test
@@ -63,7 +64,7 @@ class CropHealthServiceTest {
                 .allMatch(reading -> reading.status().equals("NOT_ASSESSED") && reading.value() == null);
         var partial = health.assess(CropType.POTATO, weather(null, 0.0));
         assertThat(partial.readings().get(0).status()).isEqualTo("NOT_ASSESSED");
-        assertThat(partial.readings().get(3).status()).isEqualTo("BELOW_RANGE");
+        assertThat(partial.readings().get(3).status()).isEqualTo("BELOW_RANGE_SEVERE");
         assertThat(partial.needsAttention()).isTrue();
     }
 

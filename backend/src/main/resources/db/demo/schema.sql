@@ -1,3 +1,4 @@
+-- [LEGACY LOCAL STORAGE] H2 demo-only tables, not used by the Supabase profile. Preserved for local demos.
 CREATE SCHEMA IF NOT EXISTS farm;
 -- CREATE SCHEMA IF NOT EXISTS farm;
         -- for later, persistent implementation

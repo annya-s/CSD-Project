@@ -312,7 +312,7 @@ class FarmIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.needsAttention").value(true))
-                .andExpect(jsonPath("$.readings[0].status").value("ABOVE_RANGE"))
+                .andExpect(jsonPath("$.readings[0].status").value("ABOVE_RANGE_SEVERE"))
                 .andExpect(jsonPath("$.readings[1].status").value("NOT_ASSESSED"))
                 .andExpect(jsonPath("$.readings[2].status").value("NOT_ASSESSED"))
                 .andExpect(jsonPath("$.readings[3].value").value(5))
