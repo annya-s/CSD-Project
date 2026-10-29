@@ -9,3 +9,6 @@ node_modules/
 *.class
 *.md
 !README.md
+
+# [ERD-ALIGNMENT ADDITION] Keep the local Supabase database password out of Git.
+backend/application-local.properties

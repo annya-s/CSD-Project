@@ -17,6 +17,8 @@ $('entry-form').addEventListener('submit', async (event) => {
     $('entry-submit').textContent = 'Saving…';
     try {
         await api('/api/crops', jsonPost({
+            // [ERD-ALIGNMENT CHANGE] The backend resolves this user's FARMS row.
+            farmName: $('farm-name').value.trim(),
             cropType: $('crop-type').value,
             plantedAt: new Date($('planted-at').value).toISOString(),
             latitude: Number($('latitude').value),
