@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ML_ROOT = Path(__file__).resolve().parents[2]
+INVALID_INPUT_MESSAGE = "Check the input and provide 14 complete days of weather history."
 PROFILE = "ifs-soil-0-7-v1"
 FEATURE_NAMES = ["days_since_sowing", "temperature_mean_7d", "temperature_mean_14d",
                  "vpd_mean_7d", "vpd_mean_14d", "soil_moisture_mean_7d",

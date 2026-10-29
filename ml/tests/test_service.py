@@ -51,4 +51,14 @@ def test_malformed_nested_history_returns_structured_state(tmp_path, change):
     else:
         payload["history"]["latitude"] = 10 ** 400
     result = TestClient(app).post("/predict", json=payload, headers={"Authorization": "Bearer test"})
-    assert result.status_code == 200 and result.json()["status"] == "INSUFFICIENT_HISTORY"
+    assert result.status_code == 422 and result.json()["status"] == "INVALID_INPUT"
+
+
+@pytest.mark.parametrize("body", ["{broken", "{}"])
+def test_bad_json_or_missing_fields_have_same_simple_error(tmp_path, body):
+    from csd_weather.common import INVALID_INPUT_MESSAGE
+    client = TestClient(create_app(tmp_path / "missing", tmp_path / "predictions", api_token="test"))
+    result = client.post("/predict", content=body,
+        headers={"Authorization": "Bearer test", "Content-Type": "application/json"})
+    assert result.status_code == 422
+    assert result.json() == {"status": "INVALID_INPUT", "message": INVALID_INPUT_MESSAGE}

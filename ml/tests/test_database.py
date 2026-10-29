@@ -139,5 +139,15 @@ def test_extreme_offset_timestamp_is_structured_error(timestamp):
     from csd_weather.database import scope
     with pytest.raises(DatabaseInputError) as exc:
         scope(1, timestamp)
+    assert exc.value.status == "INVALID_INPUT"
+    assert exc.value.reason == "INVALID_INPUT"
+
+
+
+def test_unsupported_growing_system_stays_distinct():
+    bundle = fixture()
+    bundle["context"]["growing_system"] = "hydroponic"
+    with pytest.raises(DatabaseInputError) as exc:
+        request_from_rows(bundle, **identity(bundle))
     assert exc.value.status == "UNSUPPORTED"
-    assert exc.value.reason == "INVALID_PLANTING_TIMESTAMP"
+    assert exc.value.reason == "UNSUPPORTED_CONTEXT"

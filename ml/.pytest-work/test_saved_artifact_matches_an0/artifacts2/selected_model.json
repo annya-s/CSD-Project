@@ -1,0 +1,12 @@
+{
+  "model_version": "wheat-biomass-v1",
+  "selected_model": "age_only",
+  "model_file": "age_only.joblib",
+  "model_format": "joblib",
+  "input_features": [
+    "days_since_sowing"
+  ],
+  "clip_min": 0.0,
+  "feature_profile": "ifs-soil-0-7-v1",
+  "artifact_sha256": "d3889455e58acc877100a62e22de5a29646048dc8eb4348e64bc50d81de19d03"
+}

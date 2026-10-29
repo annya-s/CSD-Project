@@ -6,8 +6,12 @@ import hmac
 import os
 from pathlib import Path
 
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
 from fastapi import Depends, FastAPI, HTTPException, Request
 
+from .common import INVALID_INPUT_MESSAGE
 from .contracts import PredictionRequest
 from .predict import Predictor, save_prediction
 
@@ -15,6 +19,10 @@ from .predict import Predictor, save_prediction
 def create_app(artifact_dir: str | Path | None = None, prediction_dir: str | Path | None = None,
                api_token: str | None = None) -> FastAPI:
     app = FastAPI(title="Experimental wheat biomass", version="0.1.0", docs_url=None, redoc_url=None, openapi_url=None)
+    @app.exception_handler(RequestValidationError)
+    async def invalid_input(request, exc):
+        return JSONResponse(status_code=422, content={"status": "INVALID_INPUT", "message": INVALID_INPUT_MESSAGE})
+
     predictor = Predictor(artifact_dir)
     token = api_token if api_token is not None else os.getenv("ML_API_TOKEN", "")
 
@@ -36,6 +44,8 @@ def create_app(artifact_dir: str | Path | None = None, prediction_dir: str | Pat
     def predict(body: PredictionRequest):
         result = predictor.predict(body)
         save_prediction(result, prediction_dir)
+        if result["status"] == "INVALID_INPUT":
+            return JSONResponse(status_code=422, content=result)
         return result
 
     return app

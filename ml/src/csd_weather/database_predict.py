@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
+from .common import INVALID_INPUT_MESSAGE
 from .database import DatabaseInputError, SupabaseHistoryReader, request_from_rows
 from .persistence import upload_prediction
 from .predict import ML_ROOT, Predictor, save_prediction
@@ -33,10 +34,13 @@ def main() -> None:
             identity = dict(farmer_id=args.farmer_id, planted_at=args.planted_at, prediction_date=args.prediction_date)
             bundle = SupabaseHistoryReader().read(**identity)
         else:
-            bundle = json.loads((args.fixture or ML_ROOT / "examples/database_fixture.json").read_text(encoding="utf-8"))
-            identity = dict(farmer_id=args.farmer_id if args.farmer_id is not None else bundle["context"]["farmer_id"],
-                planted_at=args.planted_at or bundle["context"]["planted_at"],
-                prediction_date=args.prediction_date or bundle["prediction_date"])
+            try:
+                bundle = json.loads((args.fixture or ML_ROOT / "examples/database_fixture.json").read_text(encoding="utf-8"))
+                identity = dict(farmer_id=args.farmer_id if args.farmer_id is not None else bundle["context"]["farmer_id"],
+                    planted_at=args.planted_at or bundle["context"]["planted_at"],
+                    prediction_date=args.prediction_date or bundle["prediction_date"])
+            except (ValueError, KeyError, TypeError, OSError, AttributeError):
+                raise DatabaseInputError("INVALID_INPUT") from None
         request = request_from_rows(bundle, **identity)
         result = Predictor(args.artifacts).predict(request)
         result["input_source"] = "database" if args.from_database else "local_database_fixture"
@@ -46,15 +50,20 @@ def main() -> None:
             status=exc.status if isinstance(exc, DatabaseInputError) else "UNAVAILABLE",
             support_reasons=[exc.reason if isinstance(exc, DatabaseInputError) else "DATABASE_INPUT_UNAVAILABLE"],
             created_at=datetime.now(timezone.utc).isoformat())
+    if result["status"] == "INVALID_INPUT":
+        result["support_reasons"] = ["INVALID_INPUT"]
+        result["message"] = INVALID_INPUT_MESSAGE
     path = save_prediction(result, args.output_dir)
     summary = dict(status=result["status"], value=result["value"], unit=result["unit"], saved_to=str(path))
+    if "message" in result:
+        summary["message"] = result["message"]
     if args.upload and result.get("schema_version") == "wheat-prediction-v1":
         try:
             summary.update(upload_prediction(result))
         except (RuntimeError, ValueError):
             summary["upload_error"] = "DATABASE_UPLOAD_UNAVAILABLE"
     print(json.dumps(summary))
-    if result["status"] == "UNAVAILABLE" or "upload_error" in summary:
+    if result["status"] in {"UNAVAILABLE", "INVALID_INPUT"} or "upload_error" in summary:
         raise SystemExit(1)
 
 

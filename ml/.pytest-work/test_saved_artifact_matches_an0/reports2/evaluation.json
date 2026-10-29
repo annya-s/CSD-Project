@@ -1,0 +1,479 @@
+{
+  "schema_version": "wheat-evaluation-v1",
+  "selected_model": "age_only",
+  "selection_rule": "minimum first-season grouped validation MAE; simpler model wins exact ties",
+  "weather_holdout_gate": "PASS_EXPLORATORY",
+  "age_support": {
+    "training_age_min": 170.0,
+    "training_age_max": 231.0,
+    "test_in_age_range": 6,
+    "test_outside_age_range": 6,
+    "within_age_range_metrics": {
+      "median": {
+        "n": 6,
+        "mae_g_m2": 30195.0,
+        "median_absolute_error_g_m2": 30195.0,
+        "bias_g_m2": -30195.0,
+        "rmse_g_m2": 30195.48296793192,
+        "field_seasons": 6,
+        "sampling_dates": 1,
+        "weather_request_windows": 1,
+        "by_season": {
+          "S17-18": {
+            "n": 6,
+            "mae_g_m2": 30195.0,
+            "median_absolute_error_g_m2": 30195.0,
+            "bias_g_m2": -30195.0,
+            "rmse_g_m2": 30195.48296793192
+          }
+        },
+        "by_age_days": {
+          "181-240": {
+            "n": 6,
+            "mae_g_m2": 30195.0,
+            "median_absolute_error_g_m2": 30195.0,
+            "bias_g_m2": -30195.0,
+            "rmse_g_m2": 30195.48296793192
+          }
+        }
+      },
+      "age_only": {
+        "n": 6,
+        "mae_g_m2": 30195.96384539449,
+        "median_absolute_error_g_m2": 30195.963845394486,
+        "bias_g_m2": -30195.96384539449,
+        "rmse_g_m2": 30196.44679791047,
+        "field_seasons": 6,
+        "sampling_dates": 1,
+        "weather_request_windows": 1,
+        "by_season": {
+          "S17-18": {
+            "n": 6,
+            "mae_g_m2": 30195.96384539449,
+            "median_absolute_error_g_m2": 30195.963845394486,
+            "bias_g_m2": -30195.96384539449,
+            "rmse_g_m2": 30196.44679791047
+          }
+        },
+        "by_age_days": {
+          "181-240": {
+            "n": 6,
+            "mae_g_m2": 30195.96384539449,
+            "median_absolute_error_g_m2": 30195.963845394486,
+            "bias_g_m2": -30195.96384539449,
+            "rmse_g_m2": 30196.44679791047
+          }
+        }
+      },
+      "catboost": {
+        "n": 6,
+        "mae_g_m2": 30194.842625895373,
+        "median_absolute_error_g_m2": 30194.842625895373,
+        "bias_g_m2": -30194.842625895373,
+        "rmse_g_m2": 30195.325596344457,
+        "field_seasons": 6,
+        "sampling_dates": 1,
+        "weather_request_windows": 1,
+        "by_season": {
+          "S17-18": {
+            "n": 6,
+            "mae_g_m2": 30194.842625895373,
+            "median_absolute_error_g_m2": 30194.842625895373,
+            "bias_g_m2": -30194.842625895373,
+            "rmse_g_m2": 30195.325596344457
+          }
+        },
+        "by_age_days": {
+          "181-240": {
+            "n": 6,
+            "mae_g_m2": 30194.842625895373,
+            "median_absolute_error_g_m2": 30194.842625895373,
+            "bias_g_m2": -30194.842625895373,
+            "rmse_g_m2": 30195.325596344457
+          }
+        }
+      }
+    },
+    "interpretation": "Additional subgroup analysis only; all test rows remain in primary metrics. Age support does not prove geographic or weather support."
+  },
+  "models": {
+    "median": {
+      "validation": {
+        "n": 6,
+        "mae_g_m2": 30.666666666666668,
+        "median_absolute_error_g_m2": 45.0,
+        "bias_g_m2": 0.5,
+        "rmse_g_m2": 37.36308338453881,
+        "field_seasons": 2,
+        "sampling_dates": 3,
+        "weather_request_windows": 3,
+        "by_season": {
+          "S16-17": {
+            "n": 6,
+            "mae_g_m2": 30.666666666666668,
+            "median_absolute_error_g_m2": 45.0,
+            "bias_g_m2": 0.5,
+            "rmse_g_m2": 37.36308338453881
+          }
+        },
+        "by_age_days": {
+          "121-180": {
+            "n": 2,
+            "mae_g_m2": 46.5,
+            "median_absolute_error_g_m2": 46.5,
+            "bias_g_m2": 46.5,
+            "rmse_g_m2": 46.502688094345686
+          },
+          "181-240": {
+            "n": 4,
+            "mae_g_m2": 22.75,
+            "median_absolute_error_g_m2": 22.5,
+            "bias_g_m2": -22.5,
+            "rmse_g_m2": 31.823733281939127
+          }
+        }
+      },
+      "train": {
+        "n": 12,
+        "mae_g_m2": 31.166666666666668,
+        "median_absolute_error_g_m2": 43.75,
+        "bias_g_m2": 0.5,
+        "rmse_g_m2": 37.416573867739416,
+        "field_seasons": 4,
+        "sampling_dates": 3,
+        "weather_request_windows": 3,
+        "by_season": {
+          "S16-17": {
+            "n": 12,
+            "mae_g_m2": 31.166666666666668,
+            "median_absolute_error_g_m2": 43.75,
+            "bias_g_m2": 0.5,
+            "rmse_g_m2": 37.416573867739416
+          }
+        },
+        "by_age_days": {
+          "121-180": {
+            "n": 4,
+            "mae_g_m2": 46.5,
+            "median_absolute_error_g_m2": 46.5,
+            "bias_g_m2": 46.5,
+            "rmse_g_m2": 46.54567649094812
+          },
+          "181-240": {
+            "n": 8,
+            "mae_g_m2": 23.5,
+            "median_absolute_error_g_m2": 22.5,
+            "bias_g_m2": -22.5,
+            "rmse_g_m2": 31.886517527005047
+          }
+        }
+      },
+      "test": {
+        "n": 12,
+        "mae_g_m2": 18870.0,
+        "median_absolute_error_g_m2": 18870.0,
+        "bias_g_m2": -18870.0,
+        "rmse_g_m2": 22008.21872998055,
+        "field_seasons": 6,
+        "sampling_dates": 2,
+        "weather_request_windows": 2,
+        "by_season": {
+          "S17-18": {
+            "n": 12,
+            "mae_g_m2": 18870.0,
+            "median_absolute_error_g_m2": 18870.0,
+            "bias_g_m2": -18870.0,
+            "rmse_g_m2": 22008.21872998055
+          }
+        },
+        "by_age_days": {
+          "0-60": {
+            "n": 6,
+            "mae_g_m2": 7545.0,
+            "median_absolute_error_g_m2": 7545.0,
+            "bias_g_m2": -7545.0,
+            "rmse_g_m2": 7546.932599849204
+          },
+          "181-240": {
+            "n": 6,
+            "mae_g_m2": 30195.0,
+            "median_absolute_error_g_m2": 30195.0,
+            "bias_g_m2": -30195.0,
+            "rmse_g_m2": 30195.48296793192
+          }
+        }
+      }
+    },
+    "age_only": {
+      "validation": {
+        "n": 6,
+        "mae_g_m2": 9.300804519890846,
+        "median_absolute_error_g_m2": 12.969284082593276,
+        "bias_g_m2": 1.8947806286936004e-14,
+        "rmse_g_m2": 11.03006080841366,
+        "field_seasons": 2,
+        "sampling_dates": 3,
+        "weather_request_windows": 3,
+        "by_season": {
+          "S16-17": {
+            "n": 6,
+            "mae_g_m2": 9.300804519890846,
+            "median_absolute_error_g_m2": 12.969284082593276,
+            "bias_g_m2": 1.8947806286936004e-14,
+            "rmse_g_m2": 11.03006080841366
+          }
+        },
+        "by_age_days": {
+          "121-180": {
+            "n": 2,
+            "mae_g_m2": 13.951206779836298,
+            "median_absolute_error_g_m2": 13.951206779836298,
+            "bias_g_m2": 13.951206779836298,
+            "rmse_g_m2": 13.960163702971046
+          },
+          "181-240": {
+            "n": 4,
+            "mae_g_m2": 6.9756033899181205,
+            "median_absolute_error_g_m2": 6.9756033899181205,
+            "bias_g_m2": -6.9756033899181205,
+            "rmse_g_m2": 9.222270699186799
+          }
+        }
+      },
+      "train": {
+        "n": 12,
+        "mae_g_m2": 9.646189388395518,
+        "median_absolute_error_g_m2": 11.469284082593276,
+        "bias_g_m2": 1.8947806286936004e-14,
+        "rmse_g_m2": 11.209917102160167,
+        "field_seasons": 4,
+        "sampling_dates": 3,
+        "weather_request_windows": 3,
+        "by_season": {
+          "S16-17": {
+            "n": 12,
+            "mae_g_m2": 9.646189388395518,
+            "median_absolute_error_g_m2": 11.469284082593276,
+            "bias_g_m2": 1.8947806286936004e-14,
+            "rmse_g_m2": 11.209917102160167
+          }
+        },
+        "by_age_days": {
+          "121-180": {
+            "n": 4,
+            "mae_g_m2": 13.951206779836298,
+            "median_absolute_error_g_m2": 13.951206779836298,
+            "bias_g_m2": 13.951206779836298,
+            "rmse_g_m2": 14.102700826924972
+          },
+          "181-240": {
+            "n": 8,
+            "mae_g_m2": 7.493680692675127,
+            "median_absolute_error_g_m2": 6.9756033899181205,
+            "bias_g_m2": -6.9756033899181205,
+            "rmse_g_m2": 9.436645423511438
+          }
+        }
+      },
+      "test": {
+        "n": 12,
+        "mae_g_m2": 18935.95499357972,
+        "median_absolute_error_g_m2": 18935.954993579715,
+        "bias_g_m2": -18935.95499357972,
+        "rmse_g_m2": 22031.50828991266,
+        "field_seasons": 6,
+        "sampling_dates": 2,
+        "weather_request_windows": 2,
+        "by_season": {
+          "S17-18": {
+            "n": 12,
+            "mae_g_m2": 18935.95499357972,
+            "median_absolute_error_g_m2": 18935.954993579715,
+            "bias_g_m2": -18935.95499357972,
+            "rmse_g_m2": 22031.50828991266
+          }
+        },
+        "by_age_days": {
+          "0-60": {
+            "n": 6,
+            "mae_g_m2": 7675.946141764946,
+            "median_absolute_error_g_m2": 7675.946141764946,
+            "bias_g_m2": -7675.946141764946,
+            "rmse_g_m2": 7677.845781073154
+          },
+          "181-240": {
+            "n": 6,
+            "mae_g_m2": 30195.96384539449,
+            "median_absolute_error_g_m2": 30195.963845394486,
+            "bias_g_m2": -30195.96384539449,
+            "rmse_g_m2": 30196.44679791047
+          }
+        }
+      }
+    },
+    "catboost": {
+      "validation": {
+        "n": 6,
+        "mae_g_m2": 24.77842794256844,
+        "median_absolute_error_g_m2": 36.41764191385266,
+        "bias_g_m2": 0.11065452132491298,
+        "rmse_g_m2": 30.14749617191764,
+        "field_seasons": 2,
+        "sampling_dates": 3,
+        "weather_request_windows": 3,
+        "by_season": {
+          "S16-17": {
+            "n": 6,
+            "mae_g_m2": 24.77842794256844,
+            "median_absolute_error_g_m2": 36.41764191385266,
+            "bias_g_m2": 0.11065452132491298,
+            "rmse_g_m2": 30.14749617191764
+          }
+        },
+        "by_age_days": {
+          "121-180": {
+            "n": 2,
+            "mae_g_m2": 37.004936643527515,
+            "median_absolute_error_g_m2": 37.004936643527515,
+            "bias_g_m2": 37.004936643527515,
+            "rmse_g_m2": 37.00831441705344
+          },
+          "181-240": {
+            "n": 4,
+            "mae_g_m2": 18.665173592088905,
+            "median_absolute_error_g_m2": 18.493860644401423,
+            "bias_g_m2": -18.336486539776388,
+            "rmse_g_m2": 26.048025264075978
+          }
+        }
+      },
+      "train": {
+        "n": 12,
+        "mae_g_m2": 25.27842794256844,
+        "median_absolute_error_g_m2": 34.91764191385266,
+        "bias_g_m2": 0.11065452132491298,
+        "rmse_g_m2": 30.21376384093496,
+        "field_seasons": 4,
+        "sampling_dates": 3,
+        "weather_request_windows": 3,
+        "by_season": {
+          "S16-17": {
+            "n": 12,
+            "mae_g_m2": 25.27842794256844,
+            "median_absolute_error_g_m2": 34.91764191385266,
+            "bias_g_m2": 0.11065452132491298,
+            "rmse_g_m2": 30.21376384093496
+          }
+        },
+        "by_age_days": {
+          "121-180": {
+            "n": 4,
+            "mae_g_m2": 37.004936643527515,
+            "median_absolute_error_g_m2": 37.004936643527515,
+            "bias_g_m2": 37.004936643527515,
+            "rmse_g_m2": 37.06231692692033
+          },
+          "181-240": {
+            "n": 8,
+            "mae_g_m2": 19.415173592088905,
+            "median_absolute_error_g_m2": 18.493860644401423,
+            "bias_g_m2": -18.336486539776388,
+            "rmse_g_m2": 26.124693685437546
+          }
+        }
+      },
+      "test": {
+        "n": 12,
+        "mae_g_m2": 18874.66884462592,
+        "median_absolute_error_g_m2": 18874.66884462592,
+        "bias_g_m2": -18874.66884462592,
+        "rmse_g_m2": 22009.739323742557,
+        "field_seasons": 6,
+        "sampling_dates": 2,
+        "weather_request_windows": 2,
+        "by_season": {
+          "S17-18": {
+            "n": 12,
+            "mae_g_m2": 18874.66884462592,
+            "median_absolute_error_g_m2": 18874.66884462592,
+            "bias_g_m2": -18874.66884462592,
+            "rmse_g_m2": 22009.739323742557
+          }
+        },
+        "by_age_days": {
+          "0-60": {
+            "n": 6,
+            "mae_g_m2": 7554.495063356472,
+            "median_absolute_error_g_m2": 7554.495063356472,
+            "bias_g_m2": -7554.495063356472,
+            "rmse_g_m2": 7556.425234788205
+          },
+          "181-240": {
+            "n": 6,
+            "mae_g_m2": 30194.842625895373,
+            "median_absolute_error_g_m2": 30194.842625895373,
+            "bias_g_m2": -30194.842625895373,
+            "rmse_g_m2": 30195.325596344457
+          }
+        }
+      }
+    }
+  },
+  "partitions": {
+    "train": {
+      "observations": 12,
+      "field_seasons": 4,
+      "sampling_dates": 3,
+      "weather_request_windows": 3,
+      "weather_grid_date_groups": null
+    },
+    "validation": {
+      "observations": 6,
+      "field_seasons": 2,
+      "sampling_dates": 3,
+      "weather_request_windows": 3,
+      "weather_grid_date_groups": null
+    },
+    "test": {
+      "observations": 12,
+      "field_seasons": 6,
+      "sampling_dates": 2,
+      "weather_request_windows": 2,
+      "weather_grid_date_groups": null
+    }
+  },
+  "feature_profile": "ifs-soil-0-7-v1",
+  "feature_names": [
+    "days_since_sowing",
+    "temperature_mean_7d",
+    "temperature_mean_14d",
+    "vpd_mean_7d",
+    "vpd_mean_14d",
+    "soil_moisture_mean_7d",
+    "soil_moisture_mean_14d",
+    "sunshine_hours_mean_7d",
+    "sunshine_hours_mean_14d"
+  ],
+  "configuration": {
+    "seed": 42,
+    "catboost_iterations": 10,
+    "catboost_depth": 3,
+    "catboost_learning_rate": 0.05,
+    "catboost_l2_leaf_reg": 5.0,
+    "age_only_polynomial_degree": 2,
+    "age_only_ridge_alpha": 10.0,
+    "prediction_clip_min": 0.0,
+    "refit_on_validation": false
+  },
+  "data_sha256": "439e842cd0de06a79105e1fb9449a95976b9041685d756820032ab67c11768f8",
+  "split_fingerprint": "b27fa22b60c49f93f74f54eef84a602d0b0368ce61027df569d7a1de12290c92",
+  "limitations": [
+    "One Bulgarian winter-wheat region; this is not validation across regions or varieties.",
+    "Adjacent fields can share weather-grid cells, dates and management; rows are not independent farms.",
+    "The temporal holdout covers November and April only, not late-season performance.",
+    "Biomass is not a health percentage; unobserved soil, pests and management affect growth.",
+    "Historical modelled weather is not a field sensor or proof of issue-time availability.",
+    "No calibrated confidence percentage or prediction interval is available.",
+    "Some temporal holdout observations are outside the training planting-age range; primary errors retain them and age-supported subgroup errors are reported separately."
+  ]
+}

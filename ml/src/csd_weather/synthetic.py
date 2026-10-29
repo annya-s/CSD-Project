@@ -26,6 +26,7 @@ def check_physical_history(history: dict) -> None:
     expected = len(hourly["time"])
     for name in ("temperature_2m", "relative_humidity_2m", "vapour_pressure_deficit", "soil_moisture_0_to_7cm"):
         values = np.asarray(hourly[name], dtype=float)
+
         if len(values) != expected or not np.isfinite(values).all():
             raise ValueError(f"Invalid auxiliary weather array: {name}")
         if name == "relative_humidity_2m" and ((values < 0) | (values > 100)).any():
@@ -36,8 +37,10 @@ def check_physical_history(history: dict) -> None:
             raise ValueError("Negative VPD")
         if name == "temperature_2m" and (values <= -273.15).any():
             raise ValueError("Temperature below absolute zero")
+        
     sunshine = np.asarray(daily["sunshine_duration"], dtype=float)
     daylight = np.asarray(daily["daylight_duration"], dtype=float)
+    
     if len(sunshine) != len(daylight) or len(sunshine) != len(daily["time"]):
         raise ValueError("Misaligned daily sunshine/daylight")
     if not (np.isfinite(sunshine).all() and np.isfinite(daylight).all()):

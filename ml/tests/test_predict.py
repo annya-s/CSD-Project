@@ -49,7 +49,7 @@ def test_invalid_artifacts_are_unavailable(tmp_path, change):
 
 @pytest.mark.parametrize("change,expected", [("crop", "UNSUPPORTED"), ("system", "UNSUPPORTED"),
                                             ("region", "UNSUPPORTED"), ("range", "UNSUPPORTED"),
-                                            ("history", "INSUFFICIENT_HISTORY")])
+                                            ("history", "INVALID_INPUT")])
 def test_support_boundaries(tmp_path, change, expected):
     predictor = Predictor(artifacts(tmp_path / "artifacts"))
     payload = request_payload()
@@ -79,3 +79,20 @@ def test_nonfinite_nested_input_is_rejected_before_hashing():
     payload["history"]["response"]["hourly"]["temperature_2m"][0] = float("nan")
     with pytest.raises(ValidationError):
         PredictionRequest.model_validate(payload)
+
+
+@pytest.mark.parametrize("content", ["{broken", "{}", None])
+def test_cli_invalid_request_has_simple_error(tmp_path, monkeypatch, capsys, content):
+    import sys
+    from csd_weather import predict
+    from csd_weather.common import INVALID_INPUT_MESSAGE
+    path = tmp_path / "request.json"
+    if content is not None:
+        path.write_text(content)
+    monkeypatch.setattr(sys, "argv", ["predict", "--request", str(path)])
+    with pytest.raises(SystemExit) as exc:
+        predict.main()
+    assert exc.value.code == 1
+    captured = capsys.readouterr()
+    assert json.loads(captured.out) == {"status": "INVALID_INPUT", "message": INVALID_INPUT_MESSAGE}
+    assert "Traceback" not in captured.err

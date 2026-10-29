@@ -1,0 +1,65 @@
+{
+  "schema_version": "wheat-splits-v1",
+  "seed": 42,
+  "method": "fixed_grouped_validation_then_temporal_holdout",
+  "train_season": "S16-17",
+  "test_season": "S17-18",
+  "validation_fraction": 0.33,
+  "dataset_fingerprint": "b27fa22b60c49f93f74f54eef84a602d0b0368ce61027df569d7a1de12290c92",
+  "assignments": {
+    "S16-17_1_2017-03-20": "train",
+    "S16-17_1_2017-04-20": "train",
+    "S16-17_1_2017-05-20": "train",
+    "S16-17_2_2017-03-20": "train",
+    "S16-17_2_2017-04-20": "train",
+    "S16-17_2_2017-05-20": "train",
+    "S16-17_3_2017-03-20": "validation",
+    "S16-17_3_2017-04-20": "validation",
+    "S16-17_3_2017-05-20": "validation",
+    "S16-17_4_2017-03-20": "validation",
+    "S16-17_4_2017-04-20": "validation",
+    "S16-17_4_2017-05-20": "validation",
+    "S16-17_5_2017-03-20": "train",
+    "S16-17_5_2017-04-20": "train",
+    "S16-17_5_2017-05-20": "train",
+    "S16-17_6_2017-03-20": "train",
+    "S16-17_6_2017-04-20": "train",
+    "S16-17_6_2017-05-20": "train",
+    "S17-18_1_2017-11-20": "test",
+    "S17-18_1_2018-04-20": "test",
+    "S17-18_2_2017-11-20": "test",
+    "S17-18_2_2018-04-20": "test",
+    "S17-18_3_2017-11-20": "test",
+    "S17-18_3_2018-04-20": "test",
+    "S17-18_4_2017-11-20": "test",
+    "S17-18_4_2018-04-20": "test",
+    "S17-18_5_2017-11-20": "test",
+    "S17-18_5_2018-04-20": "test",
+    "S17-18_6_2017-11-20": "test",
+    "S17-18_6_2018-04-20": "test"
+  },
+  "field_seasons": {
+    "train": [
+      "S16-17_U1",
+      "S16-17_U2",
+      "S16-17_U5",
+      "S16-17_U6"
+    ],
+    "validation": [
+      "S16-17_U3",
+      "S16-17_U4"
+    ],
+    "test": [
+      "S17-18_U1",
+      "S17-18_U2",
+      "S17-18_U3",
+      "S17-18_U4",
+      "S17-18_U5",
+      "S17-18_U6"
+    ]
+  },
+  "limitations": [
+    "Adjacent fields may share weather and management",
+    "Temporal holdout is one region and November/April only"
+  ]
+}

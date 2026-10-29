@@ -35,6 +35,7 @@ def validate_features(frame: pd.DataFrame) -> str:
         raise ValueError("Planting age must be a positive integer")
     if not frame.latitude.between(-90, 90).all() or not frame.longitude.between(-180, 180).all():
         raise ValueError("Invalid geographic coordinates")
+    
     for name in FEATURE_NAMES:
         if name.startswith("soil_moisture_") and not frame[name].between(0, 1).all():
             raise ValueError("Soil moisture must be volumetric fraction between 0 and 1")
@@ -44,6 +45,7 @@ def validate_features(frame: pd.DataFrame) -> str:
             raise ValueError("Daily sunshine hours must be between 0 and 24")
         if name.startswith("temperature_") and (frame[name] <= -273.15).any():
             raise ValueError("Temperature must exceed absolute zero")
+        
     profiles = frame.feature_profile.unique().tolist()
     if len(profiles) != 1 or profiles[0] not in {"ifs-soil-0-7-v1", "era5-soil-0-7-v1"}:
         raise ValueError("Exactly one recognized weather profile is required")

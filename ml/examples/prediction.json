@@ -11,13 +11,13 @@
   "confidence": null,
   "model_version": "wheat-biomass-v1",
   "selected_model": "catboost",
-  "model_sha256": "119f394fe730c23d914555e1c8fe6a36a376495bd90460ceafc3b828bd74d486",
+  "model_sha256": "08f4bacd66c64b0f657900972ee3f4b7a8dc51ec195578ea6aecfef375642c51",
   "feature_profile": "ifs-soil-0-7-v1",
   "input_hash": "fe57152caee37cf7c24945681c5d0971034bac8ab6b0511a923bea3b1dd43054",
   "farmer_id": null,
   "crop_type": "WHEAT",
   "planted_at": null,
-  "created_at": "2026-10-27T09:00:03.972888+00:00",
+  "created_at": "2026-10-28T02:09:47.490247+00:00",
   "support_reasons": [
     "LIMITED_REGIONAL_VALIDATION",
     "RETROSPECTIVE_WEATHER_INPUTS",
@@ -50,5 +50,5 @@
       "message": "Confirm moisture in the crop's root zone and consider recent rain and irrigation before watering. The model's shallow soil estimate is not an irrigation prescription."
     }
   ],
-  "id": "661c7793-3f15-5d74-8bea-6be88efffc69"
+  "id": "47d01140-6a5b-54b6-aa68-f6011ddcd608"
 }

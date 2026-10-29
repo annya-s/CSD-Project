@@ -81,7 +81,7 @@ There are **6 provider grid cells and 38 distinct grid/date groups**. Train/vali
 
 The included demonstration returns about **152.02 g/m²**, status `EXPERIMENTAL`, with null confidence and interval. Responses contain the input hash, model version/hash, support reasons and extracted features. Rules-based weather advice is explicitly separate from the regression and does not establish a biological diagnosis. Identical inputs/model versions have a stable prediction ID. The CLI and API save JSON under `ml/predictions/`; neither reads nor writes a database.
 
-Supported response states are `EXPERIMENTAL`, `UNSUPPORTED`, `INSUFFICIENT_HISTORY` and `UNAVAILABLE`. Missing top-level crop/context fields produce request validation errors (HTTP 422), while malformed nested history produces a structured insufficient-history response. Missing, inconsistent or corrupt model artifacts make readiness fail.
+Supported response states are `EXPERIMENTAL`, `UNSUPPORTED`, `INVALID_INPUT` and `UNAVAILABLE`. Malformed top-level requests and invalid nested history both return HTTP 422 with `INVALID_INPUT` and the message: "Check the input and provide 14 complete days of weather history." Missing, inconsistent or corrupt model artifacts make readiness fail.
 
 ```powershell
 $env:ML_API_TOKEN = 'replace-with-a-private-server-token'
@@ -100,7 +100,9 @@ Without a token, only loopback callers are accepted. Binding outside loopback re
 
 ## Future database connection
 
-The intended production flow is: existing application collects weather → database retains compatible history → a Python job reads those records and calls `Predictor` directly → the job saves the result to the database. A separate prediction API is optional, for a backend that prefers HTTP; it is not required for the database-to-Python-to-database flow. Live prediction should use weather already collected by the application. This ML component does not independently fetch current weather, and the database reader/CLI is now prepared below, with live reads disabled.
+For the school application, start with the [Java integration guide](INTEGRATION.md): run Python as a separate local process, let Java read compatible stored history, and have Java POST the request to `http://127.0.0.1:8001/predict`. **This connection is not implemented yet.** Python does not fetch weather. The existing database needs additional history before real application records can be used.
+
+The direct database → Python → database job described below is an alternative prepared adapter, not a prerequisite for the Java HTTP approach. Live reads and writes remain disabled by default; neither workflow makes today's stored snapshot sufficient.
 
 **The current database cannot directly supply this contract.** The existing weather repository stores a latest snapshot, omits VPD even though the client fetches it, and uses forecast soil moisture at 3–9 cm. This model needs 14 complete historical days and 0–7 cm soil moisture under a compatible weather profile. The prepared adapter preserves timestamps, units, profile, depth, timezone and planting context, and returns insufficient history while coverage is missing. Renaming fields or fabricating historical rows is not valid. A different profile/depth requires a separate model and validation. Database integration and backend changes are pending, outside this directory's implementation.
 
@@ -116,14 +118,25 @@ Only adding `--upload` with the required environment settings performs an insert
 
 ## Verification
 
-The full suite passed **109 tests**, covering feature boundaries/DST, physical units, frozen splits, synthetic-label exclusion, artifact consistency, authenticated API requests, malformed histories, stored-row conversion, database query bounds/truncation, fixture upload protection and disabled export. The only warning is a dependency deprecation for Starlette's HTTPX test client. On the restricted Windows runner, asyncio's local socket pair required elevated execution for the API tests; the unchanged suite then completed normally.
+Run tests from the repository root using the ML environment. `pytest` discovers functions named `test_...`; a file path narrows the files and `-k` filters test names. These commands check existing code and use local fixtures/fake database transports:
+
+```powershell
+# Everything
+ml/.venv/Scripts/python.exe -m pytest ml/tests --basetemp=ml/.test-tmp/pytest -q
+# Only the stored-history adapter tests
+ml/.venv/Scripts/python.exe -m pytest ml/tests/test_database.py --basetemp=ml/.test-tmp/pytest -q
+# One concrete test: database fixture and saved request produce the same features/prediction
+ml/.venv/Scripts/python.exe -m pytest ml/tests/test_database.py -k test_fixture_matches_golden_features_and_prediction --basetemp=ml/.test-tmp/pytest -q
+```
+
+The suite covers feature boundaries/DST, physical units, frozen splits, synthetic-label exclusion, artifact consistency, authenticated API requests, malformed histories, stored-row conversion, database query bounds/truncation, fixture upload protection and disabled export. A dependency may warn about Starlette's HTTPX test client. Restricted Windows environments can block the local socket pair used by API tests; that is an execution-environment issue, not evidence that the application is connected.
 
 A separate clean-copy check rebuilt all 198 observations, 178 feature rows and 1,000 scenarios using only the included canonical TXT files, normalized weather snapshot, split manifest and configuration, with network calls blocked and no raw HTTP cache. Saved candidate errors were recomputed and matched the report; the final feature-table hash matches the trained model report. The example request was run through the actual saved artifact and CLI.
 
 
 ## Database rows → Python prediction (prepared, disconnected)
 
-`database.py` reads the proposed `ml_planting_context`, `ml_weather_hourly` and `ml_weather_daily` contract. `sql/002_ml_weather_history.sql` is a **new, unapplied draft**, not a mapping of the current latest-snapshot tables. A separately authorized collector/backend change must provide compatible IFS history, VPD, RH, 0–7 cm volumetric soil moisture, hourly sunshine seconds and daily astronomical daylight. Ownership must be verified by the trusted backend against the application's planting records. The context keeps the planting timestamp and actual agronomic sowing date separate. Service-role-only grants and RLS prevent browser access; service credentials themselves bypass RLS.
+`database.py` reads the proposed `ml_planting_context`, `ml_weather_hourly` and `ml_weather_daily` contract. `sql/002_ml_weather_history.sql` is a **new, unapplied draft**, not a mapping of the current latest-snapshot tables. A future collector/backend change must provide compatible IFS history, VPD, RH, 0–7 cm volumetric soil moisture, hourly sunshine seconds and daily astronomical daylight. Ownership must be verified by the trusted backend against the application's planting records. The context keeps the planting timestamp and actual agronomic sowing date separate. Service-role-only grants and RLS prevent browser access; service credentials themselves bypass RLS.
 
 Run the direct Python workflow from the repository root, without credentials or any network call:
 

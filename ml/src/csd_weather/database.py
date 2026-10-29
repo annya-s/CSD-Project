@@ -19,9 +19,9 @@ DAILY_COLUMNS = SCOPE_COLUMNS + ",local_date,daylight_duration"
 
 
 class DatabaseInputError(ValueError):
-    def __init__(self, reason: str, status: str = "INSUFFICIENT_HISTORY"):
+    def __init__(self, reason: str, status: str = "INVALID_INPUT"):
         super().__init__(reason)
-        self.reason, self.status = reason, status
+        self.reason, self.status = ("INVALID_INPUT", "INVALID_INPUT") if status == "INVALID_INPUT" else (reason, status)
 
 
 def instant(value: str) -> datetime:
@@ -33,13 +33,13 @@ def instant(value: str) -> datetime:
 
 def scope(farmer_id: int, planted_at: str, profile: str = PROFILE) -> dict:
     if isinstance(farmer_id, bool) or not isinstance(farmer_id, int) or not 0 < farmer_id <= 9223372036854775807:
-        raise DatabaseInputError("INVALID_OWNER", "UNSUPPORTED")
+        raise DatabaseInputError("INVALID_OWNER")
     if profile != PROFILE:
         raise DatabaseInputError("UNSUPPORTED_PROFILE", "UNSUPPORTED")
     try:
         planted = instant(planted_at).isoformat()
     except (ValueError, TypeError, OverflowError):
-        raise DatabaseInputError("INVALID_PLANTING_TIMESTAMP", "UNSUPPORTED") from None
+        raise DatabaseInputError("INVALID_PLANTING_TIMESTAMP") from None
     return dict(farmer_id=farmer_id, crop_type="WHEAT", planted_at=planted, profile=profile)
 
 
@@ -54,14 +54,16 @@ def validate_context(context: dict, expected: dict, target: date) -> ZoneInfo:
         if not same_scope(context, expected):
             raise ValueError()
         if context["variant"] != "winter_wheat" or context["growing_system"] != "outdoor_soil" or context["soil_depth_cm"] != "0-7":
-            raise ValueError()
+            raise DatabaseInputError("UNSUPPORTED_CONTEXT", "UNSUPPORTED")
         zone = ZoneInfo(context["timezone"])
         sowing = date.fromisoformat(context["sowing_date"])
         if target < date(1, 1, 15) or sowing >= target or target > datetime.now(zone).date() or instant(context["planted_at"]).astimezone(zone).date() > target:
             raise ValueError()
         return zone
+    except DatabaseInputError:
+        raise
     except (ValueError, KeyError, TypeError, AttributeError, OverflowError):
-        raise DatabaseInputError("INVALID_OR_UNSUPPORTED_CONTEXT", "UNSUPPORTED") from None
+        raise DatabaseInputError("INVALID_CONTEXT") from None
 
 
 def request_from_rows(bundle: dict, *, farmer_id: int, planted_at: str, prediction_date: str) -> PredictionRequest:
@@ -150,11 +152,11 @@ class SupabaseHistoryReader:
         try:
             target = date.fromisoformat(prediction_date)
         except (ValueError, TypeError):
-            raise DatabaseInputError("INVALID_PREDICTION_DATE", "UNSUPPORTED") from None
+            raise DatabaseInputError("INVALID_PREDICTION_DATE") from None
         filters = [(key, "eq." + str(value)) for key, value in expected.items()]
         contexts = self._get("ml_planting_context", CONTEXT_COLUMNS, filters, 2, "planted_at.asc")
         if len(contexts) != 1:
-            raise DatabaseInputError("MISSING_OR_AMBIGUOUS_CONTEXT", "UNSUPPORTED")
+            raise DatabaseInputError("MISSING_OR_AMBIGUOUS_CONTEXT")
         context = contexts[0]
         zone = validate_context(context, expected, target)
         start = target - timedelta(days=14)

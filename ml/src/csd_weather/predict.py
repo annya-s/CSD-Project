@@ -18,6 +18,7 @@ from catboost import CatBoostRegressor
 from catboost import CatBoostError
 
 from .advice import weather_advice
+from .common import INVALID_INPUT_MESSAGE
 from .contracts import PredictionRequest
 from .features import build_features
 from .common import FEATURE_NAMES
@@ -124,7 +125,7 @@ class Predictor:
             if set(features) != set(self.schema["feature_names"]):
                 raise ValueError("Feature schema mismatch")
         except (ValueError, KeyError, TypeError, AttributeError, IndexError, OverflowError, ZoneInfoNotFoundError):
-            result.update(status="INSUFFICIENT_HISTORY", support_reasons=["INVALID_OR_INCOMPLETE_WEATHER_HISTORY"])
+            result.update(status="INVALID_INPUT", support_reasons=["INVALID_INPUT"], message=INVALID_INPUT_MESSAGE)
             return result
         result["features"] = features
         result["advice"] = weather_advice(features)
@@ -169,10 +170,19 @@ def main() -> None:
     parser.add_argument("--artifacts", type=Path)
     parser.add_argument("--output-dir", type=Path)
     args = parser.parse_args()
-    request = PredictionRequest.model_validate_json(args.request.read_text(encoding="utf-8"))
+    try:
+        request = PredictionRequest.model_validate_json(args.request.read_text(encoding="utf-8"))
+    except (ValueError, OSError):
+        print(json.dumps({"status": "INVALID_INPUT", "message": INVALID_INPUT_MESSAGE}))
+        raise SystemExit(1) from None
     result = Predictor(args.artifacts).predict(request)
     path = save_prediction(result, args.output_dir)
-    print(json.dumps({"status": result["status"], "value": result["value"], "unit": result["unit"], "saved_to": str(path)}))
+    summary = {"status": result["status"], "value": result["value"], "unit": result["unit"], "saved_to": str(path)}
+    if result["status"] == "INVALID_INPUT":
+        summary["message"] = INVALID_INPUT_MESSAGE
+    print(json.dumps(summary))
+    if result["status"] == "INVALID_INPUT":
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
