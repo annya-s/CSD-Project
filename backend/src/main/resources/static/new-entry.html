@@ -28,6 +28,9 @@
                     <p class="field-hint">Planting time uses your device’s local timezone.</p>
                 </div>
                 <form id="entry-form" class="entry-form">
+                    <!-- [ERD-ALIGNMENT CHANGE] A crop cycle belongs to a named farm. -->
+                    <label for="farm-name">Farm name</label>
+                    <input id="farm-name" type="text" maxlength="100" required placeholder="e.g. North Field">
                     <label for="crop-type">Crop</label>
                     <select id="crop-type" required><option value="">Choose a crop</option></select>
                     <label for="planted-at">Date and time planted</label>

@@ -141,12 +141,12 @@ async function start() {
         await requireFarmer();
         // The dashboard puts this planting's identity in the page URL.
         const params = new URLSearchParams(window.location.search);
-        const type = params.get('type');
-        const plantedAt = params.get('plantedAt');
-        if (!type || !plantedAt) {
+        // [ERD-ALIGNMENT CHANGE] Detail lookup uses CROP_CYCLES primary key.
+        const cycleId = params.get('cycleId');
+        if (!cycleId) {
             throw new Error('That crop link is incomplete. Use Overview to select a crop.');
         }
-        const detailsUrl = `/api/crops/${encodeURIComponent(type)}?${new URLSearchParams({ plantedAt })}`;
+        const detailsUrl = '/api/crops/' + encodeURIComponent(cycleId);
         const [details, cropTypes] = await Promise.all([
             api(detailsUrl),
             api('/api/crop-types')

@@ -1,5 +1,7 @@
 package com.csd.farm.crop;
 
+// [ERD-ALIGNMENT CHANGE] Snapshot persistence is keyed by Crop_Cycle_ID.
+
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -38,7 +40,11 @@ public class CropWeatherService {
      */
     public WeatherResult load(Long owner, CropEntry crop) {
         if (!enabled) {
-            return new WeatherResult(readings.find(owner, crop.cropType(), crop.plantedAt()).orElse(null),
+            // [ERD-ALIGNMENT CHANGE] Read the cycle-keyed snapshot.
+            DailyWeather stored = crop.cropCycleId()==null
+                    ? readings.find(owner,crop.cropType(),crop.plantedAt()).orElse(null)
+                    : readings.find(crop.cropCycleId()).orElse(null);
+            return new WeatherResult(stored,
                     "MANUAL", "Automatic weather fetching is disabled. Any supplied readings are manual.");
         }
         Location location = new Location(crop.latitude(), crop.longitude());
@@ -60,13 +66,18 @@ public class CropWeatherService {
             }
         });
         if (cached.weather() != null) {
-            readings.saveFromApi(owner, crop.cropType(), crop.plantedAt(), cached.weather());
+            // [ERD-ALIGNMENT CHANGE] Persist forecast by Crop_Cycle_ID.
+            if(crop.cropCycleId()==null) readings.saveFromApi(owner,crop.cropType(),crop.plantedAt(),cached.weather());
+            else readings.saveFromApi(crop.cropCycleId(),cached.weather());
             return new WeatherResult(cached.weather(), "OPEN_METEO",
                     "Today's full-day forecast averages and sunshine total, including forecast hours later today. "
                     + "The timezone is the server's timezone, as requested by the environment API.");
         }
         // Never fall back to the old demo/manual readings and call them real API data.
-        DailyWeather saved = readings.findFromApi(owner, crop.cropType(), crop.plantedAt()).orElse(null);
+        // [ERD-ALIGNMENT CHANGE] Load the saved forecast by Crop_Cycle_ID.
+        DailyWeather saved = crop.cropCycleId()==null
+                ? readings.findFromApi(owner,crop.cropType(),crop.plantedAt()).orElse(null)
+                : readings.findFromApi(crop.cropCycleId()).orElse(null);
         String message = saved == null
                 ? "Weather could not be loaded from Open-Meteo. Please try again shortly."
                 : "Open-Meteo could not be refreshed. Showing previously saved API readings; check their date. "

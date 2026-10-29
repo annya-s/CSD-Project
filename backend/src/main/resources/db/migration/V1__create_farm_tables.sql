@@ -1,3 +1,4 @@
+-- [LEGACY UUID SCHEMA] Old farmer_account schema. Flyway stays disabled for the ERD-aligned Supabase schema.
 -- CREATE SCHEMA IF NOT EXISTS farm;
         -- for later, persistent implementation
 
