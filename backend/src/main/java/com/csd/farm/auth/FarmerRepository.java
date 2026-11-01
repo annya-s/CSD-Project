@@ -1,18 +1,20 @@
 package com.csd.farm.auth;
 
+// [ERD-ALIGNMENT CHANGE] Auth uses existing USERS; status now joins public.ACCOUNT_STATUS.
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 @Repository
 public class FarmerRepository implements UserDetailsService {
@@ -26,19 +28,12 @@ public class FarmerRepository implements UserDetailsService {
             @Value("${app.users.name:User_Name}") String name,
             @Value("${app.users.email:User_Email}") String email,
             @Value("${app.users.hash:Password_Hash}") String hash) {
-        this.jdbc = jdbc;
-        this.table = quote(schema) + "." + quote(table);
-        this.id = quote(id);
-        this.name = quote(name);
-        this.email = quote(email);
-        this.hash = quote(hash);
+        this.jdbc=jdbc; this.table=quote(schema)+"."+quote(table);
+        this.id=quote(id); this.name=quote(name); this.email=quote(email); this.hash=quote(hash);
     }
 
-    // Only server configuration supplies identifiers; all values use bound parameters.
     private static String quote(String value) {
-        if (!value.matches("[A-Za-z_][A-Za-z0-9_]*")) {
-            throw new IllegalArgumentException("Invalid user-table SQL identifier in configuration");
-        }
+        if (!value.matches("[A-Za-z_][A-Za-z0-9_]*")) throw new IllegalArgumentException("Invalid SQL identifier");
         return "\"" + value + "\"";
     }
 
@@ -56,6 +51,7 @@ public class FarmerRepository implements UserDetailsService {
                 .param("id", farmerId).update();
         return new Farmer(farmerId, farmer.username(), farmer.email(), false, false);
     }
+
     private String select() {
         return "SELECT u." + id + " AS id, u." + name + " AS username, u." + email
                 + " AS email, COALESCE(s.email_verified, FALSE) AS email_verified,"
@@ -68,20 +64,16 @@ public class FarmerRepository implements UserDetailsService {
                 row.getString("email"), row.getBoolean("email_verified"),
                 row.getBoolean("two_factor_enabled"));
     }
-
     public Optional<Farmer> findByUsername(String username) {
-        return jdbc.sql(select() + " WHERE u." + name + " = :value")
-                .param("value", username).query(this::map).optional();
+        return jdbc.sql(select()+" WHERE u."+name+"=:value").param("value",username).query(this::map).optional();
     }
-
     public Optional<Farmer> findByEmail(String address) {
-        return jdbc.sql(select() + " WHERE u." + email + " = :value")
-                .param("value", address).query(this::map).optional();
+        return jdbc.sql(select()+" WHERE u."+email+"=:value").param("value",address).query(this::map).optional();
     }
-
-    public void markEmailVerified(Long farmerId) {
-        jdbc.sql("UPDATE farm.account_status SET email_verified = TRUE WHERE farmer_id = :id")
-                .param("id", farmerId).update();
+    public void markEmailVerified(Long userId) {
+        jdbc.sql("""
+            UPDATE public."ACCOUNT_STATUS" SET "Email_Verified"=TRUE WHERE "User_ID"=:id
+            """).param("id",userId).update();
     }
    
     public void setTwoFactorEnabled(Long farmerId, boolean enabled) {
@@ -93,16 +85,10 @@ public class FarmerRepository implements UserDetailsService {
         jdbc.sql("UPDATE " + table + " SET " + hash + " = :hash WHERE " + id + " = :id")
                 .param("id", farmerId).param("hash", passwordHash).update();
     }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) {
-        return jdbc.sql("SELECT " + name + " AS username, " + hash + " AS password_hash FROM "
-                + table + " WHERE " + name + " = :name")
-                .param("name", username)
-                .query((row, number) -> User.withUsername(row.getString("username"))
-                        .password(row.getString("password_hash")).roles("FARMER").build())
-                .optional().orElseThrow(() -> new UsernameNotFoundException("Invalid username or password."));
+    @Override public UserDetails loadUserByUsername(String username) {
+        return jdbc.sql("SELECT "+name+" AS username, "+hash+" AS password_hash FROM "+table+" WHERE "+name+"=:name")
+            .param("name",username)
+            .query((row,number)->User.withUsername(row.getString("username")).password(row.getString("password_hash")).roles("FARMER").build())
+            .optional().orElseThrow(()->new UsernameNotFoundException("Invalid username or password."));
     }
 }
-
-

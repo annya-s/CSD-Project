@@ -1,3 +1,4 @@
+-- [LEGACY UUID SCHEMA] Old migration for farm.crop_entry. Kept as reference; do not apply to the public ERD schema.
 -- Store the latest complete local day's readings with each planting.
 -- Reference ranges remain in CropConditions.java for now.
 ALTER TABLE farm.crop_entry ADD COLUMN weather_date DATE;

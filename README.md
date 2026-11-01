@@ -32,6 +32,12 @@ Restarting the in-memory demo also clears its accounts and entries.
 
 ## Crop growing-condition research
 
+For the machine-learning work, start with the [research and planning pack](docs/ml/README.md)
+(17 October 2026): 20 additional crop profiles, a ranked historical-dataset register,
+a prediction-confidence plan, and a dynamic farmer-advice plan. Its inspected
+current-code baseline also records where the older weather-integration description
+below differs from the current implementation.
+
 See [the crop reference guide](docs/crop-growing-conditions.md) for all ten crops:
 weather, temperature, air humidity, soil pH, soil moisture, and annual rainfall,
 with direct sources and guidance on interpreting the units. These references

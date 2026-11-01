@@ -7,8 +7,8 @@ node_modules/
 *.log
 *.openai
 *.class
-AGENTS.md
-DESIGN.md
-PRODUCT.md
-SUPABASE-SETUP.md
+*.md
+!README.md
+
+# [ERD-ALIGNMENT ADDITION] Keep the local Supabase database password out of Git.
 backend/application-local.properties

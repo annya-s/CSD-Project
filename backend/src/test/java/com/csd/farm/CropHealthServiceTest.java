@@ -49,12 +49,13 @@ class CropHealthServiceTest {
 
     @Test
     void secondsBecomeHoursAndLongSunshineAloneDoesNotFlagDamage() {
-        var result = health.assess(CropType.POTATO, weather(20.0, 32400.0));
-        assertThat(result.readings().get(3).value()).isEqualTo(9.0);
+        var result = health.assess(CropType.POTATO, weather(20.0, 30600.0));
+        assertThat(result.readings().get(3).value()).isEqualTo(8.5);
         assertThat(result.readings().get(3).status()).isEqualTo("ABOVE_RANGE");
         assertThat(result.needsAttention()).isFalse();
         assertThat(result.issues()).isEmpty();
-        assertThat(result.recommendedActions()).anyMatch(action -> action.contains("Do not add shade solely"));
+        assertThat(result.recommendedActions())
+        .anyMatch(action -> action.contains("Continue monitoring. Temperature and sunlight are within their reference ranges; vapour pressure deficit and soil moisture remain unassessed."));
     }
 
     @Test
@@ -63,14 +64,16 @@ class CropHealthServiceTest {
                 .allMatch(reading -> reading.status().equals("NOT_ASSESSED") && reading.value() == null);
         var partial = health.assess(CropType.POTATO, weather(null, 0.0));
         assertThat(partial.readings().get(0).status()).isEqualTo("NOT_ASSESSED");
-        assertThat(partial.readings().get(3).status()).isEqualTo("BELOW_RANGE");
+        assertThat(partial.readings().get(3).status()).isEqualTo("BELOW_RANGE_SEVERE");
         assertThat(partial.needsAttention()).isTrue();
     }
 
     @Test
-    void humidityAndSoilMoistureStayUnassessedEvenWhenValuesArePresent() {
+    void vpdAndSoilMoistureStayUnassessedEvenWhenValuesArePresent() {
         var result = health.assess(CropType.SUGAR_CANE, weather(30.0, 28800.0));
-        assertThat(result.readings().get(1).value()).isEqualTo(82.0);
+        assertThat(result.readings().get(1).name()).isEqualTo("Vapour pressure deficit");
+        assertThat(result.readings().get(1).value()).isEqualTo(1.2);
+        assertThat(result.readings().get(1).unit()).isEqualTo("kPa");
         assertThat(result.readings().get(2).value()).isEqualTo(25.0);
         assertThat(result.readings().get(2).unit()).isEqualTo("% by volume");
         assertThat(result.readings().get(1).status()).isEqualTo("NOT_ASSESSED");
@@ -81,6 +84,6 @@ class CropHealthServiceTest {
 
     private DailyWeather weather(Double temperature, Double sunshineSeconds) {
         return new DailyWeather(LocalDate.of(2026, 1, 11), "Asia/Singapore",
-                temperature, sunshineSeconds, 82.0, 0.25);
+                temperature, sunshineSeconds, 82.0, 0.25, 1.2);
     }
 }

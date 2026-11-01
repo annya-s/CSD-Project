@@ -1,8 +1,10 @@
 package com.csd.farm.auth;
 
+// [ERD-ALIGNMENT CHANGE] Verification/reset tokens now use public.ACCOUNT_TOKENS.
+
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
-import java.time.OffsetDateTime;
 
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -18,27 +20,14 @@ public class AccountTokenRepository {
     }
 
     private final JdbcClient jdbc;
-    
-    public AccountTokenRepository(JdbcClient jdbc) {
-        this.jdbc = jdbc;
-    }
-        
-    // store new email verify / password reset proof
-    public void save(UUID id, Long farmerId,
-            Purpose purpose, String tokenHash,
-            OffsetDateTime expiresAt) {
+    public AccountTokenRepository(JdbcClient jdbc) { this.jdbc=jdbc; }
 
+    public void save(UUID id,Long farmerId,Purpose purpose,String tokenHash,OffsetDateTime expiresAt) {
         jdbc.sql("""
-                INSERT INTO farm.account_token
-                        (id, farmer_id, purpose, token_hash, expires_at)
-                VALUES (:id, :farmerId, :purpose, :tokenHash, :expiresAt)
-                """)
-                .param("id", id)
-                .param("farmerId", farmerId)
-                .param("purpose", purpose.name())
-                .param("tokenHash", tokenHash)
-                .param("expiresAt", expiresAt)
-                .update();
+            INSERT INTO public."ACCOUNT_TOKENS" ("Token_ID","User_ID","Purpose","Token_Hash","Expires_At")
+            VALUES (:id,:userId,:purpose,:tokenHash,:expiresAt)
+            """).param("id",id).param("userId",farmerId).param("purpose",purpose.name())
+            .param("tokenHash",tokenHash).param("expiresAt",expiresAt).update();
     }
 
     // find token that match token_hash & purpose & unused & unexpired.
@@ -59,8 +48,6 @@ public class AccountTokenRepository {
                         row.getLong("farmer_id")))
                 .optional();
     }
-
-    // consume token 
     public void markUsed(UUID tokenId) {
         jdbc.sql("""
                 UPDATE farm.account_token
@@ -70,9 +57,7 @@ public class AccountTokenRepository {
                 .param("tokenId", tokenId)
                 .update();
     }
-
-    // invalidate prev token issued before new token is created
-    public void invalidateUnused(Long farmerId, Purpose purpose) {
+    public void invalidateUnused(Long farmerId,Purpose purpose) {
         jdbc.sql("""
                 UPDATE farm.account_token
                 SET used_at = CURRENT_TIMESTAMP
