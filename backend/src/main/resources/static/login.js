@@ -22,39 +22,47 @@ function setAuthMode(mode) {
     const registering = mode === 'register';
     const forgot = mode === 'forgot';
     const resetting = mode === 'reset';
+    const twoFactor = mode === 'twofactor';
 
     $('login-title').textContent = 
         login ? 'Start your growing season.' :
         registering ? 'Let’s get you back in the field.' :
         forgot ? 'Find your way back in.' :
+        twoFactor ? 'One more step.' :
         "Choose a new password.";
     $('auth-description').textContent =
         login ? 'Log in to your farm overview.' :
         registering ? 'Create an account for your farm.' :
         forgot ? 'Enter your email to receive a reset code.' :
+        twoFactor ? 'Enter the 6-digit code emailed to you.' :
         'Enter the reset code and choose a new password.';    
     
-    $('username-field').hidden = forgot || resetting;
-    $('password-field').hidden = forgot || resetting;
-    $('username-hint').hidden = forgot || resetting;
+    $('username-field').hidden = forgot || resetting || twoFactor;
+    $('password-field').hidden = forgot || resetting || twoFactor;
+    $('username-hint').hidden = forgot || resetting || twoFactor;
     $('password-hint').hidden = !registering;
-    $('email-field').hidden = login;
+    $('email-field').hidden = login || twoFactor;
     $('reset-token-field').hidden = !resetting;
     $('new-password-field').hidden = !resetting;
     $('confirm-password-field').hidden = !resetting;
+    $('two-factor-field').hidden = !twoFactor;
 
     $('username').required = login || registering;
     $('password').required = login || registering;
-    $('email').required = !login;
+    $('email').required = !(login || twoFactor);
     $('reset-token').required = resetting;
     $('new-password').required = resetting;
     $('confirm-password').required = resetting;
+    $('two-factor-code').required = twoFactor;
 
     $('password').minLength = registering ? 10 : 1;
     $('password').autocomplete = registering ? 'new-password' : 'current-password';
     
-    $('auth-submit').textContent = login ? 'Log in': registering ? 'Create account' : 
-                                   forgot ? 'Send reset code' : 'Reset Password';
+    $('auth-submit').textContent = login ? 'Log in': 
+                                   registering ? 'Create account' : 
+                                   forgot ? 'Send reset code' : 
+                                   twoFactor ? 'Submit codw' :
+                                   'Reset Password';
 
     $('auth-toggle').hidden = !(login || registering);
     $('forgot-password-link').hidden = !login;
@@ -112,11 +120,17 @@ $('auth-form').addEventListener('submit', async (event) => {
             return;
         }
 
-        await api('/api/auth/login', {
+        const result = await api('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ username, password })
+            body: new URLSearchParams({ username, password, 
+                                        code: $('two-factor-code').value.trim() })
         });
+        if (result && result.twoFactorRequired) {
+            setAuthMode('twofactor');
+            showMessage('global-message', 'We emailed a 6-digit code to your address.');
+            return;
+        }
         window.location.replace(loginDestination());
     } catch (error) {
         showMessage('auth-error', error.message);
