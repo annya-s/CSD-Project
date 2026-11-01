@@ -35,10 +35,32 @@ p { max-width: 65ch; }
 .brand-leaf { color: var(--leaf); margin-left: 4px; }
 .topbar nav { display: flex; gap: 28px; align-items: center; flex: 1; }
 .overview-link { background: var(--deep-green); color: #d2e5c8; padding: 8px 20px; border-radius: 12px; text-decoration: none; font-weight: 650; }
-#welcome { overflow-wrap: anywhere; }
 #brand-caption { margin-left: auto; font-size: .9rem; color: #e2e9dc; }
+
+#welcome { overflow-wrap: anywhere; }
+    .badge { position: relative; display: inline-block; margin-left: 0.4rem; padding: 0.1rem 0.45rem; border-radius: 999px; font-size: 0.72rem; font-weight: 600; vertical-align: middle; }
+    .badge::after { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(-10px);
+                    min-width: 220px; max-width: 280px; padding: 0.55rem 0.7rem; border-radius: 8px; background: rgb(32, 58, 39); color: rgb(242, 243, 238); font-size: 0.78rem; font-weight: 400; line-height: 1.35; text-align: center; white-space: normal;
+                    opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.15s ease, transform 0.15s ease; z-index: 20; }
+    .badge:hover::after,
+    .badge:focus-visible::after { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+    .badge.verified::after { content: "Account is verified. Features such as password reset are available."; }
+    .badge.unverified::after { content: "Without verification, features such as password reset will be unavailable."; }
+    .badge.verified {  background: rgba(216, 243, 220, 0.9); color: #1b4332; }
+    .badge.unverified { background: rgba(255, 206, 180, 0.9); color: #7f2824; }
+
 .text-button { background: transparent; color: white; }
 .text-button:hover { background: var(--deep-green); }
+
+/* Account dropdown */
+details { position: relative; }
+details summary { cursor: pointer; list-style: none; }
+details summary::-webkit-details-marker { display: none; }
+details > div { position: absolute; top: 100%; right: 0; z-index: 30; display: grid; min-width: 170px; padding: 6px;
+    background: white; color: var(--ink); border: 1px solid var(--border); border-radius: 10px; }
+details > div .text-button { width: 100%; text-align: left; color: var(--ink); } 
+details > div .text-button:hover { background: #e5ebdf; }
+
 main { min-height: calc(100vh - 137px); }
 .page { padding: 54px 5vw 72px; }
 .workspace { max-width: 1360px; margin: auto; }
@@ -83,6 +105,20 @@ input::placeholder { color: #5d6a5b; opacity: 1; }
 #global-message { margin: 20px 5vw; max-width: none; }
 .page-heading { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
 .summary { margin: 12px 0 38px; padding: 16px 0; border-block: 1px solid var(--border); max-width: none; color: var(--muted); }
+
+/* Account page */
+.account { max-width: 850px; margin: auto; }
+.account .section { padding: 28px 0; border-top: 1px solid var(--border); }
+.account .section:first-of-type { border-top: none; padding-top: 0; }
+.account .section h2 { margin-bottom: 16px; }
+.account input { max-width: 420px; }
+.email-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.email { font-size: 1rem; }
+.status { padding: 3px 10px; border-radius: 999px; font-size: .78rem; font-weight: 650; }
+.status.verified { background: rgba(216, 243, 220, 0.9); color: #1b4332; }
+.status.unverified { background: rgba(255, 206, 180, 0.9); color: #7f2824; }
+.button-row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 18px; }
+
 .crop-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; }
 .crop-card { display: block; background: white; border: 1px solid #d2dacd; border-radius: 24px; padding: 25px; text-decoration: none; transition: border-color 180ms, transform 180ms; }
 .crop-card:hover { border-color: var(--green); transform: translateY(-2px); }

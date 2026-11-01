@@ -49,6 +49,7 @@ public class AuthController {
                 null,
                 request.username(), 
                 request.email(),
+                false,
                 false);
     
         farmer = farmers.save(farmer, passwords.encode(request.password()));
@@ -62,6 +63,14 @@ public class AuthController {
                 principal.getName()).orElseThrow();
     }
 
+    @PostMapping("/verification-code")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resendVerificationCode(Principal principal) {
+        Farmer farmer = farmers.findByUsername(principal.getName()).orElseThrow();
+
+        accountTokens.issueEmailVerificationCode(farmer);
+    }
+
     @PostMapping("/verify-email")
     public ResponseEntity<Void> verifyEmail(
             @RequestBody VerifyEmailRequest request) {
@@ -73,7 +82,6 @@ public class AuthController {
         }
         if (farmer == null && request.email() != null
                 && !request.email().isBlank()) {
-
             farmer = farmers.findByEmail(request.email().trim()).orElse(null);
         }        
         if (farmer == null)
@@ -106,6 +114,42 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/password")
+    public ResponseEntity<Void> changePassword(
+            Principal principal, @RequestBody ChangePasswordRequest request) {
+
+        if (request.currentPassword() == null || request.currentPassword().isBlank() ||
+                request.newPassword() == null || request.newPassword().isBlank())
+            return ResponseEntity.badRequest().build();
+
+        Farmer farmer = farmers.findByUsername(principal.getName()).orElseThrow();
+        String currentHash = farmers.findPasswordHash(farmer.id());
+
+        if (currentHash == null || !passwords.matches(request.currentPassword(), currentHash))
+            return ResponseEntity.badRequest().build();
+
+        farmers.updatePassword(farmer.id(), passwords.encode(request.newPassword()));
+
+        return ResponseEntity.noContent().build();
+    }
+
+    public record ChangePasswordRequest(
+            String currentPassword,
+            String newPassword
+    ) {}
+
+    @PostMapping("/two-factor")
+    public ResponseEntity<Void> setTwoFactor(
+            @RequestBody TwoFactorToggle request, Principal principal) {
+
+        Farmer farmer = farmers.findByUsername(principal.getName()).orElseThrow();
+        if (request.enabled() && !farmer.emailVerified())
+            return ResponseEntity.badRequest().build();
+
+        farmers.setTwoFactorEnabled(farmer.id(), request.enabled());
+        return ResponseEntity.noContent().build();
+    }
+
 
 
     public record Registration(
@@ -126,6 +170,9 @@ public class AuthController {
             @Email @NotBlank String email,
             @NotBlank @Size(min = 6, max = 6) String code,
             @NotBlank @Size(min = 10, max = 128) String password) {
+    }
+    public record TwoFactorToggle(
+            boolean enabled) {
     }
 
 }
