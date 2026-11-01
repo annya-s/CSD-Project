@@ -1,4 +1,4 @@
-import { $, api, jsonPost, showMessage } from './api.js';
+import { $, api, jsonPost, requireFarmer, showMessage } from './api.js';
 
 let account = null;
 
@@ -70,7 +70,7 @@ $('password-form').addEventListener('submit', async event => {
     }
     $('update-password').disabled = true;
     try {
-        await api('/api/account/password', jsonPost({
+        await api('/api/auth/password', jsonPost({
             currentPassword,
             newPassword
         }));
@@ -103,7 +103,7 @@ $('two-factor-toggle').addEventListener('click', async () => {
 
 async function start() {
     try {
-        account = await api('/api/auth/me');
+        account = await requireFarmer();
         updateAccountPage();
 
         $('loading').hidden = true;

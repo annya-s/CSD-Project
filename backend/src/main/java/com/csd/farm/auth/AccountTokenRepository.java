@@ -36,9 +36,13 @@ public class AccountTokenRepository {
             Long farmerId, String tokenHash, Purpose purpose) {
 
         return jdbc.sql("""
-                SELECT id, farmer_id FROM farm.account_token
-                WHERE farmer_id = :farmerId AND token_hash = :tokenHash AND purpose = :purpose
-                  AND used_at IS NULL AND expires_at > CURRENT_TIMESTAMP
+                SELECT "Token_ID" AS id, "User_ID" AS farmer_id
+                FROM public."ACCOUNT_TOKENS"
+                WHERE "User_ID" = :farmerId
+                  AND "Token_Hash" = :tokenHash
+                  AND "Purpose" = :purpose
+                  AND "Used_At" IS NULL
+                  AND "Expires_At" > CURRENT_TIMESTAMP
                 """)
                 .param("farmerId", farmerId)
                 .param("tokenHash", tokenHash)
@@ -50,19 +54,19 @@ public class AccountTokenRepository {
     }
     public void markUsed(UUID tokenId) {
         jdbc.sql("""
-                UPDATE farm.account_token
-                SET used_at = CURRENT_TIMESTAMP
-                WHERE id = :tokenId AND used_at IS NULL
+                UPDATE public."ACCOUNT_TOKENS"
+                SET "Used_At" = CURRENT_TIMESTAMP
+                WHERE "Token_ID" = :tokenId AND "Used_At" IS NULL
                 """)
                 .param("tokenId", tokenId)
                 .update();
     }
     public void invalidateUnused(Long farmerId,Purpose purpose) {
         jdbc.sql("""
-                UPDATE farm.account_token
-                SET used_at = CURRENT_TIMESTAMP
-                WHERE farmer_id = :farmerId 
-                  AND purpose = :purpose AND used_at IS NULL
+                UPDATE public."ACCOUNT_TOKENS"
+                SET "Used_At" = CURRENT_TIMESTAMP
+                WHERE "User_ID" = :farmerId
+                  AND "Purpose" = :purpose AND "Used_At" IS NULL
                 """)
                 .param("farmerId", farmerId)
                 .param("purpose", purpose.name())

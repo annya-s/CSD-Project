@@ -51,19 +51,18 @@ class FarmIntegrationTest {
         jdbc.sql("DELETE FROM farm.account_token").update();
         
         String hash = passwords.encode(PASSWORD);
-        farmers.save(new Farmer(null, 
-				"alice", "alice@example.com", false), hash);
-        farmers.save(new Farmer(null, 
-				"bob", "bob@example.com", false), hash);
+        farmers.save(new Farmer(null, "alice", "alice@example.com", false, false), hash);
+        farmers.save(new Farmer(null, "bob", "bob@example.com", false, false), hash);
     }
 
     @Test
     void registrationStoresHashedPasswordAndSupportsLogin() throws Exception {
         mvc.perform(post("/api/auth/register").with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON).content("""
-								{"username": "charlie", "email": "charlie@example.com",
-								"password": "a-long-test-password"}
-								"""))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"username": "charlie", "email": "charlie@example.com",
+                        "password": "a-long-test-password"}
+                        """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.username").value("charlie"))
                 .andExpect(jsonPath("$.password").doesNotExist());
@@ -79,9 +78,10 @@ class FarmIntegrationTest {
     @Test
     void duplicateEmailIsRejectedWithoutLeavingAnAccount() throws Exception {
         mvc.perform(post("/api/auth/register").with(csrf())
-                .contentType(MediaType.APPLICATION_JSON).content("""
-                {"username":"another_alice","email":"alice@example.com","password":"a-long-test-password"}
-                """))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"username":"another_alice","email":"alice@example.com","password":"a-long-test-password"}
+                        """))
                 .andExpect(status().isConflict());
         assertThat(farmers.findByUsername("another_alice")).isEmpty();
     }
@@ -150,10 +150,11 @@ class FarmIntegrationTest {
     @Test
     void duplicateUsernameIsRejected() throws Exception {
         mvc.perform(post("/api/auth/register").with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON).content("""
-								{"username": "alice", "email": "other-alice@example.com",
-								"displayName": "Other Alice", "password": "a-long-test-password"}
-								"""))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"username": "alice", "email": "other-alice@example.com",
+                        "displayName": "Other Alice", "password": "a-long-test-password"}
+                        """))
                 .andExpect(status().isConflict());
     }
 

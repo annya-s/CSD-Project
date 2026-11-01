@@ -114,6 +114,30 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/password")
+    public ResponseEntity<Void> changePassword(
+            Principal principal, @RequestBody ChangePasswordRequest request) {
+
+        if (request.currentPassword() == null || request.currentPassword().isBlank() ||
+                request.newPassword() == null || request.newPassword().isBlank())
+            return ResponseEntity.badRequest().build();
+
+        Farmer farmer = farmers.findByUsername(principal.getName()).orElseThrow();
+        String currentHash = farmers.findPasswordHash(farmer.id());
+
+        if (currentHash == null || !passwords.matches(request.currentPassword(), currentHash))
+            return ResponseEntity.badRequest().build();
+
+        farmers.updatePassword(farmer.id(), passwords.encode(request.newPassword()));
+
+        return ResponseEntity.noContent().build();
+    }
+
+    public record ChangePasswordRequest(
+            String currentPassword,
+            String newPassword
+    ) {}
+
     @PostMapping("/two-factor")
     public ResponseEntity<Void> setTwoFactor(
             @RequestBody TwoFactorToggle request, Principal principal) {
