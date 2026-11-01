@@ -8,9 +8,10 @@ __pycache__/
 .env
 build/
 dist/
-data/raw/*
-!data/raw/zenodo_17475742/
-data/synthetic/
+data/
+model/
+archive/
+.pytest-work*/
 artifacts/
 predictions/
 .test-tmp/
