@@ -1,0 +1,104 @@
+package com.csd.farm.crop;
+
+// [ERD-ALIGNMENT CHANGE] Snapshot persistence is keyed by Crop_Cycle_ID.
+
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import com.csd.farm.environment.EnvironmentService;
+
+@Service
+public class CropWeatherService {
+    private static final Logger log = LoggerFactory.getLogger(CropWeatherService.class);
+    private final EnvironmentService environment;
+    private final CropWeatherRepository readings;
+    private final boolean enabled;
+    private final Map<Location, CachedWeather> cache = new ConcurrentHashMap<>();
+
+    public CropWeatherService(EnvironmentService environment, CropWeatherRepository readings,
+                              @Value("${weather.api.enabled:true}") boolean enabled) {
+        this.environment = environment;
+        this.readings = readings;
+        this.enabled = enabled;
+    }
+
+    /**
+     * Loads a report of the day's weather for a farmer's crop.
+     * 
+     * @param owner The Id of the farmer.
+     * @param crop The type of crop.
+     * @return A WeatherResult instance representing the day's weather report.
+     */
+    public WeatherResult load(Long owner, CropEntry crop) {
+        if (!enabled) {
+            // [ERD-ALIGNMENT CHANGE] Read the cycle-keyed snapshot.
+            DailyWeather stored = crop.cropCycleId()==null
+                    ? readings.find(owner,crop.cropType(),crop.plantedAt()).orElse(null)
+                    : readings.find(crop.cropCycleId()).orElse(null);
+            return new WeatherResult(stored,
+                    "MANUAL", "Automatic weather fetching is disabled. Any supplied readings are manual.");
+        }
+        Location location = new Location(crop.latitude(), crop.longitude());
+        // EnvironmentClient requests the server's timezone, so use the same calendar day here.
+        ZoneId zone = ZoneId.systemDefault();
+        LocalDate today = LocalDate.now(zone);
+        if (cache.size() > 1000) cache.clear();
+        CachedWeather cached = cache.compute(location, (key, previous) -> {
+            if (previous != null && Instant.now().isBefore(previous.expiresAt())
+                    && (previous.weather() == null || previous.weather().date().equals(today))) return previous;
+            try {
+                var hourlyReadings = environment.getAllReadings(key.latitude(), key.longitude());
+                DailyWeather weather = CropForecast.forDay(hourlyReadings, today, zone);
+                return new CachedWeather(weather, Instant.now().plus(Duration.ofMinutes(15)));
+            } catch (RuntimeException exception) {
+                log.warn("Weather fetch failed: {}", exception.getClass().getSimpleName());
+                // Briefly cache failures too, so page refreshes do not repeatedly hit a failing provider.
+                return new CachedWeather(null, Instant.now().plus(Duration.ofMinutes(1)));
+            }
+        });
+        if (cached.weather() != null) {
+            // [ERD-ALIGNMENT CHANGE] Persist forecast by Crop_Cycle_ID.
+            if(crop.cropCycleId()==null) readings.saveFromApi(owner,crop.cropType(),crop.plantedAt(),cached.weather());
+            else readings.saveFromApi(crop.cropCycleId(),cached.weather());
+            return new WeatherResult(cached.weather(), "OPEN_METEO",
+                    "Today's full-day forecast averages and sunshine total, including forecast hours later today. "
+                    + "The timezone is the server's timezone, as requested by the environment API.");
+        }
+        // Never fall back to the old demo/manual readings and call them real API data.
+        // [ERD-ALIGNMENT CHANGE] Load the saved forecast by Crop_Cycle_ID.
+        DailyWeather saved = crop.cropCycleId()==null
+                ? readings.findFromApi(owner,crop.cropType(),crop.plantedAt()).orElse(null)
+                : readings.findFromApi(crop.cropCycleId()).orElse(null);
+        String message = saved == null
+                ? "Weather could not be loaded from Open-Meteo. Please try again shortly."
+                : "Open-Meteo could not be refreshed. Showing previously saved API readings; check their date. "
+                  + "Saved readings may be forecasts. VPD is unavailable in saved snapshots.";
+        return new WeatherResult(saved, saved == null ? "UNAVAILABLE" : "OPEN_METEO", message);
+    }
+
+    /**
+     * Returns whether the service is enabled.
+     * @return Whether service is enabled.
+     */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    // Represents a weather report for the day along with a message.
+    public record WeatherResult(DailyWeather weather, String source, String message) { }
+
+    // Represents a location in the world.
+    private record Location(double latitude, double longitude) { }
+
+    // Represents a saved state of weather conditions with a limited existence duration.
+    private record CachedWeather(DailyWeather weather, Instant expiresAt) { }
+}

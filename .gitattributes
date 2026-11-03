@@ -1,0 +1,2 @@
+# Keep the Maven shell wrapper compatible with Linux CI.
+/backend/mvnw text eol=lf

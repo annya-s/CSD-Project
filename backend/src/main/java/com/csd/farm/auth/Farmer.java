@@ -1,12 +1,14 @@
 package com.csd.farm.auth;
 
-import java.util.UUID;
+
 
 // Safe to return to the browser: this record never contains a password.
 public record Farmer(
-        UUID id, 
+        Long id, 
         String username, 
         String email, 
-        String displayName,
-        boolean emailVerified) {
+        boolean emailVerified,
+        boolean twoFactorEnabled) {
 }
+
+

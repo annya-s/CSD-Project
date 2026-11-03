@@ -2,10 +2,13 @@ target/
 .build/
 node_modules/
 .env
-application-local.properties
-backend/application-local.properties
 .idea/
 *.iml
 *.log
 *.openai
 *.class
+*.md
+!README.md
+
+# [ERD-ALIGNMENT ADDITION] Keep the local Supabase database password out of Git.
+backend/application-local.properties

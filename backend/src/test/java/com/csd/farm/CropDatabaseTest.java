@@ -1,13 +1,11 @@
 package com.csd.farm;
 
-import java.math.BigDecimal;
 import java.sql.DriverManager;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-import com.csd.farm.crop.CropEntry;
-import com.csd.farm.crop.CropRepository;
-import com.csd.farm.crop.CropType;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -15,8 +13,9 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import com.csd.farm.crop.CropEntry;
+import com.csd.farm.crop.CropRepository;
+import com.csd.farm.crop.CropType;
 
 class CropDatabaseTest {
 
@@ -32,22 +31,22 @@ class CropDatabaseTest {
                 statement.execute("CREATE SCHEMA farm");
             }
             ScriptUtils.executeSqlScript(connection,
-                    new ClassPathResource("db/migration/V1__create_farm_tables.sql"));
+                    new ClassPathResource("db/demo/schema.sql"));
         }
 
         var jdbc = JdbcClient.create(new DriverManagerDataSource(url, "sa", ""));
         var crops = new CropRepository(jdbc);
-        UUID farmerId = UUID.randomUUID();
+        Long farmerId = 1L;
         try {
             jdbc.sql("""
-                    INSERT INTO farm.farmer_account (id, username, display_name, password_hash)
-                    VALUES (?, 'test_farmer', 'Test farmer', 'unused-test-hash')
+                    INSERT INTO public."USERS" ("User_ID", "User_Name", "User_Email", "Password_Hash")
+                    VALUES (?, 'test_farmer', 'test@example.com', 'unused-test-hash')
                     """).param(farmerId).update();
 
             for (CropType type : CropType.values()) {
                 crops.save(farmerId, new CropEntry(type,
                         OffsetDateTime.parse("2026-01-10T08:30:00Z"),
-                        BigDecimal.ONE, BigDecimal.ONE));
+                        1.0, 1.0));
             }
             assertThat(crops.findAllForFarmer(farmerId)).hasSize(10);
 
@@ -62,3 +61,5 @@ class CropDatabaseTest {
         }
     }
 }
+
+

@@ -8,6 +8,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import org.springframework.security.core.context.SecurityContextHolder; // [2FA] new import
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository; // [2FA] new import
+import com.csd.farm.auth.AccountTokenService; // [2FA] new import
+
 @Configuration
 public class SecurityConfig {
 
@@ -18,13 +22,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+			HttpSecurity http, AccountTokenService accTokens) throws Exception {
 	http
 		.authorizeHttpRequests(auth -> auth
 			// Page shells are public; their data still requires an authenticated API request.
 			.requestMatchers("/", "/index.html", "/error", 
 					"/styles.css", "/favicon.svg", "/api.js", 
-					"/login.html", "/login.js", "/verify-email.html",
+					"/login.html", "/login.js", "/account.html", "/account.js",
 					"/dashboard.html", "/dashboard.js", 
 					"/crop-details.html", "/crop-details.js", 
 					"/new-entry.html", "/new-entry.js", 
@@ -33,13 +38,35 @@ public class SecurityConfig {
 			.requestMatchers(HttpMethod.GET, 
 					"/api/auth/csrf", "/api/auth/verify-email").permitAll()
 			.requestMatchers(HttpMethod.POST, 
-					"/api/auth/register", "/api/auth/login", 
+					"/api/auth/register", "/api/auth/login", "/api/auth/verify-email", 
 					"/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
 			.anyRequest().authenticated())
 		// Spring Security keeps CSRF protection and rotates the session on login.
 		.formLogin(login -> login
 			.loginProcessingUrl("/api/auth/login")
-			.successHandler((request, response, authentication) -> response.setStatus(204))
+			// .successHandler((request, response, authentication) -> response.setStatus(204))
+			.successHandler((request, response, authentication) -> {
+                String step = accTokens.loginStep(
+                        authentication.getName(), request.getParameter("code"));
+
+                // user doesn't use 2fa, or inputted correct code
+                if (step.equals("none") || step.equals("ok")) {
+                    response.setStatus(204);
+                    return;
+                }
+                // missing or wrong code : undo the login Spring just made.
+                SecurityContextHolder.clearContext();
+                request.getSession().removeAttribute(
+                        HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+                response.setContentType("application/json");
+                if (step.equals("sent")) {
+                    response.setStatus(200);
+                    response.getWriter().write("{\"twoFactorRequired\":true}");
+                } else {
+                    response.setStatus(401);
+                    response.getWriter().write("{\"message\":\"That code is incorrect or expired.\"}");
+                }
+            })
 			.failureHandler((request, response, exception) -> {
 			    response.setStatus(401);
 			    response.setContentType("application/json");
@@ -62,9 +89,13 @@ public class SecurityConfig {
 			}))
 		.headers(headers -> headers
 			.contentSecurityPolicy(policy -> policy.policyDirectives(
-				"default-src 'self'; img-src 'self'; style-src 'self'; script-src 'self'; "
+				"default-src 'self' https://unpkg.com; "
+				+ "img-src 'self' data: https://tile.openstreetmap.org https://unpkg.com https://stadiamaps.com "
+				+ "style-src 'self' https://unpkg.com; "
+				+ "script-src 'self' https://unpkg.com; "
 				+ "connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'")));
 
 	return http.build();
     }
 }
+

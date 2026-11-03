@@ -1,7 +1,7 @@
 package com.csd.farm.auth;
 
 import java.security.Principal;
-import java.util.UUID;
+
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -42,15 +43,16 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
+    @Transactional
     public Farmer register(@Valid @RequestBody Registration request) {
         Farmer farmer = new Farmer( 
-                UUID.randomUUID(),
+                null,
                 request.username(), 
                 request.email(),
-                request.displayName().strip(), 
+                false,
                 false);
     
-        farmers.save(farmer, passwords.encode(request.password()));
+        farmer = farmers.save(farmer, passwords.encode(request.password()));
         accountTokens.issueEmailVerificationCode(farmer);
         return farmer;
     }
@@ -59,6 +61,14 @@ public class AuthController {
     public Farmer me(Principal principal) {
         return farmers.findByUsername(
                 principal.getName()).orElseThrow();
+    }
+
+    @PostMapping("/verification-code")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resendVerificationCode(Principal principal) {
+        Farmer farmer = farmers.findByUsername(principal.getName()).orElseThrow();
+
+        accountTokens.issueEmailVerificationCode(farmer);
     }
 
     @PostMapping("/verify-email")
@@ -72,7 +82,6 @@ public class AuthController {
         }
         if (farmer == null && request.email() != null
                 && !request.email().isBlank()) {
-
             farmer = farmers.findByEmail(request.email().trim()).orElse(null);
         }        
         if (farmer == null)
@@ -105,6 +114,42 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/password")
+    public ResponseEntity<Void> changePassword(
+            Principal principal, @RequestBody ChangePasswordRequest request) {
+
+        if (request.currentPassword() == null || request.currentPassword().isBlank() ||
+                request.newPassword() == null || request.newPassword().isBlank())
+            return ResponseEntity.badRequest().build();
+
+        Farmer farmer = farmers.findByUsername(principal.getName()).orElseThrow();
+        String currentHash = farmers.findPasswordHash(farmer.id());
+
+        if (currentHash == null || !passwords.matches(request.currentPassword(), currentHash))
+            return ResponseEntity.badRequest().build();
+
+        farmers.updatePassword(farmer.id(), passwords.encode(request.newPassword()));
+
+        return ResponseEntity.noContent().build();
+    }
+
+    public record ChangePasswordRequest(
+            String currentPassword,
+            String newPassword
+    ) {}
+
+    @PostMapping("/two-factor")
+    public ResponseEntity<Void> setTwoFactor(
+            @RequestBody TwoFactorToggle request, Principal principal) {
+
+        Farmer farmer = farmers.findByUsername(principal.getName()).orElseThrow();
+        if (request.enabled() && !farmer.emailVerified())
+            return ResponseEntity.badRequest().build();
+
+        farmers.setTwoFactorEnabled(farmer.id(), request.enabled());
+        return ResponseEntity.noContent().build();
+    }
+
 
 
     public record Registration(
@@ -112,8 +157,7 @@ public class AuthController {
                     regexp = "[a-z0-9_]{3,40}", 
                     message = "Use 3–40 lowercase letters, numbers, or underscores.") 
             String username,
-            @NotBlank @Email String email,
-            @NotBlank @Size(max = 80) String displayName,
+            @NotBlank @Email @Size(max = 254) String email,
             @NotBlank @Size(min = 10, max = 128) String password) {
     }
     public record VerifyEmailRequest(
@@ -127,5 +171,10 @@ public class AuthController {
             @NotBlank @Size(min = 6, max = 6) String code,
             @NotBlank @Size(min = 10, max = 128) String password) {
     }
+    public record TwoFactorToggle(
+            boolean enabled) {
+    }
 
 }
+
+

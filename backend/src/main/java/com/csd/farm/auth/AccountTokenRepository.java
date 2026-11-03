@@ -1,8 +1,10 @@
 package com.csd.farm.auth;
 
+// [ERD-ALIGNMENT CHANGE] Verification/reset tokens now use public.ACCOUNT_TOKENS.
+
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
-import java.time.OffsetDateTime;
 
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -12,71 +14,59 @@ public class AccountTokenRepository {
 
     
     public enum Purpose {
-        EMAIL_VERIFY, PASSWORD_RESET
+        EMAIL_VERIFY, PASSWORD_RESET, LOGIN_2FA
     }
-    public record UsableToken(UUID id, UUID farmerId) {
+    public record UsableToken(UUID id, Long farmerId) {
     }
 
     private final JdbcClient jdbc;
-    
-    public AccountTokenRepository(JdbcClient jdbc) {
-        this.jdbc = jdbc;
-    }
-        
-    // store new email verify / password reset proof
-    public void save(UUID id, UUID farmerId,
-            Purpose purpose, String tokenHash,
-            OffsetDateTime expiresAt) {
+    public AccountTokenRepository(JdbcClient jdbc) { this.jdbc=jdbc; }
 
+    public void save(UUID id,Long farmerId,Purpose purpose,String tokenHash,OffsetDateTime expiresAt) {
         jdbc.sql("""
-                INSERT INTO farm.account_token
-                        (id, farmer_id, purpose, token_hash, expires_at)
-                VALUES (:id, :farmerId, :purpose, :tokenHash, :expiresAt)
-                """)
-                .param("id", id)
-                .param("farmerId", farmerId)
-                .param("purpose", purpose.name())
-                .param("tokenHash", tokenHash)
-                .param("expiresAt", expiresAt)
-                .update();
+            INSERT INTO public."ACCOUNT_TOKENS" ("Token_ID","User_ID","Purpose","Token_Hash","Expires_At")
+            VALUES (:id,:userId,:purpose,:tokenHash,:expiresAt)
+            """).param("id",id).param("userId",farmerId).param("purpose",purpose.name())
+            .param("tokenHash",tokenHash).param("expiresAt",expiresAt).update();
     }
 
     // find token that match token_hash & purpose & unused & unexpired.
     //      else ret Optional.empty()
-    public Optional<UsableToken> findUsable(
-            String tokenHash, Purpose purpose) {
+    public Optional<UsableToken> findUsableFor(
+            Long farmerId, String tokenHash, Purpose purpose) {
 
         return jdbc.sql("""
-                SELECT id, farmer_id FROM farm.account_token
-                WHERE token_hash = :tokenHash   AND purpose = :purpose
-                  AND used_at IS NULL AND expires_at > CURRENT_TIMESTAMP
+                SELECT "Token_ID" AS id, "User_ID" AS farmer_id
+                FROM public."ACCOUNT_TOKENS"
+                WHERE "User_ID" = :farmerId
+                  AND "Token_Hash" = :tokenHash
+                  AND "Purpose" = :purpose
+                  AND "Used_At" IS NULL
+                  AND "Expires_At" > CURRENT_TIMESTAMP
                 """)
+                .param("farmerId", farmerId)
                 .param("tokenHash", tokenHash)
                 .param("purpose", purpose.name())
                 .query((row, number) -> new UsableToken(
                         row.getObject("id", UUID.class),
-                        row.getObject("farmer_id", UUID.class)))
+                        row.getLong("farmer_id")))
                 .optional();
     }
-
-    // consume token 
     public void markUsed(UUID tokenId) {
         jdbc.sql("""
-                UPDATE farm.account_token
-                SET used_at = CURRENT_TIMESTAMP
-                WHERE id = :tokenId     AND used_at IS NULL
+                UPDATE public."ACCOUNT_TOKENS"
+                SET "Used_At" = CURRENT_TIMESTAMP
+                WHERE "Token_ID" = :tokenId AND "Used_At" IS NULL
                 """)
                 .param("tokenId", tokenId)
                 .update();
     }
-
-    // invalidate prev token issued before new token is created
-    public void invalidateUnused(UUID farmerId, Purpose purpose) {
+    public void invalidateUnused(Long farmerId,Purpose purpose) {
         jdbc.sql("""
-                UPDATE farm.account_token
-                SET used_at = CURRENT_TIMESTAMP
-                WHERE farmer_id = :farmerId 
-                  AND purpose = :purpose    AND used_at IS NULL
+                UPDATE public."ACCOUNT_TOKENS"
+                SET "Used_At" = CURRENT_TIMESTAMP
+                WHERE "User_ID" = :farmerId
+                  AND "Purpose" = :purpose AND "Used_At" IS NULL
                 """)
                 .param("farmerId", farmerId)
                 .param("purpose", purpose.name())

@@ -47,35 +47,87 @@ class FarmIntegrationTest {
     @BeforeEach
     void createFarmers() {
         jdbc.sql("DELETE FROM farm.crop_entry").update();
-        jdbc.sql("DELETE FROM farm.farmer_account").update();
+        jdbc.sql("DELETE FROM public.\"USERS\"").update();
         jdbc.sql("DELETE FROM farm.account_token").update();
         
         String hash = passwords.encode(PASSWORD);
-        farmers.save(new Farmer(UUID.randomUUID(), 
-				"alice", "alice@example.com", "Alice", false), hash);
-        farmers.save(new Farmer(UUID.randomUUID(), 
-				"bob", "bob@example.com", "Bob", false), hash);
+        farmers.save(new Farmer(null, "alice", "alice@example.com", false, false), hash);
+        farmers.save(new Farmer(null, "bob", "bob@example.com", false, false), hash);
     }
 
     @Test
     void registrationStoresHashedPasswordAndSupportsLogin() throws Exception {
         mvc.perform(post("/api/auth/register").with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON).content("""
-								{"username": "charlie", "email": "charlie@example.com",
-								"displayName": "Charlie", "password": "a-long-test-password"}
-								"""))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"username": "charlie", "email": "charlie@example.com",
+                        "password": "a-long-test-password"}
+                        """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.username").value("charlie"))
                 .andExpect(jsonPath("$.password").doesNotExist());
 
-        String hash = jdbc.sql("SELECT password_hash FROM farm.farmer_account WHERE username = 'charlie'")
+        String hash = jdbc.sql("SELECT \"Password_Hash\" FROM public.\"USERS\" WHERE \"User_Name\" = 'charlie'")
                 .query(String.class).single();
         assertThat(hash).isNotEqualTo(PASSWORD);
         assertThat(passwords.matches(PASSWORD, hash)).isTrue();
         mvc.perform(get("/api/auth/me").session(login("charlie")))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.displayName").value("Charlie"));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.username").value("charlie"));
     }
 
+    @Test
+    void duplicateEmailIsRejectedWithoutLeavingAnAccount() throws Exception {
+        mvc.perform(post("/api/auth/register").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"username":"another_alice","email":"alice@example.com","password":"a-long-test-password"}
+                        """))
+                .andExpect(status().isConflict());
+        assertThat(farmers.findByUsername("another_alice")).isEmpty();
+    }
+
+    @Test
+    void verificationAndResetUpdateTheSameSupabaseMappedAccount() throws Exception {
+        var farmer = farmers.findByUsername("alice").orElseThrow();
+        assertThat(farmer.id()).isGreaterThan((long) Integer.MAX_VALUE);
+        var digest = java.security.MessageDigest.getInstance("SHA-256");
+        String codeHash = java.util.HexFormat.of().formatHex(
+                digest.digest("123456".getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        jdbc.sql("""
+                INSERT INTO farm.account_token (id, farmer_id, purpose, token_hash, expires_at)
+                VALUES (:id, :farmer, 'EMAIL_VERIFY', :hash, :expires)
+                """)
+                .param("id", UUID.randomUUID()).param("farmer", farmer.id())
+                .param("hash", codeHash).param("expires", java.time.OffsetDateTime.now().plusHours(1)).update();
+        mvc.perform(post("/api/auth/verify-email").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"username\":\"alice\",\"code\":\"123456\"}"))
+                .andExpect(status().isNoContent());
+        assertThat(farmers.findByUsername("alice").orElseThrow().emailVerified()).isTrue();
+        jdbc.sql("DELETE FROM farm.account_token").update();
+        jdbc.sql("""
+                INSERT INTO farm.account_token (id, farmer_id, purpose, token_hash, expires_at)
+                VALUES (:id, :farmer, 'PASSWORD_RESET', :hash, :expires)
+                """)
+                .param("id", UUID.randomUUID()).param("farmer", farmer.id())
+                .param("hash", codeHash).param("expires", java.time.OffsetDateTime.now().plusHours(1)).update();
+        mvc.perform(post("/api/auth/reset-password").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON).content("""
+                {"email":"alice@example.com","code":"123456","password":"a-new-long-password"}
+                """))
+                .andExpect(status().isNoContent());
+        mvc.perform(post("/api/auth/login").with(csrf())
+                .param("username", "alice").param("password", PASSWORD))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/auth/login").with(csrf())
+                .param("username", "alice").param("password", "a-new-long-password"))
+                .andExpect(status().isNoContent());
+        mvc.perform(post("/api/auth/reset-password").with(csrf())
+                .contentType(MediaType.APPLICATION_JSON).content("""
+                {"email":"alice@example.com","code":"123456","password":"another-long-password"}
+                """))
+                .andExpect(status().isBadRequest());
+    }
     @ParameterizedTest
     @ValueSource(strings = {"/", "/index.html"})
     void homepageRedirectsToSeparateLoginPage(String path) throws Exception {
@@ -98,17 +150,18 @@ class FarmIntegrationTest {
     @Test
     void duplicateUsernameIsRejected() throws Exception {
         mvc.perform(post("/api/auth/register").with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON).content("""
-								{"username": "alice", "email": "other-alice@example.com",
-								"displayName": "Other Alice", "password": "a-long-test-password"}
-								"""))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"username": "alice", "email": "other-alice@example.com",
+                        "displayName": "Other Alice", "password": "a-long-test-password"}
+                        """))
                 .andExpect(status().isConflict());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
             "{\"username\":\"A\",\"email\":\"a@example.com\",\"displayName\":\"Alice\",\"password\":\"a-long-test-password\"}",
-			"{\"username\":\"valid_name\",\"email\":\"valid@example.com\",\"displayName\":\"  \",\"password\":\"a-long-test-password\"}",
+			"{\"username\":\"valid_name\",\"email\":\"invalid-email\",\"password\":\"a-long-test-password\"}",
 			"{\"username\":\"valid_name\",\"email\":\"valid@example.com\",\"displayName\":\"Alice\",\"password\":\"short\"}"
     })
     void invalidRegistrationIsRejected(String json) throws Exception {
@@ -165,7 +218,7 @@ class FarmIntegrationTest {
         mvc.perform(get("/api/crops/POTATO").session(freshSession).param("plantedAt", PLANTED_AT))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.entry.latitude").value(1.3521))
-                .andExpect(jsonPath("$.readings[0].status").value("NOT_MEASURED"))
+                .andExpect(jsonPath("$.readings[0].status").value("NOT_ASSESSED"))
                 .andExpect(jsonPath("$.healthScore").isEmpty());
     }
 
@@ -246,9 +299,116 @@ class FarmIntegrationTest {
                 .andExpect(status().isNoContent()).andReturn().getRequest().getSession();
     }
 
+    private static final String WEATHER_JSON = """
+            {"date":"2026-01-12","timezone":"Asia/Singapore","temperatureMeanC":30,
+             "sunshineDurationSeconds":18000,"humidityMeanPercent":82,"soilMoistureMeanM3M3":0.25}
+            """;
+
+    @Test
+    void weatherUpdatesAppearInDetailsAndDashboardAndCanClearOldFlags() throws Exception {
+        MockHttpSession session = login("alice");
+        createCrop(session, CROP_JSON);
+        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf())
+                        .param("plantedAt", "2026-01-10T16:30:00+08:00")
+                        .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.needsAttention").value(true))
+                .andExpect(jsonPath("$.readings[0].status").value("ABOVE_RANGE_SEVERE"))
+                .andExpect(jsonPath("$.readings[1].status").value("NOT_ASSESSED"))
+                .andExpect(jsonPath("$.readings[2].status").value("NOT_ASSESSED"))
+                .andExpect(jsonPath("$.readings[3].value").value(5))
+                .andExpect(jsonPath("$.issues.length()").value(2));
+        mvc.perform(get("/api/dashboard").session(login("alice")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.crops[0].needsAttention").value(true))
+                .andExpect(jsonPath("$.crops[0].weather.date").value("2026-01-12"));
+        mvc.perform(get("/api/crops/POTATO").session(session).param("plantedAt", PLANTED_AT))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.weather.humidityMeanPercent").value(82));
+
+        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf())
+                        .param("plantedAt", PLANTED_AT).contentType(MediaType.APPLICATION_JSON)
+                        .content(WEATHER_JSON.replace(":30", ":20").replace("18000", "25200")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.needsAttention").value(false))
+                .andExpect(jsonPath("$.issues.length()").value(0));
+        mvc.perform(get("/api/dashboard").session(session))
+                .andExpect(jsonPath("$.crops[0].needsAttention").value(false));
+    }
+
+    @Test
+    void weatherUpdatesRequireLoginCsrfAndOwnership() throws Exception {
+        MockHttpSession alice = login("alice");
+        createCrop(alice, CROP_JSON);
+        mvc.perform(post("/api/crops/POTATO/weather").with(csrf()).param("plantedAt", PLANTED_AT)
+                        .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/crops/POTATO/weather").session(alice).param("plantedAt", PLANTED_AT)
+                        .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
+                .andExpect(status().isForbidden());
+        MockHttpSession bob = login("bob");
+        mvc.perform(post("/api/crops/POTATO/weather").session(bob).with(csrf()).param("plantedAt", PLANTED_AT)
+                        .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
+                .andExpect(status().isNotFound());
+        createCrop(bob, CROP_JSON);
+        mvc.perform(post("/api/crops/POTATO/weather").session(bob).with(csrf()).param("plantedAt", PLANTED_AT)
+                        .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
+                .andExpect(status().isOk());
+        mvc.perform(get("/api/crops/POTATO").session(alice).param("plantedAt", PLANTED_AT))
+                .andExpect(jsonPath("$.weather").isEmpty())
+                .andExpect(jsonPath("$.needsAttention").value(false));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"negativeSun", "longSun", "humidity", "soil", "temperature", "zone", "future", "today", "missingDate"})
+    void invalidDailyWeatherIsRejected(String invalidField) throws Exception {
+        MockHttpSession session = login("alice");
+        createCrop(session, CROP_JSON);
+        String json = switch (invalidField) {
+            case "negativeSun" -> WEATHER_JSON.replace("18000", "-1");
+            case "longSun" -> WEATHER_JSON.replace("18000", "86401");
+            case "humidity" -> WEATHER_JSON.replace(":82", ":101");
+            case "soil" -> WEATHER_JSON.replace("0.25", "25");
+            case "temperature" -> WEATHER_JSON.replace(":30", ":101");
+            case "zone" -> WEATHER_JSON.replace("Asia/Singapore", "Invalid/Timezone");
+            case "future" -> WEATHER_JSON.replace("2026-01-12", "2999-01-12");
+            case "today" -> WEATHER_JSON.replace("2026-01-12",
+                    java.time.LocalDate.now(java.time.ZoneId.of("Asia/Singapore")).toString());
+            default -> WEATHER_JSON.replace("\"2026-01-12\"", "null");
+        };
+        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf()).param("plantedAt", PLANTED_AT)
+                        .contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void olderWeatherCannotOverwriteNewerAndMissingValuesClearThePreviousSnapshot() throws Exception {
+        MockHttpSession session = login("alice");
+        createCrop(session, CROP_JSON);
+        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf()).param("plantedAt", PLANTED_AT)
+                        .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
+                .andExpect(status().isOk());
+        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf()).param("plantedAt", PLANTED_AT)
+                        .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON.replace("2026-01-12", "2026-01-11")))
+                .andExpect(status().isConflict());
+        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf()).param("plantedAt", PLANTED_AT)
+                        .contentType(MediaType.APPLICATION_JSON).content("""
+                                {"date":"2026-01-13","timezone":"Asia/Singapore"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.weather.temperatureMeanC").isEmpty())
+                .andExpect(jsonPath("$.weather.sunshineDurationSeconds").isEmpty())
+                .andExpect(jsonPath("$.readings[0].status").value("NOT_ASSESSED"))
+                .andExpect(jsonPath("$.needsAttention").value(false));
+    }
+
     private void createCrop(MockHttpSession session, String json) throws Exception {
         mvc.perform(post("/api/crops").session(session).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isCreated());
     }
 }
+
+
+
+

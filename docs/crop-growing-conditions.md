@@ -75,4 +75,53 @@ These are implementation recommendations, not additional findings from the sourc
 5. Do not turn a forecast into a claim about a current measurement. Missing soil pH or soil-moisture data should produce “not assessed,” not a healthy score.
 6. Describe weather-related disease conditions as **risk**, not confirmed disease. For example, damp potato weather can justify “inspect leaves and improve airflow”; it does not prove blight.
 
-No values in this document have been wired into the live health overview. The current application still needs your team's measurement integration and agreed assessment rules.
+## Approved prototype comparisons (28 September 2026)
+
+The application now uses the temperature ranges above and the sunlight bands below
+in `CropConditions.java`. These are preliminary daily comparisons, not a validated
+prediction of crop growth. Humidity and soil moisture are **Not assessed for all
+ten crops**, including sugar cane, even when values are supplied.
+
+| Crop | Temperature reference (°C) | Sunshine reference (hours/day) | Sunlight basis |
+| --- | --- | --- | --- |
+| Potato | 15–25 | 6–8 | Prototype estimate from strong-light guidance |
+| Sugar cane | 24–37 | 7–9 | TNAU bright-sunshine guidance |
+| Apple | 14–27 | 6–8 | NC State full sun, 6+ hours; upper value is a prototype assumption |
+| Rice | 20–30 | 6–8 | Prototype estimate from bright-condition guidance |
+| Wheat | 15–23 | 6–8 | Prototype estimate from bright-condition guidance |
+| Maize | 18–33 | 6–8 | Prototype estimate from bright-condition guidance |
+| Tomato | 20–27 | 6–8 | Maryland vegetable-garden guidance |
+| Carrot | 15–24 | 4–6 | Maryland minimum-light guidance, adapted as a prototype band |
+| Lettuce | 12–21 | 4–6 | Maryland minimum-light guidance, adapted as a prototype band |
+| Soybean | 20–33 | 6–8 | NC State full sun, 6+ hours; upper value is a prototype assumption |
+
+Sunlight sources:
+
+- [TNAU sugar cane climate](https://agritech.tnau.ac.in/expert_system/sugar/botany%26climate.html): 7–9 hours of bright sunshine.
+- [University of Maryland, Planning Your Vegetable Garden](https://extension.umd.edu/sites/extension.umd.edu/files/2025-09/Planning%20Your%20Vegetable%20Garden.pdf): 6–8 hours for fruiting vegetables and at least 4–6 for listed leafy/root vegetables.
+- [NC State apple](https://plants.ces.ncsu.edu/plants/malus-domestica/) and [soybean](https://plants.ces.ncsu.edu/plants/glycine-max/): full sun means six or more hours. Neither establishes eight hours as a harmful upper limit.
+- [Open-Meteo documentation](https://open-meteo.com/en/docs): daily `sunshine_duration` is expressed in seconds, using the WMO sunshine threshold of direct normal irradiance above 120 W/m².
+
+Gardening descriptions of direct sun are only an approximate match for weather-model
+sunshine duration. The 120 W/m² definition is not a universal threshold for useful
+plant light; plants also use diffuse light. The table's upper values are **not
+damage thresholds**. Carrot and lettuce can tolerate more sun depending on conditions.
+
+Implementation rules:
+
+1. Convert daily sunshine with `hours = seconds / 3600.0`. Compare before rounding.
+2. Below minimum → `BELOW_RANGE`; above maximum → `ABOVE_RANGE`; both endpoints
+   and everything between → `WITHIN_RANGE`. Missing readings → `NOT_ASSESSED`.
+3. Temperature outside its reference range, or sunshine below its estimated band,
+   flags the planting for review. Sunshine above its band is informational and
+   does not by itself flag the crop or recommend shade.
+4. Compare a **completed local day's** mean temperature and total sunshine.
+   Never compare a partial day's sunshine or an hourly temperature to this daily
+   snapshot. Today's and future dates are rejected by the update endpoint.
+5. Always display the weather date and timezone. The latest saved day's results
+   are not live measurements. Missing data and unassessed conditions do not imply health.
+
+The teammate's Open-Meteo client is now connected to the crop pages. See
+[the integration guide](crop-health-integration.md) for the data flow and code map.
+Soil moisture is displayed as percent by volume (`m³/m³ × 100`), not percent of
+plant-available water depleted. Its assessment remains disabled.
