@@ -51,8 +51,8 @@ class FarmIntegrationTest {
         jdbc.sql("DELETE FROM farm.account_token").update();
         
         String hash = passwords.encode(PASSWORD);
-        farmers.save(new Farmer(null, "alice", "alice@example.com", false, false), hash);
-        farmers.save(new Farmer(null, "bob", "bob@example.com", false, false), hash);
+        farmers.save(new Farmer(null, "alice", "alice@example.com", false, false, "FARMER"), hash);
+        farmers.save(new Farmer(null, "bob", "bob@example.com", false, false, "FARMER"), hash);
     }
 
     @Test
