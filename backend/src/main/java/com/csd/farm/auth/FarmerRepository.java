@@ -4,6 +4,7 @@ package com.csd.farm.auth;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public class FarmerRepository implements UserDetailsService {
     private final JdbcClient jdbc;
-    private final String table, id, name, email, hash;
+    private final String table, id, name, email, hash, role;
 
     public FarmerRepository(JdbcClient jdbc,
             @Value("${app.users.schema:public}") String schema,
@@ -27,9 +28,10 @@ public class FarmerRepository implements UserDetailsService {
             @Value("${app.users.id:User_ID}") String id,
             @Value("${app.users.name:User_Name}") String name,
             @Value("${app.users.email:User_Email}") String email,
-            @Value("${app.users.hash:Password_Hash}") String hash) {
+            @Value("${app.users.hash:Password_Hash}") String hash,
+            @Value("${app.users.role:Role}") String role) {
         this.jdbc=jdbc; this.table=quote(schema)+"."+quote(table);
-        this.id=quote(id); this.name=quote(name); this.email=quote(email); this.hash=quote(hash);
+        this.id=quote(id); this.name=quote(name); this.email=quote(email); this.hash=quote(hash); this.role=quote(role);
     }
 
     private static String quote(String value) {
@@ -56,7 +58,7 @@ public class FarmerRepository implements UserDetailsService {
             """)
             .param("id", farmerId)
             .update();
-        return new Farmer(farmerId, farmer.username(), farmer.email(), false, false);
+        return new Farmer(farmerId, farmer.username(), farmer.email(), false, false, "FARMER");
     }
 
     private String select() {
@@ -64,7 +66,8 @@ public class FarmerRepository implements UserDetailsService {
                 + "u." + name + " AS username, "
                 + "u." + email + " AS email, "
                 + "COALESCE(s.\"Email_Verified\", FALSE) AS email_verified, "
-                + "COALESCE(s.\"Two_Factor_Enabled\", FALSE) AS two_factor_enabled "
+                + "COALESCE(s.\"Two_Factor_Enabled\", FALSE) AS two_factor_enabled, "
+                + "u." + role + " AS role "
                 + "FROM " + table + " u "
                 + "LEFT JOIN public.\"ACCOUNT_STATUS\" s "
                 + "ON s.\"User_ID\" = u." + id;
@@ -73,7 +76,7 @@ public class FarmerRepository implements UserDetailsService {
     private Farmer map(ResultSet row, int number) throws SQLException {
         return new Farmer(row.getLong("id"), row.getString("username"),
                 row.getString("email"), row.getBoolean("email_verified"),
-                row.getBoolean("two_factor_enabled"));
+                row.getBoolean("two_factor_enabled"), row.getString("role"));
     }
     public Optional<Farmer> findByUsername(String username) {
         return jdbc.sql(select()+" WHERE u."+name+"=:value").param("value",username).query(this::map).optional();
@@ -116,9 +119,43 @@ public class FarmerRepository implements UserDetailsService {
     }
 
     @Override public UserDetails loadUserByUsername(String username) {
-        return jdbc.sql("SELECT "+name+" AS username, "+hash+" AS password_hash FROM "+table+" WHERE "+name+"=:name")
+        return jdbc.sql("SELECT "+name+" AS username, "+hash+" AS password_hash, "+role+" AS account_role "
+                        + "FROM "+table+" WHERE "+name+"=:name")
             .param("name",username)
-            .query((row,number)->User.withUsername(row.getString("username")).password(row.getString("password_hash")).roles("FARMER").build())
+            .query((row,number)->User
+                    .withUsername(row.getString("username"))
+                    .password(row.getString("password_hash"))
+                    .roles(row.getString("account_role"))
+                    .build())
             .optional().orElseThrow(()->new UsernameNotFoundException("Invalid username or password."));
+    }
+
+    // admin methods
+    public List<Farmer> findAllUsers() {
+        return jdbc.sql(select() + " ORDER BY u." + name).query(this::map).list();
+    }
+    public void adminUpdatePassword(Long userId, String passwordHash) {
+        jdbc.sql("UPDATE " + table + " SET " + hash + " = :hash WHERE " + id + " = :id")
+            .param("id", userId)
+            .param("hash", passwordHash)
+            .update();
+    }
+    public void setEmailVerified(Long userId, boolean verified) {
+        jdbc.sql("""
+            UPDATE public."ACCOUNT_STATUS"
+            SET "Email_Verified" = :verified
+            WHERE "User_ID" = :id
+            """)
+            .param("id", userId)
+            .param("verified", verified)
+            .update();
+    }
+    @Transactional
+    public boolean deleteById(Long userId) {
+        int deleted = jdbc.sql("DELETE FROM " + table + " WHERE " + id + " = :id")
+                .param("id", userId)
+                .update();
+
+        return deleted > 0;
     }
 }
