@@ -1,6 +1,5 @@
 package com.csd.farm.crop;
 
-// [ERD-ALIGNMENT ADDITION] Resolves a user's named farm before saving a crop cycle.
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -26,6 +25,11 @@ public class FarmRepository {
         if(Math.abs(saved.latitude()-latitude)>0.000001 || Math.abs(saved.longitude()-longitude)>0.000001)
             throw new ResponseStatusException(HttpStatus.CONFLICT,"That farm name already has different coordinates.");
         return farmId;
+    }
+
+    public void deleteForUser(Long userId,long farmId){
+        jdbc.sql("DELETE FROM public.\"FARMS\" WHERE \"Farm_ID\"=:farmId AND \"User_ID\"=:userId")
+                .param("farmId",farmId).param("userId",userId).update();
     }
     private record Location(double latitude,double longitude){}
 }
