@@ -85,7 +85,13 @@ public class EnvironmentService {
         return getAllReadings(cropId).get(currentHour);
     }
 
-    public List<EnvironmentReading> getHistoricalReading(double latitude, double longitude) {
+    public List<EnvironmentReading> getHistoricalReading(int cropId) {
+        CropRepository.FarmCoordinates coords = cropRepo.findCoordinatesForFarm(cropId)
+            .orElseThrow(() -> new NoSuchElementException("Crop coordinates not found"));
+
+        double latitude = coords.latitude();
+        double longitude = coords.longitude();
+
         if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
             throw new IllegalArgumentException("Invalid longitude/latitude inputs");
         }
