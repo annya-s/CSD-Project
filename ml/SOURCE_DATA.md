@@ -43,3 +43,13 @@ These are candidate source datasets, NOT incorporated into training.csv or the d
 - Lettuce: https://doi.org/10.5061/dryad.73n5tb3d4; metadata accessible, but file download returned HTTP 401 via API and HTTP 403 via the public download link. No lettuce measurements were saved. Its Weight label is fresh harvest mass in g/plant, not the current dry biomass g/m2 target; imagery-derived predictors also differ from the weather-only application.
 
 Next preparation step: select a crop with verified labels and dates, normalize its units, join compatible weather, and split by field/season before adapting the three Python scripts for that crop. Never fill missing observed biomass or planting dates with invented values. Simply copying these files into data/raw does not make the current wheat pipeline multicrop.
+
+## Synthetic biomass scenarios
+Run `synthetic_demo.py` offline to rebuild 1,500 seeded synthetic examples per crop in data/synthetic_biomass.csv and four CatBoost artifacts in model/synthetic/. Ship those artifacts, their age-range JSON files and synthetic_demo.py with the existing ML runtime. Data and models are ignored by Git. No simulation is used as a wheat training label or saved as a farmer observation.
+
+Carrot: Turner et al., https://github.com/mishaploid/carrot-diallel/blob/9c45b01737b4c4e14cc8c8373591defffae065fb/data/diallelRawData.csv . Use the median raw dry leaf weight (dlw), grams per plant, at the study's 130-day harvest. Day 14 and 65 anchors at 3% and 31% of that median are invented. Source study: https://academic.oup.com/g3journal/article/8/2/411/6029812.
+
+Maize, soybean and sugar beet: Chong et al., MuST-C, CC BY 4.0, https://www.ipb.uni-bonn.de/data/MuST-C/ and https://doi.org/10.1038/s41597-025-06462-y . Source archive: https://bonndata.uni-bonn.de/api/access/datafile/:persistentId?persistentId=doi:10.60507/FK2/OX9XTM/CEFQFD . Use table 1 sowing dates, omit individual-plant records flagged Dont_use_psqm, and interpolate median fresh aboveground biomass per full plot area between observed dates. This fresh weight includes water and cannot be directly compared with wheat dry mass or carrot dry shoot mass per plant.
+
+The generator samples ranges of 14-day weather summaries, applies explicitly assumed weather penalties to each growth curve, and fits each model to those simulated values. These scenarios demonstrate the assumed relationship; they have no field accuracy estimate. No synthetic record is treated as independent field validation.
+
