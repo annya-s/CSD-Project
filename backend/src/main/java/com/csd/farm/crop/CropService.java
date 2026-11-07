@@ -1,6 +1,5 @@
 package com.csd.farm.crop;
 
-// [ERD-ALIGNMENT CHANGE] Uses farm ownership and CROP_CYCLE_ID for all crop operations.
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -12,6 +11,7 @@ import com.csd.farm.crop.CropResponses.Dashboard;
 import com.csd.farm.crop.CropResponses.DashboardCrop;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -20,15 +20,15 @@ public class CropService {
     private final CropRepository crops;
     private final CropTypeRepository cropTypes;
     private final FarmerRepository farmers;
+    private final FarmRepository farms;
     private final CropWeatherRepository weatherReadings;
     private final CropHealthService health;
     private final CropWeatherService weatherService;
     private final MLPredictionService predictions;
 
-    public CropService(CropRepository crops,CropTypeRepository cropTypes,FarmerRepository farmers,
-            CropWeatherRepository weatherReadings,CropHealthService health,CropWeatherService weatherService,
-            MLPredictionService predictions){
-        this.crops=crops;this.cropTypes=cropTypes;this.farmers=farmers;
+    public CropService(CropRepository crops,CropTypeRepository cropTypes,FarmerRepository farmers,FarmRepository farms,
+            CropWeatherRepository weatherReadings,CropHealthService health,CropWeatherService weatherService){
+        this.crops=crops;this.cropTypes=cropTypes;this.farmers=farmers;this.farms=farms;
         this.weatherReadings=weatherReadings;this.health=health;this.weatherService=weatherService;
         this.predictions=predictions;
     }
@@ -55,9 +55,14 @@ public class CropService {
             normalizeTime(request.plantedAt()),request.latitude(),request.longitude());
         return crops.save(userId(username),entry);
     }
+    @Transactional
     public void delete(String username,Long cycleId){
-        if(!crops.deleteForFarmer(userId(username),cycleId))
+        Long owner=userId(username);
+        Long farmId=crops.findFarmIdForCrop(owner,cycleId)
+            .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Crop entry not found.")).longValue();
+        if(!crops.deleteForFarmer(owner,cycleId))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Crop entry not found.");
+        if(crops.countForFarm(farmId)==0) farms.deleteForUser(owner,farmId);
     }
     public CropDetails details(String username,Long cycleId){
         Long owner=userId(username);return cropDetails(owner,findCrop(owner,cycleId));
