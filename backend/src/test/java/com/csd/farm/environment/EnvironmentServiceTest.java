@@ -6,26 +6,32 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.csd.farm.crop.CropRepository;
 
 @ExtendWith(MockitoExtension.class)
 class EnvironmentServiceTest {
 
     private static final double LATITUDE = 1.35;
     private static final double LONGITUDE = 103.82;
+
+    @Mock
+    private CropRepository cropRepo;
 
     @Mock
     private EnvironmentClient environmentClient;
@@ -36,39 +42,125 @@ class EnvironmentServiceTest {
     // GetLatestReading test set
     @Test
     void getAllReadings_ShouldThrowWhenHourlyBlockIsMissing() {
-        // Arrange
+        int cropId = 1;
+
         OpenMeteoResponse apiResponse = completeResponse(
             LocalDate.now(ZoneId.systemDefault())
         );
         apiResponse.hourly = null;
 
+        mockCropCoordinates(cropId);
+
         when(environmentClient.fetchLatestMeteoData(LATITUDE, LONGITUDE))
             .thenReturn(apiResponse);
 
         // Act & Assert
         assertThrows(NoSuchElementException.class,
-            () -> environmentService.getAllReadings(LATITUDE, LONGITUDE));
+            () -> environmentService.getAllReadings(cropId));
     }
 
     @Test
+    void getAllReadings_ShouldThrowWhenCropCoordinatesAreNotFound() {
+        int cropId = 1;
+
+        when(cropRepo.findCoordinatesForFarm(cropId))
+            .thenReturn(Optional.empty());
+
+        assertThrows(
+            NoSuchElementException.class,
+            () -> environmentService.getAllReadings(cropId)
+        );
+
+        verify(cropRepo).findCoordinatesForFarm(cropId);
+        verifyNoInteractions(environmentClient);
+    }
+
+    @Test
+    void getAllReadings_ShouldPassFarmCoordinatesToEnvironmentClient() {
+        int cropId = 1;
+        mockCropCoordinates(cropId);
+
+        when(environmentClient.fetchLatestMeteoData(LATITUDE, LONGITUDE))
+            .thenReturn(completeResponse(LocalDate.now()));
+
+        environmentService.getAllReadings(cropId);
+
+        verify(cropRepo).findCoordinatesForFarm(cropId);
+        verify(environmentClient).fetchLatestMeteoData(LATITUDE, LONGITUDE);
+    }
+
+    @Test
+    void getAllReadings_ShouldRejectInvalidLatitude() {
+        int cropId = 1;
+
+        when(cropRepo.findCoordinatesForFarm(cropId))
+            .thenReturn(Optional.of(
+                new CropRepository.FarmCoordinates(91.0, LONGITUDE)
+            ));
+
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> environmentService.getAllReadings(cropId)
+        );
+
+        verifyNoInteractions(environmentClient);
+    }
+
+    @Test
+    void getAllReadings_ShouldRejectInvalidLongitude() {
+        int cropId = 1;
+
+        when(cropRepo.findCoordinatesForFarm(cropId))
+            .thenReturn(Optional.of(
+                new CropRepository.FarmCoordinates(LATITUDE, 181.0)
+            ));
+
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> environmentService.getAllReadings(cropId)
+        );
+
+        verifyNoInteractions(environmentClient);
+    }
+
+    @Test
+    void getAllReadings_ShouldThrowWhenEnvironmentClientReturnsNull() {
+        int cropId = 1;
+        mockCropCoordinates(cropId);
+
+        when(environmentClient.fetchLatestMeteoData(LATITUDE, LONGITUDE))
+            .thenReturn(null);
+
+        assertThrows(
+            NoSuchElementException.class,
+            () -> environmentService.getAllReadings(cropId)
+        );
+    }
+
+
+    @Test
     void getAllReadings_ShouldThrowWhenDailyBlockIsMissing() {
-        // Arrange
+        int cropId = 1;
+
         OpenMeteoResponse apiResponse = completeResponse(
             LocalDate.now(ZoneId.systemDefault())
         );
         apiResponse.daily = null;
 
+        mockCropCoordinates(cropId);
+
         when(environmentClient.fetchLatestMeteoData(LATITUDE, LONGITUDE))
             .thenReturn(apiResponse);
 
         // Act & Assert
         assertThrows(NoSuchElementException.class,
-            () -> environmentService.getAllReadings(LATITUDE, LONGITUDE));
+            () -> environmentService.getAllReadings(cropId));
     }
 
     @Test
     void getAllReadings_ShouldIncludeCurrentDayAndForecastReadings() {
-        // Arrange
+        int cropId = 1;
+        
         LocalDate today = LocalDate.now(ZoneId.systemDefault());
         LocalDate tomorrow = today.plusDays(1);
 
@@ -86,12 +178,14 @@ class EnvironmentServiceTest {
         apiResponse.daily.time = new ArrayList<>(List.of(today.toString(), tomorrow.toString()));
         apiResponse.daily.sunshine_duration = new ArrayList<>(List.of(3600.0, 7200.0));
 
+        mockCropCoordinates(cropId);
+
         when(environmentClient.fetchLatestMeteoData(LATITUDE, LONGITUDE))
             .thenReturn(apiResponse);
 
         // Act
         List<EnvironmentReading> readings =
-            environmentService.getAllReadings(LATITUDE, LONGITUDE);
+            environmentService.getAllReadings(cropId);
 
         // Assert
         assertEquals(3, readings.size());
@@ -103,18 +197,21 @@ class EnvironmentServiceTest {
 
     @Test
     void getAllReadings_ShouldReturnNullWhenMeasurementArraysAreShorterThanTimeArrays() {
-        // Arrange
+        int cropId = 1;
+
         LocalDate today = LocalDate.now(ZoneId.systemDefault());
         OpenMeteoResponse apiResponse = completeResponse(today);
 
         apiResponse.hourly.temperature.remove(335);
+
+        mockCropCoordinates(cropId);
 
         when(environmentClient.fetchLatestMeteoData(LATITUDE, LONGITUDE))
             .thenReturn(apiResponse);
 
         // Act
         List<EnvironmentReading> readings =
-            environmentService.getAllReadings(LATITUDE, LONGITUDE);
+            environmentService.getAllReadings(cropId);
 
         // Assert
         assertEquals(336, readings.size());
@@ -123,18 +220,21 @@ class EnvironmentServiceTest {
 
     @Test
     void getAllReadings_ShouldKeepIndividualMissingObservationsAsNull() {
-        // Arrange
+        int cropId = 1;
+
         LocalDate today = LocalDate.now(ZoneId.systemDefault());
         OpenMeteoResponse apiResponse = completeResponse(today);
 
         apiResponse.hourly.temperature.set(100, null);
+
+        mockCropCoordinates(cropId);
 
         when(environmentClient.fetchLatestMeteoData(LATITUDE, LONGITUDE))
             .thenReturn(apiResponse);
 
         // Act
         List<EnvironmentReading> readings =
-            environmentService.getAllReadings(LATITUDE, LONGITUDE);
+            environmentService.getAllReadings(cropId);
 
         // Assert
         assertEquals(336, readings.size());
@@ -143,7 +243,8 @@ class EnvironmentServiceTest {
 
     @Test
     void getAllReadings_ShouldSkipMissingHourlyTimestamps() {
-        // Arrange
+        int cropId = 1;
+
         LocalDate today = LocalDate.now(ZoneId.systemDefault());
         OpenMeteoResponse apiResponse = completeResponse(today);
 
@@ -155,12 +256,14 @@ class EnvironmentServiceTest {
         apiResponse.hourly.soil_moisture.remove(missingIndex);
         apiResponse.hourly.vapour_pressure_deficit.remove(missingIndex);
 
+        mockCropCoordinates(cropId);
+
         when(environmentClient.fetchLatestMeteoData(LATITUDE, LONGITUDE))
             .thenReturn(apiResponse);
 
 		// Act
 		List<EnvironmentReading> readings =
-			environmentService.getAllReadings(LATITUDE, LONGITUDE);
+			environmentService.getAllReadings(cropId);
 
         // Assert
         assertEquals(335, readings.size());
@@ -169,19 +272,22 @@ class EnvironmentServiceTest {
 
     @Test
     void getAllReadings_ShouldMapSunshineDurationToCorrectDate() {
-        // Arrange
+        int cropId = 1;
+
         LocalDate today = LocalDate.now(ZoneId.systemDefault());
         OpenMeteoResponse apiResponse = completeResponse(today);
 
         apiResponse.daily.sunshine_duration.set(0, 3600.0);
         apiResponse.daily.sunshine_duration.set(1, 7200.0);
 
+        mockCropCoordinates(cropId);
+
         when(environmentClient.fetchLatestMeteoData(LATITUDE, LONGITUDE))
             .thenReturn(apiResponse);
 
 		// Act
 		List<EnvironmentReading> readings =
-			environmentService.getAllReadings(LATITUDE, LONGITUDE);
+			environmentService.getAllReadings(cropId);
 
         // Assert
         assertEquals(3600.0, readings.get(0).sunshineDuration());
@@ -308,7 +414,6 @@ class EnvironmentServiceTest {
 
     @Test
     void getHistoricalReading_ShouldReturnNullWhenMeasurementArraysAreShorterThanTimeArrays() {
-        // Arrange
         LocalDate startDate = LocalDate.now(ZoneId.systemDefault()).minusDays(14);
         LocalDate endDate = startDate.plusDays(13);
         OpenMeteoResponse apiResponse = completeResponse(startDate);
@@ -399,4 +504,11 @@ class EnvironmentServiceTest {
         assertThrows(NoSuchElementException.class, 
             () -> environmentService.getHistoricalReading(LATITUDE, LONGITUDE));
     }
+
+    private void mockCropCoordinates(int cropId) {
+        when(cropRepo.findCoordinatesForFarm(cropId))
+            .thenReturn(Optional.of(
+                new CropRepository.FarmCoordinates(LATITUDE, LONGITUDE)
+            ));
+}
 }

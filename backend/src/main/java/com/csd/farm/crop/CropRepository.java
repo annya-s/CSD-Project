@@ -71,6 +71,24 @@ public class CropRepository {
             """).param("userId",userId).param("cycleId",cycleId).update()==1;
     }
 
+    public Optional<FarmCoordinates> findCoordinatesForFarm(int cropCycleId) {
+        return jdbc.sql("""
+            SELECT f."Latitude" AS latitude, f."Longitude" as longitude
+            FROM public."CROP_CYCLES" c
+            JOIN public."FARMS" f on c."Farm_ID" = f."Farm_ID"
+            WHERE c."Crop_Cycle_ID" = :cropCycleId
+            """)
+            .param("cropCycleId", cropCycleId)
+            .query(this::mapCoords)
+            .optional();
+    }
+
+    public record FarmCoordinates(double latitude, double longitude) {}
+
+    public FarmCoordinates mapCoords(ResultSet row, int number) throws SQLException {
+        return new FarmCoordinates(row.getDouble("latitude"), row.getDouble("longitude"));
+    }
+
     private String select(){
         return """
             SELECT c."Crop_Cycle_ID" AS cycle_id,f."Farm_Name" AS farm_name,

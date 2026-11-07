@@ -16,15 +16,15 @@ public class EnvironmentController {
         this.envService = envService;
     }
 
-    @GetMapping("/api/environment/latest")
-    public EnvironmentReading getLatestEnvironnmentReading(@RequestParam double latitude, @RequestParam double longitude) {
-        return envService.getLatestReading(latitude, longitude);
-    }
+    // @GetMapping("/api/environment/latest")
+    // public EnvironmentReading getLatestEnvironnmentReading(@RequestParam double latitude, @RequestParam double longitude) {
+    //     return envService.getLatestReading(latitude, longitude);
+    // }
 
     // TODO: Use for when Database gets integrated
-    // @GetMapping("/api/environment/latest")
-    // public EnvironmentReading getLatestEnvironnmentReading(@RequestParam int cropId) {
-    //     return envService.getLatestReading(cropId);
-    // }
+    @GetMapping("/api/environment/latest")
+    public EnvironmentReading getLatestEnvironnmentReading(@RequestParam int cropId) {
+        return envService.getLatestReading(cropId);
+    }
 }
 
