@@ -6,16 +6,20 @@ import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.jdbc.core.simple.JdbcClient;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.csd.farm.environment.HistoricalReadingAverage;
 
 @Repository
 public class CropRepository {
     private final JdbcClient jdbc;
     private final FarmRepository farms;
     private final CropTypeRepository cropTypes;
+
     @Autowired
     public CropRepository(JdbcClient jdbc,FarmRepository farms,CropTypeRepository cropTypes){
         this.jdbc=jdbc;this.farms=farms;this.cropTypes=cropTypes;
@@ -43,6 +47,44 @@ public class CropRepository {
             """).param("farmId",farmId).param("typeId",typeId).param("plantedAt",crop.plantedAt())
             .query(Long.class).single();
         return new CropEntry(cycleId,crop.farmName(),crop.cropType(),crop.plantedAt(),crop.latitude(),crop.longitude());
+    }
+
+    @Transactional
+    public void saveHistoricalAverageReading(HistoricalReadingAverage average) {
+        jdbc.sql("""
+            INSERT INTO public."CROP_WEATHER_READINGS" (
+                "Crop_Cycle_ID",
+                "Start_Date",
+                "End_Date",
+                "Temperature_Mean",
+                "Soil_Moisture_Mean",
+                "Vapour_Pressure_Deficit_Mean",
+                "Sunshine_Duration_Mean_Seconds"
+            ) VALUES (
+                :cropCycleId,
+                :startDate,
+                :endDate,
+                :temperatureMean,
+                :soilMoistureMean,
+                :vpdMean,
+                :sunshineDurationMean
+            ) ON CONFLICT ("Crop_Cycle_ID")
+            DO UPDATE SET
+                "Start_Date" = EXCLUDED."Start_Date",
+                "End_Date" = EXCLUDED."End_Date",
+                "Temperature_Mean" = EXCLUDED."Temperature_Mean",
+                "Soil_Moisture_Mean" = EXCLUDED."Soil_Moisture_Mean",
+                "Vapour_Pressure_Deficit_Mean" = EXCLUDED."Vapour_Pressure_Deficit_Mean",
+                "Sunshine_Duration_Mean_Seconds" = EXCLUDED."Sunshine_Duration_Mean_Seconds"
+            """)
+            .param("cropCycleId", average.cropCycleId())
+            .param("startDate", average.startDate())
+            .param("endDate", average.endDate())
+            .param("temperatureMean", average.temperatureMean())
+            .param("soilMoistureMean", average.soilMoistureMean())
+            .param("vpdMean", average.vpdMean())
+            .param("sunshineDurationMean", average.sunshineDurationMean())
+            .update();
     }
 
     public List<CropEntry> findAllForFarmer(Long userId){

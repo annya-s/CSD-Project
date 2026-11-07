@@ -13,10 +13,6 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 
-import com.csd.farm.crop.CropEntry;
-import com.csd.farm.crop.CropRepository;
-import com.csd.farm.crop.CropType;
-
 class CropDatabaseTest {
 
     @Test
@@ -61,5 +57,3 @@ class CropDatabaseTest {
         }
     }
 }
-
-
