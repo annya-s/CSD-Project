@@ -17,10 +17,10 @@ public class FarmRepository {
             RETURNING "Farm_ID", "Latitude", "Longitude"
             """).param("userId",userId).param("name",name)
             .param("latitude",latitude).param("longitude",longitude)
-            .query((r, n) -> new FarmLocation(
-                r.getLong("Farm_ID"),
-                r.getDouble("Latitude"),
-                r.getDouble("Longitude")
+            .query((row, number) -> new FarmLocation(
+                row.getLong("Farm_ID"),
+                row.getDouble("Latitude"),
+                row.getDouble("Longitude")
             ))
             .single();
 
