@@ -33,14 +33,15 @@ public class CropRepository {
                 .param("planted",crop.plantedAt()).param("lat",crop.latitude()).param("lon",crop.longitude()).update();
             return new CropEntry(null,"",crop.cropType(),crop.plantedAt(),crop.latitude(),crop.longitude());
         }
-        long farmId=farms.findOrCreate(userId,crop.farmName(),crop.latitude(),crop.longitude());
+        // Check if farm exists, if it does, overwrite the inputted coords and use existing coords
+        FarmLocation farmLocation = farms.findOrCreate(userId,crop.farmName(),crop.latitude(),crop.longitude());
         long typeId=cropTypes.idFor(crop.cropType());
         Long cycleId=jdbc.sql("""
             INSERT INTO public."CROP_CYCLES" ("Farm_ID","Crop_Type_ID","Date_Planted")
             VALUES (:farmId,:typeId,:plantedAt) RETURNING "Crop_Cycle_ID"
-            """).param("farmId",farmId).param("typeId",typeId).param("plantedAt",crop.plantedAt())
+            """).param("farmId",farmLocation.farmId()).param("typeId",typeId).param("plantedAt",crop.plantedAt())
             .query(Long.class).single();
-        return new CropEntry(cycleId,crop.farmName(),crop.cropType(),crop.plantedAt(),crop.latitude(),crop.longitude());
+        return new CropEntry(cycleId,crop.farmName(),crop.cropType(),crop.plantedAt(),farmLocation.latitude(),farmLocation.longitude());
     }
 
     public List<CropEntry> findAllForFarmer(Long userId){
