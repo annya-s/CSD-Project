@@ -52,7 +52,7 @@ public class CropRepository {
     @Transactional
     public void saveHistoricalAverageReading(HistoricalReadingAverage average) {
         jdbc.sql("""
-            INSERT INTO public."CROP_WEATHER_READINGS" (
+            INSERT INTO public."CROP_WEATHER_HISTORICAL_AVERAGE" (
                 "Crop_Cycle_ID",
                 "Start_Date",
                 "End_Date",
