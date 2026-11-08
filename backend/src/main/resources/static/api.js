@@ -33,6 +33,17 @@ export async function requireFarmer() {
     );
     $('welcome').append(' ', badge);
 
+    const overviewLink = $('overview-link');
+    if (overviewLink) {
+        if (farmer.role === 'ADMIN') {
+            overviewLink.href = '/admin.html';
+            overviewLink.textContent = 'Admin';
+        } else {
+            overviewLink.href = '/dashboard.html';
+            overviewLink.textContent = 'Overview';
+        }
+    }
+
     $('logout').addEventListener('click', async () => {
         $('logout').disabled = true;
         try {
