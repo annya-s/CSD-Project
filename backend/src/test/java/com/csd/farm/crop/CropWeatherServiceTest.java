@@ -1,4 +1,4 @@
-package com.csd.farm;
+package com.csd.farm.crop;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -7,13 +7,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-import com.csd.farm.crop.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.csd.farm.environment.EnvironmentReading;
 import com.csd.farm.environment.EnvironmentService;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
 
 class CropWeatherServiceTest {
     private final EnvironmentService environment = mock(EnvironmentService.class);
