@@ -24,14 +24,17 @@ public class CropHealthService {
         Double soilPercent = weather == null || weather.soilMoistureMeanM3M3() == null
                 ? null : weather.soilMoistureMeanM3M3() * 100.0;
 
-        Reading temperatureReading = compare("Temperature", temperature, "°C", conditions.temperatureC());
-        Reading sunshineReading = compare("Sunlight", sunshineHours, "hours/day", conditions.sunshineHours());
+        Reading temperatureReading = compare("Temperature", temperature, "°C", conditions == null ? null : conditions.temperatureC());
+        Reading sunshineReading = compare("Sunlight", sunshineHours, "hours/day", conditions == null ? null : conditions.sunshineHours());
         List<Reading> readings = List.of(
                 temperatureReading,
                 new Reading("Vapour pressure deficit", weather == null ? null : weather.vapourPressureDeficitMeanKpa(),
                         "kPa", "NOT_ASSESSED", null),
                 new Reading("Soil moisture", soilPercent, "% by volume", "NOT_ASSESSED", null),
                 sunshineReading);
+
+        if (conditions == null) return new Assessment(readings, List.of(),
+                List.of("Reference growing conditions have not been configured for this crop."), false);
 
         List<String> issues = new ArrayList<>();
         List<String> actions = new ArrayList<>();
@@ -96,7 +99,7 @@ public class CropHealthService {
      */
     private Reading compare(String name, Double value, String unit, Range range) {
 
-        if (value == null) {
+        if (value == null || range == null) {
             return new Reading(name, value, unit, "NOT_ASSESSED", range);
         }
 

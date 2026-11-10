@@ -1,72 +1,129 @@
+
 package com.csd.farm.crop;
 
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
+import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.h2.jdbcx.JdbcDataSource;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import com.csd.farm.environment.EnvironmentReading;
-import com.csd.farm.environment.EnvironmentService;
+import org.springframework.jdbc.core.simple.JdbcClient;
 
 class CropWeatherServiceTest {
-    private final EnvironmentService environment = mock(EnvironmentService.class);
-    private final CropWeatherRepository repository = mock(CropWeatherRepository.class);
-    private final CropWeatherService service = new CropWeatherService(environment, repository, true);
-    private final Long owner = 1L;
-    private final CropEntry crop = new CropEntry(CropType.POTATO, OffsetDateTime.parse("2026-01-10T08:30:00Z"),
-            1.0, 1.0);
-    private final ZoneId zone = ZoneId.systemDefault();
-    private final LocalDate today = LocalDate.now(zone);
-    private final DailyWeather weather = new DailyWeather(today, zone.getId(),
-            28.0, 25200.0, null, 0.25, 1.0);
-    private final List<EnvironmentReading> hourlyReadings = IntStream.range(0, 24)
-            .mapToObj(hour -> new EnvironmentReading(
-                    today.atTime(hour, 0), 28.0, 0.25, 1.0, today, 25200.0))
-            .toList();
 
-    @Test
-    void sharesApiCacheForTheSameCoordinatesButSavesEachOwnedPlanting() {
-        when(environment.getAllReadings(1.0, 1.0)).thenReturn(hourlyReadings);
-        var first = service.load(owner, crop);
-        Long otherOwner = 2L;
-        var second = service.load(otherOwner, crop);
-        assertThat(first.source()).isEqualTo("OPEN_METEO");
-        assertThat(second.weather()).isEqualTo(weather);
-        verify(environment, times(1)).getAllReadings(1.0, 1.0);
-        verify(repository).saveFromApi(owner, crop.cropType(), crop.plantedAt(), weather);
-        verify(repository).saveFromApi(otherOwner, crop.cropType(), crop.plantedAt(), weather);
+    private CropRepository cropRepository;
+    private JdbcClient jdbc;
+
+    @BeforeEach
+    void setUp() {
+        JdbcDataSource dataSource = new JdbcDataSource();
+        dataSource.setURL(
+            "jdbc:h2:mem:crop-coordinates-" + UUID.randomUUID()
+                + ";MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1"
+        );
+
+        this.jdbc = JdbcClient.create(dataSource);
+        cropRepository = new CropRepository(jdbc);
+
+        jdbc.sql("""
+            CREATE TABLE public."FARMS" (
+                "Farm_ID" BIGINT PRIMARY KEY,
+                "Latitude" DOUBLE PRECISION NOT NULL,
+                "Longitude" DOUBLE PRECISION NOT NULL
+            )
+            """).update();
+
+        jdbc.sql("""
+            CREATE TABLE public."CROP_CYCLES" (
+                "Crop_Cycle_ID" BIGINT PRIMARY KEY,
+                "Farm_ID" BIGINT NOT NULL,
+                CONSTRAINT fk_crop_cycle_farm
+                    FOREIGN KEY ("Farm_ID")
+                    REFERENCES public."FARMS" ("Farm_ID")
+            )
+            """).update();
     }
 
     @Test
-    void outageUsesOnlyPreviouslyVerifiedApiDataWithWarning() {
-        when(environment.getAllReadings(1.0, 1.0)).thenThrow(new IllegalStateException("Unavailable"));
-        when(repository.findFromApi(owner, crop.cropType(), crop.plantedAt())).thenReturn(Optional.of(weather));
-        var result = service.load(owner, crop);
-        assertThat(result.weather()).isEqualTo(weather);
-        assertThat(result.message()).contains("previously saved API readings");
-        verify(repository, never()).find(any(), any(), any());
+    void findCoordinatesForFarm_ShouldReturnCoordinatesForMatchingCropCycle() {
+        // Arrange
+        insertFarm(10L, 1.3521, 103.8198);
+        insertCropCycle(100L, 10L);
+
+        // Act
+        Optional<CropRepository.FarmCoordinates> result =
+            cropRepository.findCoordinatesForFarm(100);
+
+        // Assert
+        assertTrue(result.isPresent());
+        assertEquals(1.3521, result.get().latitude(), 0.000001);
+        assertEquals(103.8198, result.get().longitude(), 0.000001);
     }
 
     @Test
-    void outageWithoutApiHistoryDoesNotUseDemoReadingsAndRetriesAreLimited() {
-        when(environment.getAllReadings(1.0, 1.0)).thenThrow(new IllegalStateException("Unavailable"));
-        when(repository.find(owner, crop.cropType(), crop.plantedAt())).thenReturn(Optional.of(weather));
-        var result = service.load(owner, crop);
-        service.load(owner, crop);
-        assertThat(result.weather()).isNull();
-        assertThat(result.source()).isEqualTo("UNAVAILABLE");
-        verify(repository, never()).find(any(), any(), any());
-        verify(environment, times(1)).getAllReadings(1.0, 1.0);
+    void findCoordinatesForFarm_ShouldReturnEmptyWhenCropCycleDoesNotExist() {
+        // Act
+        Optional<CropRepository.FarmCoordinates> result =
+            cropRepository.findCoordinatesForFarm(999);
+
+        // Assert
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    void findCoordinatesForFarm_ShouldReturnCoordinatesFromCorrectFarm() {
+        // Arrange
+        insertFarm(10L, 1.3521, 103.8198);
+        insertFarm(20L, 3.1390, 101.6869);
+
+        insertCropCycle(100L, 10L);
+        insertCropCycle(200L, 20L);
+
+        // Act
+        CropRepository.FarmCoordinates first =
+            cropRepository.findCoordinatesForFarm(100).orElseThrow();
+
+        CropRepository.FarmCoordinates second =
+            cropRepository.findCoordinatesForFarm(200).orElseThrow();
+
+        // Assert
+        assertEquals(1.3521, first.latitude(), 0.000001);
+        assertEquals(103.8198, first.longitude(), 0.000001);
+
+        assertEquals(3.1390, second.latitude(), 0.000001);
+        assertEquals(101.6869, second.longitude(), 0.000001);
+    }
+
+    private void insertFarm(long farmId, double latitude, double longitude) {
+        JdbcClient jdbc = getJdbcClient();
+
+        jdbc.sql("""
+            INSERT INTO public."FARMS"
+                ("Farm_ID", "Latitude", "Longitude")
+            VALUES (:farmId, :latitude, :longitude)
+            """)
+            .param("farmId", farmId)
+            .param("latitude", latitude)
+            .param("longitude", longitude)
+            .update();
+    }
+
+    private void insertCropCycle(long cycleId, long farmId) {
+        JdbcClient jdbc = getJdbcClient();
+
+        jdbc.sql("""
+            INSERT INTO public."CROP_CYCLES" ("Crop_Cycle_ID", "Farm_ID")
+            VALUES (:cycleId, :farmId)
+            """)
+            .param("cycleId", cycleId)
+            .param("farmId", farmId)
+            .update();
+    }
+
+    private JdbcClient getJdbcClient() {
+        return jdbc;
     }
 }

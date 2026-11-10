@@ -2,17 +2,24 @@ package com.csd.farm.crop;
 
 import java.time.LocalDate;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.csd.farm.crop.CropConditions;
+import com.csd.farm.crop.CropHealthService;
+import com.csd.farm.crop.CropType;
+import com.csd.farm.crop.DailyWeather;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class CropHealthServiceTest {
 
     private final CropHealthService health = new CropHealthService();
 
     @ParameterizedTest
-    @EnumSource(CropType.class)
+    @EnumSource(value = CropType.class,
+            names = {"SUGAR_BEET", "SPRING_WHEAT", "FABA_BEAN", "WINTER_BARLEY", "RAPESEED", "SPELT"},
+            mode = EnumSource.Mode.EXCLUDE)
     void allCropsIncludeTheirBoundariesAndDetectValuesOutsideThem(CropType type) {
         var conditions = CropConditions.forCrop(type);
         double minimumTemperature = conditions.temperatureC().minimum();
@@ -40,6 +47,18 @@ class CropHealthServiceTest {
         assertThat(above.readings().get(3).status()).isEqualTo("ABOVE_RANGE");
         assertThat(above.needsAttention()).isTrue();
         assertThat(above.issues()).hasSize(1);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = CropType.class,
+            names = {"SUGAR_BEET", "SPRING_WHEAT", "FABA_BEAN", "WINTER_BARLEY", "RAPESEED", "SPELT"})
+    void cropsWithoutConfiguredReferenceRangesRemainUnassessed(CropType type) {
+        assertThat(CropConditions.forCrop(type)).isNull();
+        var result = health.assess(type, weather(20.0, 25200.0));
+        assertThat(result.readings()).allMatch(reading -> reading.status().equals("NOT_ASSESSED"));
+        assertThat(result.needsAttention()).isFalse();
+        assertThat(result.issues()).isEmpty();
+        assertThat(result.recommendedActions()).contains("Reference growing conditions have not been configured for this crop.");
     }
 
     @Test

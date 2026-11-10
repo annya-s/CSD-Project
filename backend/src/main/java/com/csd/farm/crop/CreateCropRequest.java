@@ -14,5 +14,8 @@ public record CreateCropRequest(
         @Size(max=100) String farmName,
         @NotNull CropType cropType,
         @NotNull @PastOrPresent OffsetDateTime plantedAt,
-        @NotNull @DecimalMin("-90") @DecimalMax("90") @Digits(integer=3,fraction=6) Double latitude,
-        @NotNull @DecimalMin("-180") @DecimalMax("180") @Digits(integer=3,fraction=6) Double longitude){}
+        @NotNull @DecimalMin("-90") @DecimalMax("90") 
+        @Digits(integer=3,fraction=6) Double latitude,
+        
+        @NotNull @DecimalMin("-180") @DecimalMax("180") 
+        @Digits(integer=3,fraction=6) Double longitude){}

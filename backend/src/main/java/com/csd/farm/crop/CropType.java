@@ -11,7 +11,13 @@ public enum CropType {
     TOMATO("Tomato"),
     CARROT("Carrot"),
     LETTUCE("Lettuce"),
-    SOYBEAN("Soybean");
+    SOYBEAN("Soybean"),
+    SUGAR_BEET("Sugar beet"),
+    SPRING_WHEAT("Spring wheat"),
+    FABA_BEAN("Faba bean"),
+    WINTER_BARLEY("Winter barley"),
+    RAPESEED("Rapeseed"),
+    SPELT("Spelt");
 
     private final String displayName;
 

@@ -24,12 +24,21 @@ public class CropService {
     private final CropWeatherRepository weatherReadings;
     private final CropHealthService health;
     private final CropWeatherService weatherService;
+    private final MLPredictionService predictions;
 
     public CropService(CropRepository crops,CropTypeRepository cropTypes,FarmerRepository farmers,FarmRepository farms,
-            CropWeatherRepository weatherReadings,CropHealthService health,CropWeatherService weatherService){
+            CropWeatherRepository weatherReadings,CropHealthService health,CropWeatherService weatherService,
+            MLPredictionService predictions){
         this.crops=crops;this.cropTypes=cropTypes;this.farmers=farmers;this.farms=farms;
         this.weatherReadings=weatherReadings;this.health=health;this.weatherService=weatherService;
+        this.predictions=predictions;
     }
+    CropResponses.Prediction synthetic(CropType crop, int age, String scenario){
+        return predictions.synthetic(crop, age, scenario);
+    }
+
+    CropResponses.Prediction sampleWheat(){return predictions.sampleWheat();}
+
     public List<CropOption> cropTypes(){return cropTypes.findAll();}
     public List<CropEntry> list(String username){return crops.findAllForFarmer(userId(username));}
     public Dashboard dashboard(String username){
@@ -77,8 +86,10 @@ public class CropService {
     private CropDetails cropDetails(Long owner,CropEntry entry){
         var result=weatherService.load(owner,entry);DailyWeather w=result.weather();
         var assessment=health.assess(entry.cropType(),w);
-        return new CropDetails(entry,null,assessment.readings(),assessment.recommendedActions(),DETAILS_NOTE,
-            assessment.issues(),assessment.needsAttention(),w,result.source(),result.message());
+        var prediction=predictions.forPlanting(entry);
+        return new CropDetails(entry,null,assessment.readings(),assessment.recommendedActions(),
+            DETAILS_NOTE+" "+prediction.message(),assessment.issues(),assessment.needsAttention(),
+            w,result.source(),result.message(),prediction);
     }
     private CropEntry findCrop(Long owner,Long cycleId){
         return crops.findForFarmer(owner,cycleId)

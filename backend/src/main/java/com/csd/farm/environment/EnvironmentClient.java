@@ -36,7 +36,6 @@ public class EnvironmentClient {
 
     public OpenMeteoResponse fetchHistoricalMeteoData(double latitude, double longitude) {
         ZoneId timeZone = ZoneId.systemDefault();
-        System.out.println(timeZone);
 
         LocalDate today = LocalDate.now(timeZone);
         LocalDate startDate = today.minusDays(14);
