@@ -15,5 +15,10 @@ public final class CropResponses {
             List<Reading> readings,boolean needsAttention,String weatherSource,String weatherMessage){}
     public record CropDetails(CropEntry entry,Integer healthScore,List<Reading> readings,
             List<String> recommendedActions,String note,List<String> issues,boolean needsAttention,
-            DailyWeather weather,String weatherSource,String weatherMessage){}
+            DailyWeather weather,String weatherSource,String weatherMessage,Prediction prediction){}
+    public record Prediction(String status,Double value,String unit,String message){
+        static Prediction unavailable(){
+            return new Prediction("UNAVAILABLE",null,null,"The biomass model is temporarily unavailable.");
+        }
+    }
 }

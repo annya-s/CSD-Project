@@ -8,89 +8,36 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.csd.farm.environment.HistoricalReadingAverage;
 
-@Testcontainers
+@org.springframework.boot.test.context.SpringBootTest
+@org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
+@org.springframework.test.context.ActiveProfiles("test")
 class CropHistoricalAverageTest {
-    @Container
-    private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine");
 
+    @org.springframework.beans.factory.annotation.Autowired
     private JdbcClient jdbc;
     private CropRepository cropRepository;
 
     @BeforeEach
     void setUp() {
-        // Arrange
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-
-        dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUrl(POSTGRES.getJdbcUrl());
-        dataSource.setUsername(POSTGRES.getUsername());
-        dataSource.setPassword(POSTGRES.getPassword());
-
-        jdbc = JdbcClient.create(dataSource);
         cropRepository = new CropRepository(jdbc);
-
+        // Use the same disposable PostgreSQL schema as CI; never the live database.
+        jdbc.sql("DELETE FROM public.\"USERS\"").update();
         jdbc.sql("""
-            DROP TABLE IF EXISTS public."CROP_WEATHER_READINGS"
+            INSERT INTO public."USERS" ("User_ID", "User_Name", "User_Email", "Password_Hash")
+            VALUES (1, 'history_test', 'history@example.com', 'unused-test-hash')
             """).update();
-
         jdbc.sql("""
-            DROP TABLE IF EXISTS public."CROP_CYCLES"
+            INSERT INTO public."FARMS" ("Farm_ID", "User_ID", "Farm_Name", "Latitude", "Longitude")
+            VALUES (1, 1, 'Historical test farm', 1.3521, 103.8198)
             """).update();
-
         jdbc.sql("""
-            CREATE TABLE public."CROP_CYCLES" (
-                "Crop_Cycle_ID" BIGINT PRIMARY KEY
-            )
-            """).update();
-
-        jdbc.sql("""
-            CREATE TABLE public."CROP_WEATHER_READINGS" (
-                "Crop_Cycle_ID" BIGINT NOT NULL,
-                "Start_Date" DATE NOT NULL,
-                "End_Date" DATE NOT NULL,
-                "Temperature_Mean" DOUBLE PRECISION NULL,
-                "Sunshine_Duration_Mean_Seconds" DOUBLE PRECISION NULL,
-                "Vapour_Pressure_Deficit_Mean" DOUBLE PRECISION NULL,
-                "Soil_Moisture_Mean" DOUBLE PRECISION NULL,
-
-                PRIMARY KEY ("Crop_Cycle_ID"),
-
-                FOREIGN KEY ("Crop_Cycle_ID")
-                    REFERENCES public."CROP_CYCLES" ("Crop_Cycle_ID")
-                    ON DELETE CASCADE,
-
-                CHECK (
-                    "Temperature_Mean" >= -100
-                    AND "Temperature_Mean" <= 100
-                ),
-
-                CHECK (
-                    "Sunshine_Duration_Mean_Seconds" >= 0
-                    AND "Sunshine_Duration_Mean_Seconds" <= 86400
-                ),
-
-                CHECK (
-                    "Vapour_Pressure_Deficit_Mean" >= 0
-                    AND "Vapour_Pressure_Deficit_Mean" <= 100
-                ),
-
-                CHECK (
-                    "Soil_Moisture_Mean" >= 0
-                    AND "Soil_Moisture_Mean" <= 1
-                )
-            )
-            """).update();
-
-        jdbc.sql("""
-            INSERT INTO public."CROP_CYCLES" ("Crop_Cycle_ID")
-            VALUES (1), (2)
+            INSERT INTO public."CROP_CYCLES" ("Crop_Cycle_ID", "Farm_ID", "Crop_Type_ID", "Date_Planted")
+            SELECT cycle_id, 1, "Crop_Type_ID", DATE '2026-10-01' + cycle_id
+            FROM public."CROP_TYPES" CROSS JOIN (VALUES (1), (2)) cycles(cycle_id)
+            WHERE "Crop_Name"='Potato'
             """).update();
     }
 
@@ -242,7 +189,7 @@ class CropHistoricalAverageTest {
                 "Soil_Moisture_Mean",
                 "Vapour_Pressure_Deficit_Mean",
                 "Sunshine_Duration_Mean_Seconds"
-            FROM public."CROP_WEATHER_READINGS"
+            FROM public."CROP_WEATHER_HISTORICAL_AVERAGE"
             WHERE "Crop_Cycle_ID" = :cropCycleId
             """)
             .param("cropCycleId", cropCycleId)
@@ -261,7 +208,7 @@ class CropHistoricalAverageTest {
     private long countReadings() {
         return jdbc.sql("""
             SELECT COUNT(*)
-            FROM public."CROP_WEATHER_READINGS"
+            FROM public."CROP_WEATHER_HISTORICAL_AVERAGE"
             """)
             .query(Long.class)
             .single();

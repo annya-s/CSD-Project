@@ -1,0 +1,62 @@
+{
+  "schema_version": "wheat-features-v1",
+  "feature_names": [
+    "days_since_sowing",
+    "temperature_mean_7d",
+    "temperature_mean_14d",
+    "vpd_mean_7d",
+    "vpd_mean_14d",
+    "soil_moisture_mean_7d",
+    "soil_moisture_mean_14d",
+    "sunshine_hours_mean_7d",
+    "sunshine_hours_mean_14d"
+  ],
+  "feature_profile": "ifs-soil-0-7-v1",
+  "target": "target_dry_biomass_g_m2",
+  "unit": "g/m2",
+  "training_ranges": {
+    "days_since_sowing": {
+      "min": 170.0,
+      "max": 231.0
+    },
+    "temperature_mean_7d": {
+      "min": 15.0,
+      "max": 15.0
+    },
+    "temperature_mean_14d": {
+      "min": 14.0,
+      "max": 14.0
+    },
+    "vpd_mean_7d": {
+      "min": 0.8,
+      "max": 0.8
+    },
+    "vpd_mean_14d": {
+      "min": 0.7,
+      "max": 0.7
+    },
+    "soil_moisture_mean_7d": {
+      "min": 0.3,
+      "max": 0.3
+    },
+    "soil_moisture_mean_14d": {
+      "min": 0.31,
+      "max": 0.31
+    },
+    "sunshine_hours_mean_7d": {
+      "min": 6.0,
+      "max": 6.0
+    },
+    "sunshine_hours_mean_14d": {
+      "min": 5.5,
+      "max": 5.5
+    }
+  },
+  "scope": {
+    "crop": "winter_wheat",
+    "latitude_min": 43.501,
+    "latitude_max": 43.506,
+    "longitude_min": 24.101000000000003,
+    "longitude_max": 24.106
+  }
+}
