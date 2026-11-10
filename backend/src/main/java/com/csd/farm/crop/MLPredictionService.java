@@ -28,9 +28,6 @@ public class MLPredictionService {
 
     // CropService verifies the logged-in farmer owns the cycle before this read.
     Prediction forPlanting(CropEntry entry) {
-        if (!java.util.Set.of(CropType.WHEAT, CropType.CARROT, CropType.MAIZE,
-                CropType.SOYBEAN, CropType.SUGAR_BEET).contains(entry.cropType()))
-            return new Prediction("UNSUPPORTED", null, null, "No biomass model is available for this crop yet.");
         try {
             // The environment producer uses the server timezone for this date range.
             ZoneId zone = ZoneId.systemDefault();

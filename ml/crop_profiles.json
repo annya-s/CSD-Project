@@ -1,0 +1,332 @@
+{
+  "CARROT": {
+    "ages": [
+      0,
+      14,
+      65,
+      130
+    ],
+    "biomass": [
+      0,
+      0.13239999999,
+      1.3681333332299999,
+      4.413333333
+    ],
+    "unit": "g/plant dry shoot",
+    "reference": [
+      18,
+      0.28,
+      0.8,
+      7
+    ],
+    "basis": "Observed median anchors; zero and interpolation and all weather effects are synthetic.",
+    "sources": [
+      "CARROT"
+    ]
+  },
+  "MAIZE": {
+    "ages": [
+      0,
+      36,
+      50,
+      51,
+      63,
+      84
+    ],
+    "biomass": [
+      0,
+      867.55,
+      2527.0,
+      4036.3,
+      4322.25,
+      7700.5
+    ],
+    "unit": "g/m2 fresh aboveground",
+    "reference": [
+      25,
+      0.28,
+      1.2,
+      9
+    ],
+    "basis": "Observed median anchors; zero and interpolation and all weather effects are synthetic.",
+    "sources": [
+      "MUSTC"
+    ]
+  },
+  "SOYBEAN": {
+    "ages": [
+      0,
+      41,
+      49,
+      62,
+      77,
+      97
+    ],
+    "biomass": [
+      0,
+      275.6,
+      895.5,
+      934.65,
+      2094.1499999999996,
+      4046.8
+    ],
+    "unit": "g/m2 fresh aboveground",
+    "reference": [
+      24,
+      0.28,
+      1,
+      8
+    ],
+    "basis": "Observed median anchors; zero and interpolation and all weather effects are synthetic.",
+    "sources": [
+      "MUSTC"
+    ]
+  },
+  "WHEAT": {
+    "ages": [
+      0,
+      33,
+      35,
+      36,
+      38,
+      39,
+      42,
+      148,
+      164,
+      165,
+      168,
+      169,
+      172,
+      180,
+      181,
+      182,
+      183,
+      186,
+      187,
+      199,
+      200,
+      203,
+      204,
+      218,
+      219,
+      227,
+      228,
+      244,
+      260,
+      261,
+      262,
+      263
+    ],
+    "biomass": [
+      0,
+      10.0,
+      29.0,
+      16.0,
+      13.0,
+      30.0,
+      44.0,
+      25.0,
+      201.0,
+      171.5,
+      127.0,
+      136.0,
+      160.0,
+      264.0,
+      174.0,
+      104.5,
+      88.0,
+      289.0,
+      264.0,
+      194.0,
+      173.0,
+      181.0,
+      144.5,
+      985.5,
+      1037.0,
+      869.0,
+      756.0,
+      1371.0,
+      1359.0,
+      1351.5,
+      1353.0,
+      1237.0
+    ],
+    "unit": "g/m2 dry aboveground",
+    "reference": [
+      18,
+      0.26,
+      1,
+      8
+    ],
+    "basis": "Existing winter-wheat observations grouped by age; invented zero anchor and weather response.",
+    "sources": [
+      "EXISTING_WHEAT"
+    ]
+  },
+  "POTATO": {
+    "ages": [
+      0,
+      24,
+      60,
+      96,
+      120
+    ],
+    "biomass": [
+      0,
+      15.0,
+      105.0,
+      255.0,
+      300
+    ],
+    "unit": "g/m2 dry aboveground",
+    "reference": [
+      18,
+      0.28,
+      0.8,
+      8
+    ],
+    "basis": "Assumed demonstration scale and growth curve. Sources provide context, NOT these exact labels. Not edible yield.",
+    "sources": [
+      "FAO_DURATION",
+      "FAO_POTATO"
+    ]
+  },
+  "SUGAR_CANE": {
+    "ages": [
+      0,
+      73,
+      182,
+      292,
+      365
+    ],
+    "biomass": [
+      0,
+      150.0,
+      1050.0,
+      2550.0,
+      3000
+    ],
+    "unit": "g/m2 dry aboveground",
+    "reference": [
+      27,
+      0.32,
+      1.2,
+      9
+    ],
+    "basis": "Assumed demonstration scale and growth curve. Sources provide context, NOT these exact labels. Not edible yield.",
+    "sources": [
+      "FAO_WATER",
+      "FAO_SUGARCANE"
+    ]
+  },
+  "RICE": {
+    "ages": [
+      0,
+      30,
+      75,
+      120,
+      150
+    ],
+    "biomass": [
+      0,
+      60.0,
+      420.0,
+      1020.0,
+      1200
+    ],
+    "unit": "g/m2 dry aboveground",
+    "reference": [
+      26,
+      0.4,
+      0.8,
+      8
+    ],
+    "basis": "Assumed demonstration scale and growth curve. Sources provide context, NOT these exact labels. Not edible yield.",
+    "sources": [
+      "FAO_DURATION"
+    ]
+  },
+  "TOMATO": {
+    "ages": [
+      0,
+      30,
+      75,
+      120,
+      150
+    ],
+    "biomass": [
+      0,
+      30.0,
+      210.0,
+      510.0,
+      600
+    ],
+    "unit": "g/m2 dry aboveground",
+    "reference": [
+      22,
+      0.28,
+      1,
+      8
+    ],
+    "basis": "Assumed demonstration scale and growth curve. Sources provide context, NOT these exact labels. Not edible yield.",
+    "sources": [
+      "FAO_DURATION",
+      "TOMATO_TEMP"
+    ]
+  },
+  "LETTUCE": {
+    "ages": [
+      0,
+      15,
+      38,
+      60,
+      75
+    ],
+    "biomass": [
+      0,
+      10.0,
+      70.0,
+      170.0,
+      200
+    ],
+    "unit": "g/m2 dry aboveground",
+    "reference": [
+      17,
+      0.28,
+      0.8,
+      7
+    ],
+    "basis": "Assumed demonstration scale and growth curve. Sources provide context, NOT these exact labels. Not edible yield.",
+    "sources": [
+      "FAO_DURATION",
+      "LETTUCE"
+    ]
+  },
+  "APPLE": {
+    "ages": [
+      0,
+      365,
+      1825,
+      3650,
+      8395
+    ],
+    "biomass": [
+      0.5,
+      1,
+      5,
+      12,
+      24.8
+    ],
+    "unit": "kg/tree dry aboveground wood",
+    "reference": [
+      20,
+      0.28,
+      1,
+      8
+    ],
+    "basis": "23-year tree dry woody mass anchor 24.8 kg from Irish orchard report; all earlier points invented. Assumes a young transplanted tree at logging, excludes fruit; mature transplants not supported.",
+    "sources": [
+      "APPLE"
+    ]
+  }
+}

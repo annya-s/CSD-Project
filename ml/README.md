@@ -1,5 +1,11 @@
 # Simple offline biomass ML
 
+**Current live crop pages:** use `average_prediction.py` and the 10 crop-specific
+synthetic models. See [SYNTHETIC_CROPS.md](SYNTHETIC_CROPS.md) for training, data,
+inputs and research/assumptions. Java integration is implemented through
+`MLPredictionService` and `MLPredictionClient`. The older instructions below describe
+the separate observed winter-wheat pipeline, not the live synthetic comparison.
+
 Three main Python files:
 - data_preprocessing.py: read local data or explicitly read Supabase; compute five features.
 - train.py: train CatBoost and an age-only baseline, select by validation MAE, save model and metadata.

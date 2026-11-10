@@ -76,7 +76,10 @@ public class MLPredictionClient {
                 if ("synthetic".equals(input.get("mode")) || "averages".equals(input.get("mode"))) {
                     if ("SYNTHETIC_DEMO".equals(status) && result.path("value").isNumber())
                         return new CropResponses.Prediction(status, result.path("value").asDouble(),
-                                result.path("unit").asString(), result.path("message").asString());
+                                result.path("unit").asString(), result.path("message").asString(),
+                                result.path("current_estimate").isNumber() ? result.path("current_estimate").asDouble() : null,
+                                result.path("reference_conditions").isNumber() ? result.path("reference_conditions").asDouble() : null,
+                                result.path("projection_date").asString(null));
                     if ("UNSUPPORTED".equals(status))
                         return new CropResponses.Prediction(status, null, null, result.path("message").asString());
                     return CropResponses.Prediction.unavailable();

@@ -114,8 +114,28 @@ function renderCropPhoto(cropType, cropName) {
 
 // Only this file handles the crop-details screen.
 function renderDetails(data, cropTypes) {
+    $('wheat-example').hidden = data.entry.cropType !== 'WHEAT';
     const name = cropTypes.find((type) => type.code === data.entry.cropType)?.name || data.entry.cropType;
-    $('biomass-result').textContent = data.prediction?.message || 'Biomass estimate unavailable.';
+    const prediction = data.prediction;
+    const comparison = $('biomass-comparison');
+    const available = prediction?.status === 'SYNTHETIC_DEMO'
+        && Number.isFinite(prediction.value) && Number.isFinite(prediction.referenceEstimate)
+        && prediction.projectionDate;
+    comparison.hidden = !available;
+    if (available) {
+        const unit = prediction.unit;
+        $('biomass-result').textContent = 'Experimental biomass projection if recent conditions continue: '
+            + prediction.value.toFixed(1) + ' ' + unit + ' on ' + prediction.projectionDate + '.';
+        $('biomass-reference').textContent = 'Biomass under assumed reference conditions: '
+            + prediction.referenceEstimate.toFixed(1) + ' ' + unit + ' on the same date.';
+        const difference = prediction.referenceEstimate - prediction.value;
+        $('biomass-gap').textContent = 'Illustrative difference (reference minus continued conditions): '
+            + (difference > 0 ? '+' : '') + difference.toFixed(1) + ' ' + unit + '.';
+    } else {
+        $('biomass-result').textContent = prediction?.message || 'Biomass estimate unavailable.';
+        $('biomass-reference').textContent = '';
+        $('biomass-gap').textContent = '';
+    }
     document.title = `Dome · ${name}`;
     $('detail-title').textContent = name;
     renderCropPhoto(data.entry.cropType, name);

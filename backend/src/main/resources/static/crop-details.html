@@ -45,11 +45,18 @@
                         <h2>Biomass estimate</h2>
                         <p>Calculated from the saved planting date and the previous 14 complete days of weather.</p>
                         <p id="biomass-result" role="status"></p>
+                        <div id="biomass-comparison" hidden>
+                            <p id="biomass-reference"></p>
+                            <p id="biomass-gap"></p>
+                            <p class="field-hint">Synthetic model illustration using this crop's reference assumptions, listed in Notes. These are hypothetical age and weather scenarios, not measured biomass or a validated forecast. The reference is not a proven optimum. Actual growth may differ.</p>
+                        </div>
                     </section>
+                    <section id="wheat-example" hidden>
                     <h2>Historical wheat example</h2>
                     <p>Winter wheat in Bulgaria on 24 April 2017. This example uses recorded weather from the study field.</p>
                     <button id="sample-wheat" type="button">Run sample wheat prediction</button>
                     <p id="sample-result" role="status"></p>
+                    </section>
                     <h2>Notes</h2><p id="detail-note" class="intro-copy"></p>
                 </div>
                 <div class="health-panel">

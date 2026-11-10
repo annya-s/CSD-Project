@@ -26,14 +26,15 @@ public class CropController {
     @GetMapping("/samples/synthetic/{crop}/{age}/{scenario}")
     public CropResponses.Prediction synthetic(@PathVariable CropType crop, @PathVariable int age,
                                               @PathVariable String scenario) {
-        if (!java.util.Set.of(CropType.CARROT, CropType.MAIZE, CropType.SUGAR_BEET, CropType.SOYBEAN).contains(crop)
-                || !java.util.Set.of("mild", "hot-dry", "cool").contains(scenario))
+        if (!java.util.Set.of("mild", "hot-dry", "cool").contains(scenario))
             throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown scenario");
         return cropService.synthetic(crop, age, scenario);
     }
 
     @GetMapping("/samples/winter-wheat")
-    public CropResponses.Prediction sampleWheat(){return cropService.sampleWheat();}
+    public CropResponses.Prediction sampleWheat(){
+        return cropService.sampleWheat();
+    }
 
     @GetMapping("/crop-types") 
     public List<CropOption> cropTypes(){

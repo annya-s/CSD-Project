@@ -27,20 +27,33 @@ public class CropService {
     private final MLPredictionService predictions;
 
     public CropService(CropRepository crops,CropTypeRepository cropTypes,FarmerRepository farmers,FarmRepository farms,
-            CropWeatherRepository weatherReadings,CropHealthService health,CropWeatherService weatherService,
+            CropWeatherRepository weatherReadings,CropHealthService health,CropWeatherService weatherService, 
             MLPredictionService predictions){
-        this.crops=crops;this.cropTypes=cropTypes;this.farmers=farmers;this.farms=farms;
-        this.weatherReadings=weatherReadings;this.health=health;this.weatherService=weatherService;
+        this.crops=crops;
+        this.cropTypes=cropTypes;
+        this.farmers=farmers;
+        this.farms=farms;
+        this.weatherReadings=weatherReadings;
+        this.health=health;
+        this.weatherService=weatherService;
         this.predictions=predictions;
     }
     CropResponses.Prediction synthetic(CropType crop, int age, String scenario){
         return predictions.synthetic(crop, age, scenario);
     }
 
-    CropResponses.Prediction sampleWheat(){return predictions.sampleWheat();}
+    CropResponses.Prediction sampleWheat(){
+        return predictions.sampleWheat();
+    }
 
-    public List<CropOption> cropTypes(){return cropTypes.findAll();}
-    public List<CropEntry> list(String username){return crops.findAllForFarmer(userId(username));}
+    public List<CropOption> cropTypes(){
+        return cropTypes.findAll();
+    }
+
+    public List<CropEntry> list(String username){
+        return crops.findAllForFarmer(userId(username));
+    }
+
     public Dashboard dashboard(String username){
         Long owner=userId(username);
         List<DashboardCrop> entries=crops.findAllForFarmer(owner).stream().map(e->dashboardCrop(owner,e)).toList();
@@ -65,9 +78,11 @@ public class CropService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Crop entry not found.");
         if(crops.countForFarm(farmId)==0) farms.deleteForUser(owner,farmId);
     }
+
     public CropDetails details(String username,Long cycleId){
         Long owner=userId(username);return cropDetails(owner,findCrop(owner,cycleId));
     }
+    
     public CropDetails updateWeather(String username,Long cycleId,DailyWeather weather){
         Long owner=userId(username);CropEntry entry=findCrop(owner,cycleId);
         if(weatherService.isEnabled()) throw new ResponseStatusException(HttpStatus.CONFLICT,

@@ -10,8 +10,7 @@ from data_preprocessing import build_features
 ROOT = Path(__file__).resolve().parent
 FEATURES = ["days_since_sowing", "temperature_min_mean_14d", "temperature_max_mean_14d",
             "soil_moisture_mean_14d", "solar_radiation_total_14d"]
-BONN = {"MAIZE": ("Maize", "2023-05-18"), "SOYBEAN": ("Soy Bean", "2023-05-05"),
-        "SUGAR_BEET": ("Sugar Beet", "2023-05-05")}
+BONN = {"MAIZE": ("Maize", "2023-05-18"), "SOYBEAN": ("Soy Bean", "2023-05-05")}
 # Hypothetical 14-day summaries. Their biomass effects are teaching assumptions.
 SCENARIOS = {"mild": [12, 24, .26, 235], "hot-dry": [21, 35, .12, 315],
              "cool": [5, 15, .30, 145]}
