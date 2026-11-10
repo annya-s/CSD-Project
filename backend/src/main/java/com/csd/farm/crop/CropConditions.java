@@ -5,13 +5,11 @@ import java.util.Map;
 // Temporary reference data. Later, this lookup can read from Supabase instead.
 // Sources and assumptions: docs/crop-growing-conditions.md.
 public final class CropConditions {
-    private static final double temperatureTolerance = 0.1;
-    private static final double sunshineHoursTolerance = 0.1;
 
     // Represents the optimal growing conditions of a set list of crops. 
     private static final Map<CropType, Conditions> CONDITIONS = Map.of(
-            CropType.POTATO, new Conditions(new Range(15, 25, temperatureTolerance), 
-            new Range(6, 8, sunshineHoursTolerance)),
+            CropType.POTATO, new Conditions(new Range(15, 25, 7, 30),
+            new Range(6, 8, 5, 9)),
             CropType.SUGAR_CANE, new Conditions(new Range(24, 37, temperatureTolerance), 
             new Range(7, 9, sunshineHoursTolerance)),
             CropType.APPLE, new Conditions(new Range(14, 27, temperatureTolerance), 
@@ -47,5 +45,5 @@ public final class CropConditions {
     public record Conditions(Range temperatureC, Range sunshineHours) { }
 
     // Represents a range between two doubles.
-    public record Range(double minimum, double maximum, double tolerance) { }
+    public record Range(double minimum, double maximum, double abs_minimum, double abs_maximum) { }
 }
