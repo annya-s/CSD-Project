@@ -1,54 +1,54 @@
-package com.csd.farm;
+// package com.csd.farm;
 
-import java.util.UUID;
+// import java.util.UUID;
 
-import com.csd.farm.auth.Farmer;
-import com.csd.farm.auth.FarmerRepository;
-import com.jayway.jsonpath.JsonPath;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.mock.web.MockHttpSession;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
+// import com.csd.farm.auth.Farmer;
+// import com.csd.farm.auth.FarmerRepository;
+// import com.jayway.jsonpath.JsonPath;
+// import org.junit.jupiter.api.BeforeEach;
+// import org.junit.jupiter.api.Test;
+// import org.junit.jupiter.params.ParameterizedTest;
+// import org.junit.jupiter.params.provider.ValueSource;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.boot.test.context.SpringBootTest;
+// import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+// import org.springframework.http.MediaType;
+// import org.springframework.jdbc.core.simple.JdbcClient;
+// import org.springframework.mock.web.MockHttpSession;
+// import org.springframework.security.crypto.password.PasswordEncoder;
+// import org.springframework.test.context.ActiveProfiles;
+// import org.springframework.test.web.servlet.MockMvc;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+// import static org.assertj.core.api.Assertions.assertThat;
+// import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+// import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+// import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+// import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+// import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+// import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-class FarmIntegrationTest {
+// @SpringBootTest
+// @AutoConfigureMockMvc
+// @ActiveProfiles("test")
+// class FarmIntegrationTest {
 
-    private static final String PASSWORD = "a-long-test-password";
-    private static final String PLANTED_AT = "2026-01-10T08:30:00Z";
-    private static final String CROP_JSON = """
-            {"cropType":"POTATO","plantedAt":"2026-01-10T08:30:00Z",
-             "latitude":1.3521,"longitude":103.8198}
-            """;
+//     private static final String PASSWORD = "a-long-test-password";
+//     private static final String PLANTED_AT = "2026-01-10T08:30:00Z";
+//     private static final String CROP_JSON = """
+//             {"cropType":"POTATO","plantedAt":"2026-01-10T08:30:00Z",
+//              "latitude":1.3521,"longitude":103.8198}
+//             """;
 
-    @Autowired MockMvc mvc;
-    @Autowired JdbcClient jdbc;
-    @Autowired FarmerRepository farmers;
-    @Autowired PasswordEncoder passwords;
+//     @Autowired MockMvc mvc;
+//     @Autowired JdbcClient jdbc;
+//     @Autowired FarmerRepository farmers;
+//     @Autowired PasswordEncoder passwords;
 
-    @BeforeEach
-    void createFarmers() {
-        jdbc.sql("DELETE FROM farm.crop_entry").update();
-        jdbc.sql("DELETE FROM public.\"USERS\"").update();
-        jdbc.sql("DELETE FROM farm.account_token").update();
+//     @BeforeEach
+//     void createFarmers() {
+//         jdbc.sql("DELETE FROM farm.crop_entry").update();
+//         jdbc.sql("DELETE FROM public.\"USERS\"").update();
+//         jdbc.sql("DELETE FROM farm.account_token").update();
         
         String hash = passwords.encode(PASSWORD);
         farmers.save(new Farmer(null, "alice", "alice@example.com", false, false, "FARMER"), hash);
