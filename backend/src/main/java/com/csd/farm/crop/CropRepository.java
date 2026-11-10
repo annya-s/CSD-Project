@@ -1,6 +1,5 @@
 package com.csd.farm.crop;
 
-// [ERD-ALIGNMENT CHANGE] Crop CRUD maps onto public.FARMS, CROP_TYPES and CROP_CYCLES.
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
@@ -25,12 +24,10 @@ public class CropRepository {
         this.jdbc=jdbc;this.farms=farms;this.cropTypes=cropTypes;
     }
 
-    // [LEGACY COMPATIBILITY] Existing local tests can still compile against this constructor.
     public CropRepository(JdbcClient jdbc){this(jdbc,null,null);}
 
     @Transactional
     public CropEntry save(Long userId,CropEntry crop){
-        // [LEGACY LOCAL STORAGE] One-argument constructor is retained for old H2 repository tests only.
         if(farms==null){
             jdbc.sql("""
                 INSERT INTO farm.crop_entry (farmer_id,crop_type,planted_at,latitude,longitude)
@@ -88,7 +85,6 @@ public class CropRepository {
     }
 
     public List<CropEntry> findAllForFarmer(Long userId){
-        // [LEGACY LOCAL STORAGE] Preserve old H2-only lookup used by the legacy database test.
         if(farms==null) return jdbc.sql("""
             SELECT crop_type,planted_at,latitude,longitude FROM farm.crop_entry
             WHERE farmer_id=:userId ORDER BY planted_at DESC,crop_type
@@ -104,7 +100,19 @@ public class CropRepository {
             """).param("userId",userId).param("cycleId",cycleId).query(this::mapRow).optional();
     }
 
-    // [ERD-ALIGNMENT ADDITION] The owner check is part of the DELETE statement.
+    public Optional<Long> findFarmIdForCrop(Long userId,Long cycleId){
+        return jdbc.sql("""
+            SELECT c."Farm_ID" FROM public."CROP_CYCLES" c
+            JOIN public."FARMS" f ON f."Farm_ID"=c."Farm_ID"
+            WHERE f."User_ID"=:userId AND c."Crop_Cycle_ID"=:cycleId
+            """).param("userId",userId).param("cycleId",cycleId).query(Long.class).optional();
+    }
+
+    public long countForFarm(Long farmId){
+        return jdbc.sql("SELECT COUNT(*) FROM public.\"CROP_CYCLES\" WHERE \"Farm_ID\"=:farmId")
+                .param("farmId",farmId).query(Long.class).single();
+    }
+
     public boolean deleteForFarmer(Long userId,Long cycleId){
         return jdbc.sql("""
             DELETE FROM public."CROP_CYCLES" c USING public."FARMS" f
