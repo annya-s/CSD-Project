@@ -3,7 +3,6 @@ package com.csd.farm;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import com.csd.farm.auth.Farmer;
 import com.csd.farm.auth.FarmerRepository;
@@ -47,12 +46,13 @@ class PostgresSchemaTest {
                 """).query(String.class).list();
         assertThat(tables).contains("USERS", "FARMS", "CROP_TYPES", "CROP_CYCLES",
                 "SENSORS", "RISK_ASSESSMENTS", "RECOMMENDATIONS", "ACCOUNT_STATUS",
-                "ACCOUNT_TOKENS", "CROP_WEATHER_READINGS");
+                "ACCOUNT_TOKENS", "CROP_WEATHER_READINGS", "CROP_WEATHER_HISTORICAL_AVERAGE");
         assertThat(jdbc.sql("""
                 SELECT COUNT(*) FROM information_schema.table_constraints
-                WHERE table_schema='public' AND table_name='CROP_WEATHER_READINGS'
+                WHERE table_schema='public'
+                  AND table_name IN ('CROP_WEATHER_READINGS', 'CROP_WEATHER_HISTORICAL_AVERAGE')
                   AND constraint_type='FOREIGN KEY'
-                """).query(Integer.class).single()).isEqualTo(1);
+                """).query(Integer.class).single()).isEqualTo(2);
     }
 
     @Test
@@ -67,13 +67,11 @@ class PostgresSchemaTest {
     }
 
     @Test
-    void suppliedFourteenDayAverageIsStoredByCycleWithoutChangingAnotherPlanting() {
+    void dailySnapshotIsStoredByCycleWithoutChangingAnotherPlanting() {
         CropEntry first = planting(owner, CropType.POTATO);
         CropEntry second = planting(otherOwner, CropType.POTATO);
-        // A supplied aggregate fixture: persistence is tested here, not the upstream aggregation algorithm.
-        double average = IntStream.range(20, 34).average().orElseThrow();
         DailyWeather aggregate = new DailyWeather(LocalDate.of(2026, 10, 31), "Asia/Singapore",
-                average, 25200.0, 82.0, 0.25);
+                26.5, 25200.0, 82.0, 0.25);
         assertThat(weather.saveFromApi(first.cropCycleId(), aggregate)).isTrue();
         assertThat(weather.find(first.cropCycleId())).contains(aggregate);
         assertThat(weather.find(second.cropCycleId())).isEmpty();
@@ -128,6 +126,69 @@ class PostgresSchemaTest {
                 "INSERT INTO public.\"RECOMMENDATIONS\" (\"Assessment_ID\") VALUES (-1)")) {
             assertThatThrownBy(() -> jdbc.sql(statement).update()).isInstanceOf(DataIntegrityViolationException.class);
         }
+    }
+
+    @Test
+    void historicalAverageUsesItsOwnTableAndLeavesDailySnapshotsUnchanged() {
+        Long cycle = planting(owner, CropType.POTATO).cropCycleId();
+        DailyWeather daily = new DailyWeather(LocalDate.of(2026, 11, 7), "Asia/Singapore", 29.0, 25200.0, 82.0, 0.25);
+        weather.saveFromApi(cycle, daily);
+        saveHistoricalAverage(cycle, 23.5);
+        assertThat(jdbc.sql("""
+                SELECT COUNT(*) FROM public."CROP_WEATHER_HISTORICAL_AVERAGE"
+                WHERE "Crop_Cycle_ID"=:cycle AND "Start_Date"=DATE '2026-10-25'
+                  AND "End_Date"=DATE '2026-11-07' AND "Temperature_Mean"=23.5
+                  AND "Soil_Moisture_Mean"=0.32 AND "Vapour_Pressure_Deficit_Mean"=1.4
+                  AND "Sunshine_Duration_Mean_Seconds"=7200
+                """).param("cycle", cycle).query(Integer.class).single()).isEqualTo(1);
+        assertThat(weather.find(cycle)).contains(daily);
+    }
+
+    @Test
+    void historicalAverageUpsertKeepsOneRowPerCycleAndOtherCyclesSeparate() {
+        Long first = planting(owner, CropType.POTATO).cropCycleId();
+        Long second = planting(otherOwner, CropType.POTATO).cropCycleId();
+        saveHistoricalAverage(first, 23.5);
+        saveHistoricalAverage(second, 28.0);
+        saveHistoricalAverage(first, 25.0);
+        assertThat(jdbc.sql("""
+                SELECT "Temperature_Mean" FROM public."CROP_WEATHER_HISTORICAL_AVERAGE"
+                ORDER BY "Crop_Cycle_ID"
+                """).query(Double.class).list()).containsExactly(25.0, 28.0);
+    }
+
+    @Test
+    void historicalAverageRequiresACycleAndIsDeletedWithItsCycle() {
+        assertThatThrownBy(() -> saveHistoricalAverage(-1L, 23.5))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        Long cycle = planting(owner, CropType.POTATO).cropCycleId();
+        saveHistoricalAverage(cycle, 23.5);
+        assertThat(crops.deleteForFarmer(owner, cycle)).isTrue();
+        assertThat(jdbc.sql("SELECT COUNT(*) FROM public.\"CROP_WEATHER_HISTORICAL_AVERAGE\"")
+                .query(Integer.class).single()).isZero();
+    }
+
+    @Test
+    void historicalAverageKeepsMissingMeasurementsNullAndRejectsInvalidMeasurements() {
+        Long cycle = planting(owner, CropType.POTATO).cropCycleId();
+        saveHistoricalAverage(cycle, null);
+        assertThat(jdbc.sql("""
+                SELECT "Temperature_Mean" IS NULL FROM public."CROP_WEATHER_HISTORICAL_AVERAGE"
+                WHERE "Crop_Cycle_ID"=:cycle
+                """).param("cycle", cycle).query(Boolean.class).single()).isTrue();
+        assertThatThrownBy(() -> saveHistoricalAverage(cycle, 101.0))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    // Schema contract only: PR #27 separately tests the production averaging and save methods.
+    private void saveHistoricalAverage(Long cycle, Double temperature) {
+        jdbc.sql("""
+                INSERT INTO public."CROP_WEATHER_HISTORICAL_AVERAGE"
+                    ("Crop_Cycle_ID", "Start_Date", "End_Date", "Temperature_Mean", "Soil_Moisture_Mean",
+                     "Vapour_Pressure_Deficit_Mean", "Sunshine_Duration_Mean_Seconds")
+                VALUES (:cycle, DATE '2026-10-25', DATE '2026-11-07', :temperature, 0.32, 1.4, 7200)
+                ON CONFLICT ("Crop_Cycle_ID") DO UPDATE SET "Temperature_Mean"=EXCLUDED."Temperature_Mean"
+                """).param("cycle", cycle).param("temperature", temperature, java.sql.Types.DOUBLE).update();
     }
 
     private CropEntry planting(Long user, CropType type) {

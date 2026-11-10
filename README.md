@@ -24,9 +24,14 @@ the `Weather_Date`, `Weather_Timezone`, and mean-reading columns in that fixture
 Review it against an actual schema export when live column definitions change.
 Supabase RLS policies and real provider connections are not covered by this job.
 
-The weather tests verify storage of a supplied 14-day average and its cycle
-relationship. The application currently fetches a daily forecast; these tests
-do not implement or prove a 14-day historical aggregation calculation.
+CI provisions both current weather tables: `public."CROP_WEATHER_READINGS"`
+for daily snapshots and `public."CROP_WEATHER_HISTORICAL_AVERAGE"` for the
+14-day averages written by PR #27. Schema tests verify their separate storage,
+cycle foreign keys, upserts, null measurements, validation, and deletion behavior.
+PR #27 contains the averaging implementation and calculation tests; this CI
+branch does not duplicate its production code. When combining the branches,
+its `CropHistoricalAverageTest` must create and query
+`CROP_WEATHER_HISTORICAL_AVERAGE`, matching the production repository's table.
 
 To run the database tests locally, start a disposable database (Docker required):
 
