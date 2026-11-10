@@ -53,8 +53,8 @@ class FarmIntegrationTest {
 
         
         String hash = passwords.encode(PASSWORD);
-        farmers.save(new Farmer(null, "alice", "alice@example.com", false, false), hash);
-        farmers.save(new Farmer(null, "bob", "bob@example.com", false, false), hash);
+        farmers.save(new Farmer(null, "alice", "alice@example.com", false, false, "FARMER"), hash);
+        farmers.save(new Farmer(null, "bob", "bob@example.com", false, false, "FARMER"), hash);
     }
 
     @Test
@@ -140,14 +140,24 @@ class FarmIntegrationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {
-            "/login.html", "/dashboard.html", "/crop-details.html", "/new-entry.html",
-            "/api.js", "/login.js", "/dashboard.js", "/crop-details.js", "/new-entry.js"
-    })
-    void pageShellsAndScriptsLoadBeforeLogin(String path) throws Exception {
-        // Page scripts must load so they can direct logged-out visitors to login.
-        // The existing anonymous-request test separately verifies the API stays protected.
+    @ValueSource(strings = {"/login.html", "/api.js", "/login.js"})
+    void loginPageAndSharedScriptsLoadBeforeLogin(String path) throws Exception {
         mvc.perform(get(path)).andExpect(status().isOk());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "/dashboard.html", "/crop-details.html", "/new-entry.html",
+            "/dashboard.js", "/crop-details.js", "/new-entry.js"
+    })
+    void farmerPagesAndScriptsRequireLoginAndLoadForFarmers(String path) throws Exception {
+        var anonymous = mvc.perform(get(path).servletPath(path));
+        if (path.endsWith(".html")) {
+            anonymous.andExpect(status().isFound()).andExpect(redirectedUrl("/login.html"));
+        } else {
+            anonymous.andExpect(status().isUnauthorized());
+        }
+        mvc.perform(get(path).session(login("alice"))).andExpect(status().isOk());
     }
 
     @Test

@@ -1,4 +1,4 @@
-package com.csd.farm;
+package com.csd.farm.crop;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-class CropWeatherServiceTest {
+class CropWeatherCachingTest {
     private final EnvironmentService environment = mock(EnvironmentService.class);
     private final CropWeatherRepository repository = mock(CropWeatherRepository.class);
     private final CropWeatherService service = new CropWeatherService(environment, repository, true);
@@ -33,20 +33,20 @@ class CropWeatherServiceTest {
 
     @Test
     void sharesApiCacheForTheSameCoordinatesButSavesEachOwnedPlanting() {
-        when(environment.getAllReadings(1.0, 1.0)).thenReturn(hourlyReadings);
+        when(environment.getAllReadings(10)).thenReturn(hourlyReadings);
         var first = service.load(owner, crop);
         Long otherOwner = 2L;
         var second = service.load(otherOwner, new CropEntry(11L, "Other Farm", crop.cropType(), crop.plantedAt(), 1.0, 1.0));
         assertThat(first.source()).isEqualTo("OPEN_METEO");
         assertThat(second.weather()).isEqualTo(weather);
-        verify(environment, times(1)).getAllReadings(1.0, 1.0);
+        verify(environment, times(1)).getAllReadings(10);
         verify(repository).saveFromApi(10L, weather);
         verify(repository).saveFromApi(11L, weather);
     }
 
     @Test
     void outageUsesOnlyPreviouslyVerifiedApiDataWithWarning() {
-        when(environment.getAllReadings(1.0, 1.0)).thenThrow(new IllegalStateException("Unavailable"));
+        when(environment.getAllReadings(10)).thenThrow(new IllegalStateException("Unavailable"));
         when(repository.findFromApi(crop.cropCycleId())).thenReturn(Optional.of(weather));
         var result = service.load(owner, crop);
         assertThat(result.weather()).isEqualTo(weather);
@@ -56,13 +56,13 @@ class CropWeatherServiceTest {
 
     @Test
     void outageWithoutApiHistoryDoesNotUseDemoReadingsAndRetriesAreLimited() {
-        when(environment.getAllReadings(1.0, 1.0)).thenThrow(new IllegalStateException("Unavailable"));
+        when(environment.getAllReadings(10)).thenThrow(new IllegalStateException("Unavailable"));
         when(repository.find(crop.cropCycleId())).thenReturn(Optional.of(weather));
         var result = service.load(owner, crop);
         service.load(owner, crop);
         assertThat(result.weather()).isNull();
         assertThat(result.source()).isEqualTo("UNAVAILABLE");
         verify(repository, never()).find(any(Long.class));
-        verify(environment, times(1)).getAllReadings(1.0, 1.0);
+        verify(environment, times(1)).getAllReadings(10);
     }
 }

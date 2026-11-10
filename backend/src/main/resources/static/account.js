@@ -33,10 +33,7 @@ function updateAccountPage() {
 $('verify-email').addEventListener('click', async () => {
     showMessage('global-message');
     try {
-        await api('/api/auth/verify-email', jsonPost({
-            email: account.email,
-            code: $('verification-code').value.trim()
-        }));
+        await api('/api/auth/verify-email', jsonPost({ email: account.email, code: $('verification-code').value.trim() }));
         showMessage('global-message', 'Your email was verified.');
         await start();
     } catch (error) {
@@ -44,13 +41,25 @@ $('verify-email').addEventListener('click', async () => {
     }
 });
 
+let resendInProgress = false;
 $('resend-code').addEventListener('click', async () => {
+    if (resendInProgress) return;
+    const confirmed = confirm('Resend verification code? Any previous code will no longer work.');
+    if (!confirmed) return;
+
+    const button = $('resend-code');
     showMessage('global-message');
+    resendInProgress = true;
+    button.disabled = true;
     try {
         await api('/api/auth/verification-code', jsonPost({}));
-        showMessage('global-message', 'A new verification code was sent.');
+        showMessage('global-message', 'A new verification code was sent. Check your email; it may take a moment.');
+        // prevent accidental spam clicks
+        setTimeout(() => { button.disabled = false; }, 30000);
     } catch (error) {
         showMessage('global-message', error.message);
+        resendInProgress = false;
+        button.disabled = false;
     }
 });
 
@@ -70,10 +79,7 @@ $('password-form').addEventListener('submit', async event => {
     }
     $('update-password').disabled = true;
     try {
-        await api('/api/auth/password', jsonPost({
-            currentPassword,
-            newPassword
-        }));
+        await api('/api/auth/password', jsonPost({ currentPassword, newPassword }));
         showMessage('global-message', 'Your password was updated.');
         $('password-form').reset();
     } catch (error) {
@@ -92,8 +98,7 @@ $('two-factor-toggle').addEventListener('click', async () => {
     toggle.disabled = true;
     try {
         await api('/api/auth/two-factor', jsonPost({ enabled: enable }));
-        showMessage('global-message', 
-                    'Two-factor authentication is ' + (enable ? 'on.' : 'off.'));
+        showMessage('global-message', 'Two-factor authentication is ' + (enable ? 'on.' : 'off.'));
         await start(); // reloads account, which re-renders the section
     } catch (error) {
         showMessage('global-message', error.message);
@@ -110,14 +115,7 @@ async function start() {
         $('account-page').hidden = false;
     } catch (error) {
         $('loading').hidden = true;
-
-        if (error.status === 401) {
-            window.location.replace('/login.html');
-            return;
-        }
-        showMessage('global-message',
-            'Cannot reach the server. Check the connection and refresh to try again.'
-        );
+        showMessage('global-message', 'Cannot reach the server. Check the connection and refresh to try again.');
     }
 }
 

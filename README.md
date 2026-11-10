@@ -28,10 +28,10 @@ CI provisions both current weather tables: `public."CROP_WEATHER_READINGS"`
 for daily snapshots and `public."CROP_WEATHER_HISTORICAL_AVERAGE"` for the
 14-day averages written by PR #27. Schema tests verify their separate storage,
 cycle foreign keys, upserts, null measurements, validation, and deletion behavior.
-PR #27 contains the averaging implementation and calculation tests; this CI
-branch does not duplicate its production code. When combining the branches,
-its `CropHistoricalAverageTest` must create and query
-`CROP_WEATHER_HISTORICAL_AVERAGE`, matching the production repository's table.
+The combined suite also runs PR #27's averaging calculation tests and its
+`CropHistoricalAverageTest` against `CROP_WEATHER_HISTORICAL_AVERAGE`, matching
+the production repository. These tests share the CI PostgreSQL service and
+do not require a second Testcontainers database.
 
 To run the database tests locally, start a disposable database (Docker required):
 

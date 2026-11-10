@@ -56,7 +56,7 @@ public class CropWeatherService {
             if (previous != null && Instant.now().isBefore(previous.expiresAt())
                     && (previous.weather() == null || previous.weather().date().equals(today))) return previous;
             try {
-                var hourlyReadings = environment.getAllReadings(key.latitude(), key.longitude());
+                var hourlyReadings = environment.getAllReadings(crop.cropCycleId().intValue());
                 DailyWeather weather = CropForecast.forDay(hourlyReadings, today, zone);
                 return new CachedWeather(weather, Instant.now().plus(Duration.ofMinutes(15)));
             } catch (RuntimeException exception) {

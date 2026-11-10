@@ -34,8 +34,8 @@ class PostgresSchemaTest {
     @BeforeEach
     void createOwners() {
         jdbc.sql("DELETE FROM public.\"USERS\"").update();
-        owner = farmers.save(new Farmer(null, "schema_owner", "owner@example.com", false, false), "unused-test-hash").id();
-        otherOwner = farmers.save(new Farmer(null, "schema_other", "other@example.com", false, false), "unused-test-hash").id();
+        owner = farmers.save(new Farmer(null, "schema_owner", "owner@example.com", false, false, "FARMER"), "unused-test-hash").id();
+        otherOwner = farmers.save(new Farmer(null, "schema_other", "other@example.com", false, false, "FARMER"), "unused-test-hash").id();
     }
 
     @Test
