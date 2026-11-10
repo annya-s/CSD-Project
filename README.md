@@ -9,6 +9,43 @@ farm dashboard, crop details, and a new-entry form. It uses plain HTML, CSS and
 JavaScript, Spring Security, readable JDBC queries, and Supabase PostgreSQL.
 The previous standalone prototype is preserved in `dist/index.html`.
 
+## CI for the public Supabase schema
+
+GitHub Actions starts a fresh PostgreSQL 17 service, loads the test-only schema
+from `backend/src/test/resources/db/ci/`, and runs `clean verify`. It checks the
+current account, farm, crop-cycle, and weather repositories, API access controls,
+foreign keys, duplicate entries, and weather snapshot updates. Successful builds
+save the application JAR and test reports. No Supabase credentials are needed.
+
+The fixture follows the supplied ERD and SQL used by the application. It is not
+a production migration or an exact export of the live database. In particular,
+the weather repository currently expects one snapshot per `Crop_Cycle_ID` and
+the `Weather_Date`, `Weather_Timezone`, and mean-reading columns in that fixture.
+Review it against an actual schema export when live column definitions change.
+Supabase RLS policies and real provider connections are not covered by this job.
+
+The weather tests verify storage of a supplied 14-day average and its cycle
+relationship. The application currently fetches a daily forecast; these tests
+do not implement or prove a 14-day historical aggregation calculation.
+
+To run the database tests locally, start a disposable database (Docker required):
+
+```powershell
+docker run --detach --name csd-ci-db --publish 127.0.0.1:15432:5432 --env POSTGRES_DB=farm_ci --env POSTGRES_USER=farm_ci --env POSTGRES_PASSWORD=ci_only postgres:17
+# Wait until this returns "accepting connections":
+docker exec csd-ci-db pg_isready -U farm_ci -d farm_ci
+cd backend
+$env:TEST_DB_URL = 'jdbc:postgresql://127.0.0.1:15432/farm_ci'
+.\mvnw.cmd --batch-mode --no-transfer-progress clean verify
+docker rm --force --volumes csd-ci-db
+Remove-Item Env:TEST_DB_URL
+```
+
+Use only an empty disposable database named `farm_ci`. The tests create tables
+and clear their test accounts. The test profile ignores local Supabase settings
+and uses separate `TEST_DB_URL`, `TEST_DB_USERNAME`, and `TEST_DB_PASSWORD`
+variables, with defaults `localhost:5432/farm_ci`, `farm_ci`, and `ci_only`.
+
 ## Run locally without Supabase
 
 Install **Java 17 or newer**. Maven is included through the Maven wrapper.

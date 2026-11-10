@@ -20,7 +20,7 @@ class CropWeatherServiceTest {
     private final CropWeatherRepository repository = mock(CropWeatherRepository.class);
     private final CropWeatherService service = new CropWeatherService(environment, repository, true);
     private final Long owner = 1L;
-    private final CropEntry crop = new CropEntry(CropType.POTATO, OffsetDateTime.parse("2026-01-10T08:30:00Z"),
+    private final CropEntry crop = new CropEntry(10L, "Main Farm", CropType.POTATO, OffsetDateTime.parse("2026-01-10T08:30:00Z"),
             1.0, 1.0);
     private final ZoneId zone = ZoneId.systemDefault();
     private final LocalDate today = LocalDate.now(zone);
@@ -36,33 +36,33 @@ class CropWeatherServiceTest {
         when(environment.getAllReadings(1.0, 1.0)).thenReturn(hourlyReadings);
         var first = service.load(owner, crop);
         Long otherOwner = 2L;
-        var second = service.load(otherOwner, crop);
+        var second = service.load(otherOwner, new CropEntry(11L, "Other Farm", crop.cropType(), crop.plantedAt(), 1.0, 1.0));
         assertThat(first.source()).isEqualTo("OPEN_METEO");
         assertThat(second.weather()).isEqualTo(weather);
         verify(environment, times(1)).getAllReadings(1.0, 1.0);
-        verify(repository).saveFromApi(owner, crop.cropType(), crop.plantedAt(), weather);
-        verify(repository).saveFromApi(otherOwner, crop.cropType(), crop.plantedAt(), weather);
+        verify(repository).saveFromApi(10L, weather);
+        verify(repository).saveFromApi(11L, weather);
     }
 
     @Test
     void outageUsesOnlyPreviouslyVerifiedApiDataWithWarning() {
         when(environment.getAllReadings(1.0, 1.0)).thenThrow(new IllegalStateException("Unavailable"));
-        when(repository.findFromApi(owner, crop.cropType(), crop.plantedAt())).thenReturn(Optional.of(weather));
+        when(repository.findFromApi(crop.cropCycleId())).thenReturn(Optional.of(weather));
         var result = service.load(owner, crop);
         assertThat(result.weather()).isEqualTo(weather);
         assertThat(result.message()).contains("previously saved API readings");
-        verify(repository, never()).find(any(), any(), any());
+        verify(repository, never()).find(any(Long.class));
     }
 
     @Test
     void outageWithoutApiHistoryDoesNotUseDemoReadingsAndRetriesAreLimited() {
         when(environment.getAllReadings(1.0, 1.0)).thenThrow(new IllegalStateException("Unavailable"));
-        when(repository.find(owner, crop.cropType(), crop.plantedAt())).thenReturn(Optional.of(weather));
+        when(repository.find(crop.cropCycleId())).thenReturn(Optional.of(weather));
         var result = service.load(owner, crop);
         service.load(owner, crop);
         assertThat(result.weather()).isNull();
         assertThat(result.source()).isEqualTo("UNAVAILABLE");
-        verify(repository, never()).find(any(), any(), any());
+        verify(repository, never()).find(any(Long.class));
         verify(environment, times(1)).getAllReadings(1.0, 1.0);
     }
 }

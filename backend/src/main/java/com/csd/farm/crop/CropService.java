@@ -27,7 +27,8 @@ public class CropService {
     private final MLPredictionService predictions;
 
     public CropService(CropRepository crops,CropTypeRepository cropTypes,FarmerRepository farmers,FarmRepository farms,
-            CropWeatherRepository weatherReadings,CropHealthService health,CropWeatherService weatherService){
+            CropWeatherRepository weatherReadings,CropHealthService health,CropWeatherService weatherService,
+            MLPredictionService predictions){
         this.crops=crops;this.cropTypes=cropTypes;this.farmers=farmers;this.farms=farms;
         this.weatherReadings=weatherReadings;this.health=health;this.weatherService=weatherService;
         this.predictions=predictions;
