@@ -41,15 +41,10 @@
                         </figcaption>
                     </figure>
                     <dl class="location-data"><dt>Latitude</dt><dd id="detail-latitude"></dd><dt>Longitude</dt><dd id="detail-longitude"></dd></dl>
-                    <section id="synthetic-demo" hidden>
-                        <h2>Biomass scenario</h2>
-                        <p>Explore how a model trained on synthetic data responds to an assumed age and 14 days of weather. This is a simulation for the selected crop.</p>
-                        <label>Plant age (days) <input id="scenario-age" type="number" value="60" step="1"></label>
-                        <label>Weather scenario <select id="scenario-weather">
-                            <option value="mild">Mild</option><option value="hot-dry">Hot and dry</option><option value="cool">Cool</option>
-                        </select></label>
-                        <button id="run-scenario" type="button">Estimate simulated biomass</button>
-                        <p id="scenario-result" role="status"></p>
+                    <section>
+                        <h2>Biomass estimate</h2>
+                        <p>Calculated from the saved planting date and the previous 14 complete days of weather.</p>
+                        <p id="biomass-result" role="status"></p>
                     </section>
                     <h2>Historical wheat example</h2>
                     <p>Winter wheat in Bulgaria on 24 April 2017. This example uses recorded weather from the study field.</p>

@@ -29,18 +29,21 @@ public class MLPredictionService {
 
     // Called only after CropService has resolved this cycle for its authenticated owner.
     Prediction forPlanting(CropEntry entry) {
-        if (entry.cropType() != CropType.WHEAT)
-            return new Prediction("UNSUPPORTED", null, null, "Biomass estimates are available for outdoor winter wheat only.");
+        boolean synthetic = java.util.Set.of(CropType.CARROT, CropType.MAIZE,
+                CropType.SOYBEAN, CropType.SUGAR_BEET).contains(entry.cropType());
+        if (entry.cropType() != CropType.WHEAT && !synthetic)
+            return new Prediction("UNSUPPORTED", null, null, "No biomass model is available for this crop yet.");
+        String crop = synthetic ? entry.cropType().name() : "winter_wheat";
         try {
             var rows = jdbc.sql("""
                     SELECT date, timezone, temperature_min_c, temperature_max_c,
                            soil_moisture_m3_m3, solar_radiation_mj_m2
                     FROM public.ml_daily_weather
                     WHERE crop_cycle_id = :cycle AND profile = :profile
-                      AND crop = 'winter_wheat' AND growing_system = 'outdoor_soil'
+                      AND lower(crop) = lower(:crop) AND growing_system = 'outdoor_soil'
                       AND date < (CURRENT_TIMESTAMP AT TIME ZONE timezone)::date
                     ORDER BY date DESC LIMIT 15
-                    """).param("cycle", entry.cropCycleId()).param("profile", PROFILE)
+                    """).param("cycle", entry.cropCycleId()).param("profile", PROFILE).param("crop", crop)
                     .query((r, n) -> new Day(r.getObject("date", LocalDate.class), r.getString("timezone"),
                             r.getObject("temperature_min_c", Double.class), r.getObject("temperature_max_c", Double.class),
                             r.getObject("soil_moisture_m3_m3", Double.class), r.getObject("solar_radiation_mj_m2", Double.class))).list();
@@ -56,7 +59,7 @@ public class MLPredictionService {
                 window.add(day);
             }
             if (rows.size() == 15 && rows.get(14).date().equals(window.get(0).date())) return pending();
-            return model.predict(Map.of("profile", PROFILE, "crop", "winter_wheat", "growing_system", "outdoor_soil",
+            return model.predict(Map.of("mode", synthetic ? "synthetic" : "observed", "profile", PROFILE, "crop", crop, "growing_system", "outdoor_soil",
                     "latitude", entry.latitude(), "longitude", entry.longitude(), "timezone", zone.getId(),
                     "sowing_date", entry.plantedAt().atZoneSameInstant(zone).toLocalDate().toString(),
                     "prediction_date", today.toString(), "weather", window));
@@ -67,7 +70,7 @@ public class MLPredictionService {
 
     private static Prediction pending() {
         return new Prediction("INSUFFICIENT_DATA", null, null,
-                "A biomass estimate needs confirmed outdoor winter wheat and 14 complete days of matching weather.");
+                "A biomass estimate needs a confirmed crop type and 14 complete days of matching weather.");
     }
 
     private record Day(LocalDate date, String timezone, Double temperature_min_c, Double temperature_max_c,

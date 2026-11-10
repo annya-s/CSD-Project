@@ -115,9 +115,7 @@ function renderCropPhoto(cropType, cropName) {
 // Only this file handles the crop-details screen.
 function renderDetails(data, cropTypes) {
     const name = cropTypes.find((type) => type.code === data.entry.cropType)?.name || data.entry.cropType;
-    const demo = $('synthetic-demo');
-    demo.dataset.crop = data.entry.cropType;
-    demo.hidden = !['CARROT','SOYBEAN','SUGAR_BEET','MAIZE'].includes(data.entry.cropType);
+    $('biomass-result').textContent = data.prediction?.message || 'Biomass estimate unavailable.';
     document.title = `Dome · ${name}`;
     $('detail-title').textContent = name;
     renderCropPhoto(data.entry.cropType, name);
@@ -138,22 +136,6 @@ function renderDetails(data, cropTypes) {
         ? 'No attention flags in the available readings. This is not a complete crop health assessment.'
         : 'Not assessed. Daily weather readings are needed.';
 }
-
-$('run-scenario').addEventListener('click', async () => {
-    const age = $('scenario-age').valueAsNumber;
-    const output = $('scenario-result');
-    if (!Number.isInteger(age)) { output.textContent = 'Enter a whole number of days.'; return; }
-    const button = $('run-scenario');
-    button.disabled = true;
-    output.textContent = 'Running simulation…';
-    try {
-        const result = await api('/api/samples/synthetic/' + $('synthetic-demo').dataset.crop
-            + '/' + age + '/' + $('scenario-weather').value);
-        output.textContent = result.message;
-    } catch {
-        output.textContent = 'Could not run this simulation. Try again.';
-    } finally { button.disabled = false; }
-});
 
 $('sample-wheat').addEventListener('click', async () => {
     const button = $('sample-wheat');
