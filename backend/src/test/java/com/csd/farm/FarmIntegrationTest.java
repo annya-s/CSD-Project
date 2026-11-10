@@ -39,6 +39,8 @@ class FarmIntegrationTest {
              "latitude":1.3521,"longitude":103.8198}
             """;
 
+    private long cycleId;
+
     @Autowired MockMvc mvc;
     @Autowired JdbcClient jdbc;
     @Autowired FarmerRepository farmers;
@@ -46,13 +48,13 @@ class FarmIntegrationTest {
 
     @BeforeEach
     void createFarmers() {
-        jdbc.sql("DELETE FROM farm.crop_entry").update();
+        cycleId = 0;
         jdbc.sql("DELETE FROM public.\"USERS\"").update();
-        jdbc.sql("DELETE FROM farm.account_token").update();
+
         
         String hash = passwords.encode(PASSWORD);
-        farmers.save(new Farmer(null, "alice", "alice@example.com", false, false), hash);
-        farmers.save(new Farmer(null, "bob", "bob@example.com", false, false), hash);
+        farmers.save(new Farmer(null, "alice", "alice@example.com", false, false, "FARMER"), hash);
+        farmers.save(new Farmer(null, "bob", "bob@example.com", false, false, "FARMER"), hash);
     }
 
     @Test
@@ -94,7 +96,7 @@ class FarmIntegrationTest {
         String codeHash = java.util.HexFormat.of().formatHex(
                 digest.digest("123456".getBytes(java.nio.charset.StandardCharsets.UTF_8)));
         jdbc.sql("""
-                INSERT INTO farm.account_token (id, farmer_id, purpose, token_hash, expires_at)
+                INSERT INTO public."ACCOUNT_TOKENS" ("Token_ID", "User_ID", "Purpose", "Token_Hash", "Expires_At")
                 VALUES (:id, :farmer, 'EMAIL_VERIFY', :hash, :expires)
                 """)
                 .param("id", UUID.randomUUID()).param("farmer", farmer.id())
@@ -104,9 +106,10 @@ class FarmIntegrationTest {
                 .content("{\"username\":\"alice\",\"code\":\"123456\"}"))
                 .andExpect(status().isNoContent());
         assertThat(farmers.findByUsername("alice").orElseThrow().emailVerified()).isTrue();
-        jdbc.sql("DELETE FROM farm.account_token").update();
+        jdbc.sql("DELETE FROM public.\"ACCOUNT_TOKENS\"").update();
+
         jdbc.sql("""
-                INSERT INTO farm.account_token (id, farmer_id, purpose, token_hash, expires_at)
+                INSERT INTO public."ACCOUNT_TOKENS" ("Token_ID", "User_ID", "Purpose", "Token_Hash", "Expires_At")
                 VALUES (:id, :farmer, 'PASSWORD_RESET', :hash, :expires)
                 """)
                 .param("id", UUID.randomUUID()).param("farmer", farmer.id())
@@ -137,14 +140,24 @@ class FarmIntegrationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {
-            "/login.html", "/dashboard.html", "/crop-details.html", "/new-entry.html",
-            "/api.js", "/login.js", "/dashboard.js", "/crop-details.js", "/new-entry.js"
-    })
-    void pageShellsAndScriptsLoadBeforeLogin(String path) throws Exception {
-        // Page scripts must load so they can direct logged-out visitors to login.
-        // The existing anonymous-request test separately verifies the API stays protected.
+    @ValueSource(strings = {"/login.html", "/api.js", "/login.js"})
+    void loginPageAndSharedScriptsLoadBeforeLogin(String path) throws Exception {
         mvc.perform(get(path)).andExpect(status().isOk());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "/dashboard.html", "/crop-details.html", "/new-entry.html",
+            "/dashboard.js", "/crop-details.js", "/new-entry.js"
+    })
+    void farmerPagesAndScriptsRequireLoginAndLoadForFarmers(String path) throws Exception {
+        var anonymous = mvc.perform(get(path).servletPath(path));
+        if (path.endsWith(".html")) {
+            anonymous.andExpect(status().isFound()).andExpect(redirectedUrl("/login.html"));
+        } else {
+            anonymous.andExpect(status().isUnauthorized());
+        }
+        mvc.perform(get(path).session(login("alice"))).andExpect(status().isOk());
     }
 
     @Test
@@ -176,7 +189,7 @@ class FarmIntegrationTest {
                         .param("username", "alice").param("password", "incorrect"))
                 .andExpect(status().isUnauthorized());
         mvc.perform(get("/api/dashboard")).andExpect(status().isUnauthorized());
-        mvc.perform(get("/api/crops/POTATO").param("plantedAt", PLANTED_AT))
+        mvc.perform(get("/api/crops/" + cycleId).param("plantedAt", PLANTED_AT))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -199,10 +212,10 @@ class FarmIntegrationTest {
     }
 
     @Test
-    void catalogueHasTenCropsAndNewFarmerHasNoInventedEntries() throws Exception {
+    void catalogueMatchesSeededCropTypesAndNewFarmerHasNoInventedEntries() throws Exception {
         MockHttpSession session = login("alice");
         mvc.perform(get("/api/crop-types").session(session))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(10));
+                .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(com.csd.farm.crop.CropType.values().length));
         mvc.perform(get("/api/dashboard").session(session))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.crops.length()").value(0));
     }
@@ -215,7 +228,7 @@ class FarmIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.crops.length()").value(1))
                 .andExpect(jsonPath("$.crops[0].cropType").value("POTATO"));
-        mvc.perform(get("/api/crops/POTATO").session(freshSession).param("plantedAt", PLANTED_AT))
+        mvc.perform(get("/api/crops/" + cycleId).session(freshSession).param("plantedAt", PLANTED_AT))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.entry.latitude").value(1.3521))
                 .andExpect(jsonPath("$.readings[0].status").value("NOT_ASSESSED"))
@@ -228,7 +241,7 @@ class FarmIntegrationTest {
         MockHttpSession bob = login("bob");
         mvc.perform(get("/api/dashboard").session(bob))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.crops.length()").value(0));
-        mvc.perform(get("/api/crops/POTATO").session(bob).param("plantedAt", PLANTED_AT))
+        mvc.perform(get("/api/crops/" + cycleId).session(bob).param("plantedAt", PLANTED_AT))
                 .andExpect(status().isNotFound());
     }
 
@@ -236,7 +249,7 @@ class FarmIntegrationTest {
     void differentFarmersCanPlantSameCropAtSameTime() throws Exception {
         createCrop(login("alice"), CROP_JSON);
         createCrop(login("bob"), CROP_JSON);
-        assertThat(jdbc.sql("SELECT COUNT(*) FROM farm.crop_entry").query(Integer.class).single()).isEqualTo(2);
+        assertThat(jdbc.sql("SELECT COUNT(*) FROM public.\"CROP_CYCLES\"").query(Integer.class).single()).isEqualTo(2);
     }
 
     @Test
@@ -308,7 +321,7 @@ class FarmIntegrationTest {
     void weatherUpdatesAppearInDetailsAndDashboardAndCanClearOldFlags() throws Exception {
         MockHttpSession session = login("alice");
         createCrop(session, CROP_JSON);
-        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf())
+        mvc.perform(post("/api/crops/" + cycleId + "/weather").session(session).with(csrf())
                         .param("plantedAt", "2026-01-10T16:30:00+08:00")
                         .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
                 .andExpect(status().isOk())
@@ -322,11 +335,11 @@ class FarmIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.crops[0].needsAttention").value(true))
                 .andExpect(jsonPath("$.crops[0].weather.date").value("2026-01-12"));
-        mvc.perform(get("/api/crops/POTATO").session(session).param("plantedAt", PLANTED_AT))
+        mvc.perform(get("/api/crops/" + cycleId).session(session).param("plantedAt", PLANTED_AT))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.weather.humidityMeanPercent").value(82));
 
-        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf())
+        mvc.perform(post("/api/crops/" + cycleId + "/weather").session(session).with(csrf())
                         .param("plantedAt", PLANTED_AT).contentType(MediaType.APPLICATION_JSON)
                         .content(WEATHER_JSON.replace(":30", ":20").replace("18000", "25200")))
                 .andExpect(status().isOk())
@@ -339,22 +352,22 @@ class FarmIntegrationTest {
     @Test
     void weatherUpdatesRequireLoginCsrfAndOwnership() throws Exception {
         MockHttpSession alice = login("alice");
-        createCrop(alice, CROP_JSON);
-        mvc.perform(post("/api/crops/POTATO/weather").with(csrf()).param("plantedAt", PLANTED_AT)
+        long aliceCycleId = createCrop(alice, CROP_JSON);
+        mvc.perform(post("/api/crops/" + cycleId + "/weather").with(csrf()).param("plantedAt", PLANTED_AT)
                         .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
                 .andExpect(status().isUnauthorized());
-        mvc.perform(post("/api/crops/POTATO/weather").session(alice).param("plantedAt", PLANTED_AT)
+        mvc.perform(post("/api/crops/" + cycleId + "/weather").session(alice).param("plantedAt", PLANTED_AT)
                         .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
                 .andExpect(status().isForbidden());
         MockHttpSession bob = login("bob");
-        mvc.perform(post("/api/crops/POTATO/weather").session(bob).with(csrf()).param("plantedAt", PLANTED_AT)
+        mvc.perform(post("/api/crops/" + cycleId + "/weather").session(bob).with(csrf()).param("plantedAt", PLANTED_AT)
                         .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
                 .andExpect(status().isNotFound());
         createCrop(bob, CROP_JSON);
-        mvc.perform(post("/api/crops/POTATO/weather").session(bob).with(csrf()).param("plantedAt", PLANTED_AT)
+        mvc.perform(post("/api/crops/" + cycleId + "/weather").session(bob).with(csrf()).param("plantedAt", PLANTED_AT)
                         .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
                 .andExpect(status().isOk());
-        mvc.perform(get("/api/crops/POTATO").session(alice).param("plantedAt", PLANTED_AT))
+        mvc.perform(get("/api/crops/" + aliceCycleId).session(alice).param("plantedAt", PLANTED_AT))
                 .andExpect(jsonPath("$.weather").isEmpty())
                 .andExpect(jsonPath("$.needsAttention").value(false));
     }
@@ -376,7 +389,7 @@ class FarmIntegrationTest {
                     java.time.LocalDate.now(java.time.ZoneId.of("Asia/Singapore")).toString());
             default -> WEATHER_JSON.replace("\"2026-01-12\"", "null");
         };
-        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf()).param("plantedAt", PLANTED_AT)
+        mvc.perform(post("/api/crops/" + cycleId + "/weather").session(session).with(csrf()).param("plantedAt", PLANTED_AT)
                         .contentType(MediaType.APPLICATION_JSON).content(json))
                 .andExpect(status().isBadRequest());
     }
@@ -385,13 +398,13 @@ class FarmIntegrationTest {
     void olderWeatherCannotOverwriteNewerAndMissingValuesClearThePreviousSnapshot() throws Exception {
         MockHttpSession session = login("alice");
         createCrop(session, CROP_JSON);
-        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf()).param("plantedAt", PLANTED_AT)
+        mvc.perform(post("/api/crops/" + cycleId + "/weather").session(session).with(csrf()).param("plantedAt", PLANTED_AT)
                         .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON))
                 .andExpect(status().isOk());
-        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf()).param("plantedAt", PLANTED_AT)
+        mvc.perform(post("/api/crops/" + cycleId + "/weather").session(session).with(csrf()).param("plantedAt", PLANTED_AT)
                         .contentType(MediaType.APPLICATION_JSON).content(WEATHER_JSON.replace("2026-01-12", "2026-01-11")))
                 .andExpect(status().isConflict());
-        mvc.perform(post("/api/crops/POTATO/weather").session(session).with(csrf()).param("plantedAt", PLANTED_AT)
+        mvc.perform(post("/api/crops/" + cycleId + "/weather").session(session).with(csrf()).param("plantedAt", PLANTED_AT)
                         .contentType(MediaType.APPLICATION_JSON).content("""
                                 {"date":"2026-01-13","timezone":"Asia/Singapore"}
                                 """))
@@ -402,10 +415,13 @@ class FarmIntegrationTest {
                 .andExpect(jsonPath("$.needsAttention").value(false));
     }
 
-    private void createCrop(MockHttpSession session, String json) throws Exception {
-        mvc.perform(post("/api/crops").session(session).with(csrf())
+    private long createCrop(MockHttpSession session, String json) throws Exception {
+        var result = mvc.perform(post("/api/crops").session(session).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON).content(json))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated()).andReturn();
+        Number id = JsonPath.read(result.getResponse().getContentAsString(), "$.cropCycleId");
+        cycleId = id.longValue();
+        return cycleId;
     }
 }
 

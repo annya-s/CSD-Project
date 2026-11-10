@@ -7,18 +7,17 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import org.springframework.security.core.context.SecurityContextHolder; // [2FA] new import
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository; // [2FA] new import
-import com.csd.farm.auth.AccountTokenService; // [2FA] new import
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
+import com.csd.farm.auth.AccountTokenService;
 
 @Configuration
 public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-	// PBKDF2 handles long passwords without bcrypt's 72-byte limit.
-	return Pbkdf2PasswordEncoder.defaultsForSpringSecurity_v5_8();
+		// PBKDF2 handles long passwords without bcrypt's 72-byte limit.
+		return Pbkdf2PasswordEncoder.defaultsForSpringSecurity_v5_8();
     }
 
     @Bean
@@ -28,19 +27,26 @@ public class SecurityConfig {
 		.authorizeHttpRequests(auth -> auth
 			// Page shells are public; their data still requires an authenticated API request.
 			.requestMatchers("/", "/index.html", "/error", 
-					"/styles.css", "/favicon.svg", "/api.js", 
-					"/login.html", "/login.js", "/account.html", "/account.js",
-					"/dashboard.html", "/dashboard.js", 
-					"/crop-details.html", "/crop-details.js", 
-					"/new-entry.html", "/new-entry.js", 
-					"/**/*.svg").permitAll()
-			.requestMatchers("/**/*.svg").permitAll()
+					"/api.js", "/login.html", "/login.js", "/account.html", "/account.js",
+					"/styles.css", "/favicon.svg", "/icons.svg").permitAll()
 			.requestMatchers(HttpMethod.GET, 
-					"/api/auth/csrf", "/api/auth/verify-email").permitAll()
+					"/api/auth/csrf").permitAll()
 			.requestMatchers(HttpMethod.POST, 
 					"/api/auth/register", "/api/auth/login", "/api/auth/verify-email", 
 					"/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
+
+			.requestMatchers(
+					"/admin.html", "/admin.js",	"/api/admin", "/api/admin/**"
+			).hasRole("ADMIN")
+
+			.requestMatchers(
+					"/dashboard.html", "/dashboard.js", "/api/dashboard", "/api/dashboard/**",
+					"/crop-details.html", "/crop-details.js", "/api/crops",	"/api/crops/**", 
+					"/api/crop-types", "/api/crop-types/**", "/new-entry.html", "/new-entry.js"
+			).hasRole("FARMER")
+
 			.anyRequest().authenticated())
+		
 		// Spring Security keeps CSRF protection and rotates the session on login.
 		.formLogin(login -> login
 			.loginProcessingUrl("/api/auth/login")
@@ -78,7 +84,11 @@ public class SecurityConfig {
 			.logoutSuccessHandler((request, response, authentication) -> response.setStatus(204)))
 		.exceptionHandling(errors -> errors
 			.authenticationEntryPoint((request, response, exception) -> {
-			    response.setStatus(401);
+				if (request.getServletPath().endsWith(".html")) {
+					response.sendRedirect("/login.html");
+					return;
+				}
+				response.setStatus(401);
 			    response.setContentType("application/json");
 			    response.getWriter().write("{\"message\":\"Please log in to continue.\"}");
 			})

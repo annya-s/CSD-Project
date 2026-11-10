@@ -8,7 +8,8 @@ public record Farmer(
         String username, 
         String email, 
         boolean emailVerified,
-        boolean twoFactorEnabled) {
+        boolean twoFactorEnabled,
+        String role) {
 }
 
 
