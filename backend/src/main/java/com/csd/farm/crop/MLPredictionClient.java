@@ -38,7 +38,10 @@ public class MLPredictionClient {
             import json, sys
             from predict import predict
             request = json.load(sys.stdin)
-            if request.get('mode') == 'synthetic':
+            if request.get('mode') == 'averages':
+                from average_prediction import compare
+                result = compare(request)
+            elif request.get('mode') == 'synthetic':
                 from synthetic_demo import simulate
                 result = simulate(request)
             else:
@@ -70,7 +73,7 @@ public class MLPredictionClient {
             try (var stdout = process.getInputStream()) {
                 var result = json.readTree(stdout);
                 String status = result.path("status").asString("");
-                if ("synthetic".equals(input.get("mode"))) {
+                if ("synthetic".equals(input.get("mode")) || "averages".equals(input.get("mode"))) {
                     if ("SYNTHETIC_DEMO".equals(status) && result.path("value").isNumber())
                         return new CropResponses.Prediction(status, result.path("value").asDouble(),
                                 result.path("unit").asString(), result.path("message").asString());

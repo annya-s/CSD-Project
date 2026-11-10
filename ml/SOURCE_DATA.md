@@ -53,3 +53,31 @@ Maize, soybean and sugar beet: Chong et al., MuST-C, CC BY 4.0, https://www.ipb.
 
 The generator samples ranges of 14-day weather summaries, applies explicitly assumed weather penalties to each growth curve, and fits each model to those simulated values. These scenarios demonstrate the assumed relationship; they have no field accuracy estimate. No synthetic record is treated as independent field validation.
 
+
+## Stored-average comparison (2026-11-10)
+average_prediction.py trains offline and writes model/averages/*.cbm and *.json.
+Run: python average_prediction.py. It uses the existing carrot/Bonn curves from
+synthetic_demo.py and observed wheat age/biomass medians from
+data/processed/observations.csv. Every training label in this comparison model
+is synthetic, including wheat. The historical observed-data wheat example
+continues to use its original saved model.
+
+The live Java reader uses public.CROP_WEATHER_HISTORICAL_AVERAGE by authenticated
+crop cycle ID. Required values are Start_Date, End_Date, Temperature_Mean,
+Soil_Moisture_Mean, Vapour_Pressure_Deficit_Mean, Sunshine_Duration_Mean_Seconds.
+Its date window must end yesterday and begin 14 days ago. It uses the server
+timezone because EnvironmentClient uses that timezone. Date_Planted determines age.
+Missing/stale averages cause INSUFFICIENT_DATA. This reader never fetches weather.
+The API producer must call storeAverageHistoricalReading for each planting and
+ensure complete source data. Its current calculation skips nulls, and the table
+has no sample counts, so date validation alone cannot prove completeness.
+
+The model compares now, age+14 under constant recent averages, and age+14 under
+assumed reference means (20 C, 0.26 m3/m3 soil water, 1 kPa VPD, 8 sunshine hours/day).
+Reference assumptions are shared demonstration settings, not validated crop optima.
+The generator's penalties are explicitly synthetic. No growth beyond the observed
+age endpoints is extrapolated. One recent average window cannot establish a real
+crop's accumulated biomass or causally predict management benefits.
+The metadata's synthetic_holdout_mae measures imitation of the generator only.
+It is not field accuracy or a confidence interval. Deploy model/averages plus both
+average_prediction.py and synthetic_demo.py and the installed Python dependencies.
