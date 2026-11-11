@@ -9,7 +9,6 @@ __pycache__/
 build/
 dist/
 data/
-model/
 archive/
 .pytest-work*/
 artifacts/
