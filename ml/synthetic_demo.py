@@ -5,12 +5,12 @@ import zipfile
 import numpy as np
 import pandas as pd
 from catboost import CatBoostRegressor
+from data_preprocessing import build_features
 
 ROOT = Path(__file__).resolve().parent
 FEATURES = ["days_since_sowing", "temperature_min_mean_14d", "temperature_max_mean_14d",
             "soil_moisture_mean_14d", "solar_radiation_total_14d"]
-BONN = {"MAIZE": ("Maize", "2023-05-18"), "SOYBEAN": ("Soy Bean", "2023-05-05"),
-        "SUGAR_BEET": ("Sugar Beet", "2023-05-05")}
+BONN = {"MAIZE": ("Maize", "2023-05-18"), "SOYBEAN": ("Soy Bean", "2023-05-05")}
 # Hypothetical 14-day summaries. Their biomass effects are teaching assumptions.
 SCENARIOS = {"mild": [12, 24, .26, 235], "hot-dry": [21, 35, .12, 315],
              "cool": [5, 15, .30, 145]}
@@ -60,18 +60,34 @@ def train():
 
 def simulate(request):
     crop = request["crop"]
-    if crop not in {"CARROT", *BONN} or request["scenario"] not in SCENARIOS:
+    if crop not in {"CARROT", *BONN}:
         return {"status": "INVALID_INPUT"}
     lo, hi = json.loads((FOLDER / (crop + ".json")).read_text())
-    age = request["age"]
+    live = "weather" in request
+    if live:
+        try:
+            features = build_features(request, expected_crop=crop)
+        except ValueError:
+            return {"status": "INVALID_INPUT"}
+        age = features["days_since_sowing"]
+        vector = [features[key] for key in FEATURES]
+        bounds = [(5, 22), (14, 37), (.10, .34), (135, 330)]
+        if any(not low <= value <= high for value, (low, high) in zip(vector[1:], bounds)):
+            return {"status": "UNSUPPORTED", "message": "Recent weather falls outside this synthetic model's training ranges."}
+    else:
+        if request.get("scenario") not in SCENARIOS:
+            return {"status": "INVALID_INPUT"}
+        age = request["age"]
+        vector = [age, *SCENARIOS[request["scenario"]]]
     if type(age) != int or not lo <= age <= hi:
-        return {"status": "UNSUPPORTED", "message": f"Choose a simulated planting age from {lo} to {hi} days."}
+        return {"status": "UNSUPPORTED", "message": f"Plant age is {age} days. This synthetic model supports ages {lo} to {hi} days."}
     model = CatBoostRegressor()
     model.load_model(str(FOLDER / (crop + ".cbm")))
-    value = float(model.predict(pd.DataFrame([[age, *SCENARIOS[request["scenario"]]]], columns=FEATURES))[0])
+    value = float(model.predict(pd.DataFrame([vector], columns=FEATURES))[0])
     unit = "g/plant dry shoot" if crop == "CARROT" else "g/m² fresh aboveground"
+    label = "Synthetic-model estimate using recorded weather" if live else "Simulated biomass"
     return {"status": "SYNTHETIC_DEMO", "value": value, "unit": unit,
-            "message": f"Simulated biomass at day {age}: {value:.1f} {unit}. Scenario only; field accuracy has not been established."}
+            "message": f"{label} at day {age}: {value:.1f} {unit}. Trained on synthetic data; field accuracy has not been established."}
 
 
 if __name__ == "__main__":

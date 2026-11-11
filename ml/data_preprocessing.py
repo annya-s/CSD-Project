@@ -31,13 +31,13 @@ def write_json(path, value):
     path.write_text(json.dumps(value, indent=2, allow_nan=False), encoding='utf-8')
 
 
-def build_features(request):
+def build_features(request, expected_crop='winter_wheat'):
     """Same calculations for training and prediction; never fill missing readings."""
     try:
         target = date.fromisoformat(request['prediction_date'])
         sowing = date.fromisoformat(request['sowing_date'])
         zone = ZoneInfo(request['timezone'])
-        if request['profile'] != PROFILE or request['crop'] != 'winter_wheat':
+        if request['profile'] != PROFILE or request['crop'] != expected_crop:
             raise ValueError()
         if request['growing_system'] != 'outdoor_soil':
             raise ValueError()

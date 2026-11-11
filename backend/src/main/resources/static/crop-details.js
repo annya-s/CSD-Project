@@ -115,9 +115,29 @@ function renderCropPhoto(cropType, cropName) {
 // Only this file handles the crop-details screen.
 function renderDetails(data, cropTypes) {
     const name = cropTypes.find((type) => type.code === data.entry.cropType)?.name || data.entry.cropType;
-    const demo = $('synthetic-demo');
-    demo.dataset.crop = data.entry.cropType;
-    demo.hidden = !['CARROT','SOYBEAN','SUGAR_BEET','MAIZE'].includes(data.entry.cropType);
+    $('run-prediction').textContent = `Run ${name.toLowerCase()} biomass prediction`;
+    const prediction = data.prediction;
+    const comparison = $('biomass-comparison');
+    const available = prediction?.status === 'SYNTHETIC_DEMO'
+        && Number.isFinite(prediction.value) && Number.isFinite(prediction.referenceEstimate)
+        && prediction.projectionDate;
+    const hasTarget = Number.isFinite(prediction?.referenceEstimate) && prediction.projectionDate;
+    comparison.hidden = !hasTarget;
+    $('biomass-reference').textContent = hasTarget
+        ? 'Full-growth target under assumed optimal conditions: ' + prediction.referenceEstimate.toFixed(1)
+            + ' ' + prediction.unit + ' on ' + prediction.projectionDate + '.'
+        : '';
+    if (available) {
+        const unit = prediction.unit;
+        $('biomass-result').textContent = 'Predicted biomass at full growth if recent conditions continue: '
+            + prediction.value.toFixed(1) + ' ' + unit + ' on ' + prediction.projectionDate + '.';
+        const difference = prediction.referenceEstimate - prediction.value;
+        $('biomass-gap').textContent = 'Difference from full-growth target: '
+            + (difference > 0 ? '+' : '') + difference.toFixed(1) + ' ' + unit + '.';
+    } else {
+        $('biomass-result').textContent = prediction?.message || 'Biomass estimate unavailable.';
+        $('biomass-gap').textContent = '';
+    }
     document.title = `Dome · ${name}`;
     $('detail-title').textContent = name;
     renderCropPhoto(data.entry.cropType, name);
@@ -139,37 +159,6 @@ function renderDetails(data, cropTypes) {
         : 'Not assessed. Daily weather readings are needed.';
 }
 
-$('run-scenario').addEventListener('click', async () => {
-    const age = $('scenario-age').valueAsNumber;
-    const output = $('scenario-result');
-    if (!Number.isInteger(age)) { output.textContent = 'Enter a whole number of days.'; return; }
-    const button = $('run-scenario');
-    button.disabled = true;
-    output.textContent = 'Running simulation…';
-    try {
-        const result = await api('/api/samples/synthetic/' + $('synthetic-demo').dataset.crop
-            + '/' + age + '/' + $('scenario-weather').value);
-        output.textContent = result.message;
-    } catch {
-        output.textContent = 'Could not run this simulation. Try again.';
-    } finally { button.disabled = false; }
-});
-
-$('sample-wheat').addEventListener('click', async () => {
-    const button = $('sample-wheat');
-    const output = $('sample-result');
-    button.disabled = true;
-    output.textContent = 'Running the historical example…';
-    try {
-        const prediction = await api('/api/samples/winter-wheat');
-        output.textContent = prediction.message;
-    } catch {
-        output.textContent = 'Could not load the wheat example. Try again.';
-    } finally {
-        button.disabled = false;
-    }
-});
-
 async function start() {
     try {
         await requireFarmer();
@@ -186,9 +175,34 @@ async function start() {
             api('/api/crop-types')
         ]);
         renderDetails(details, cropTypes);
+        let refreshing = false;
+        async function refreshPrediction(manual = false) {
+            if (refreshing) return;
+            refreshing = true;
+            const button = $('run-prediction');
+            const status = $('prediction-run-status');
+            button.disabled = true;
+            if (manual) status.textContent = 'Checking saved weather, refreshing it if needed, and running your crop model…';
+            try {
+                // The existing details endpoint checks ownership, refreshes stale averages,
+                // reads them from the database and runs this planting's model.
+                const updated = await api(detailsUrl);
+                renderDetails(updated, cropTypes);
+                if (manual) status.textContent = updated.prediction?.status === 'SYNTHETIC_DEMO'
+                    ? 'Prediction updated. Compare the estimate and target below for the same date.'
+                    : 'Prediction unavailable. See the explanation below.';
+            } catch (error) {
+                if (!manual) throw error;
+                status.textContent = 'Could not run the prediction. Previously displayed values have not been updated. Please try again.';
+            } finally {
+                refreshing = false;
+                button.disabled = false;
+            }
+        }
+        $('run-prediction').addEventListener('click', () => refreshPrediction(true));
         $('loading').hidden = true;
         $('detail-page').hidden = false;
-        refreshPeriodically(async () => renderDetails(await api(detailsUrl), cropTypes));
+        refreshPeriodically(() => refreshPrediction());
     } catch (error) {
         showPageError(error);
     }

@@ -12,7 +12,6 @@ import com.csd.farm.crop.CropResponses.Prediction;
 
 @Service
 public class MLPredictionService {
-    private static final String PROFILE = "ifs-daily-soil-0-7-v2";
     private final JdbcClient jdbc;
     private final MLPredictionClient model;
 
@@ -25,51 +24,57 @@ public class MLPredictionService {
         return model.predict(Map.of("mode", "synthetic", "crop", crop.name(), "age", age, "scenario", scenario));
     }
 
-    Prediction sampleWheat(){return model.sampleWheat();}
 
-    // Called only after CropService has resolved this cycle for its authenticated owner.
+    // CropService verifies the logged-in farmer owns the cycle before this read.
     Prediction forPlanting(CropEntry entry) {
-        if (entry.cropType() != CropType.WHEAT)
-            return new Prediction("UNSUPPORTED", null, null, "Biomass estimates are available for outdoor winter wheat only.");
         try {
-            var rows = jdbc.sql("""
-                    SELECT date, timezone, temperature_min_c, temperature_max_c,
-                           soil_moisture_m3_m3, solar_radiation_mj_m2
-                    FROM public.ml_daily_weather
-                    WHERE crop_cycle_id = :cycle AND profile = :profile
-                      AND crop = 'winter_wheat' AND growing_system = 'outdoor_soil'
-                      AND date < (CURRENT_TIMESTAMP AT TIME ZONE timezone)::date
-                    ORDER BY date DESC LIMIT 15
-                    """).param("cycle", entry.cropCycleId()).param("profile", PROFILE)
-                    .query((r, n) -> new Day(r.getObject("date", LocalDate.class), r.getString("timezone"),
-                            r.getObject("temperature_min_c", Double.class), r.getObject("temperature_max_c", Double.class),
-                            r.getObject("soil_moisture_m3_m3", Double.class), r.getObject("solar_radiation_mj_m2", Double.class))).list();
-            if (rows.size() < 14) return pending();
-            ZoneId zone = ZoneId.of(rows.get(0).timezone());
+            // The environment producer uses the server timezone for this date range.
+            ZoneId zone = ZoneId.systemDefault();
             LocalDate today = LocalDate.now(zone);
-            List<Day> window = new java.util.ArrayList<>(14);
-            for (int i = 13; i >= 0; i--) {
-                Day day = rows.get(i);
-                if (!day.date().equals(today.minusDays(i + 1)) || !day.timezone().equals(zone.getId())
-                        || day.temperature_min_c() == null || day.temperature_max_c() == null
-                        || day.soil_moisture_m3_m3() == null || day.solar_radiation_mj_m2() == null) return pending();
-                window.add(day);
-            }
-            if (rows.size() == 15 && rows.get(14).date().equals(window.get(0).date())) return pending();
-            return model.predict(Map.of("profile", PROFILE, "crop", "winter_wheat", "growing_system", "outdoor_soil",
-                    "latitude", entry.latitude(), "longitude", entry.longitude(), "timezone", zone.getId(),
-                    "sowing_date", entry.plantedAt().atZoneSameInstant(zone).toLocalDate().toString(),
-                    "prediction_date", today.toString(), "weather", window));
+            var row = jdbc.sql("""
+                    SELECT "Start_Date", "End_Date", "Temperature_Mean", "Soil_Moisture_Mean",
+                           "Vapour_Pressure_Deficit_Mean", "Sunshine_Duration_Mean_Seconds"
+                    FROM public."CROP_WEATHER_HISTORICAL_AVERAGE"
+                    WHERE "Crop_Cycle_ID" = :cycle
+                    """).param("cycle", entry.cropCycleId()).query((r, n) -> new Average(
+                        r.getObject("Start_Date", LocalDate.class), r.getObject("End_Date", LocalDate.class),
+                        r.getObject("Temperature_Mean", Double.class), r.getObject("Soil_Moisture_Mean", Double.class),
+                        r.getObject("Vapour_Pressure_Deficit_Mean", Double.class),
+                        r.getObject("Sunshine_Duration_Mean_Seconds", Double.class))).optional();
+            if (row.isEmpty()) return reference(entry, "No saved 14-day weather averages were found for this planting.");
+            Average average = row.get();
+            if (!today.minusDays(14).equals(average.start()) || !today.minusDays(1).equals(average.end())
+                    || average.temperature() == null || average.soil() == null || average.vpd() == null
+                    || average.sunshine() == null) return reference(entry,
+                            "Saved weather averages are incomplete or do not cover the previous 14 complete days.");
+            var request = new java.util.HashMap<String, Object>();
+            request.put("mode", "averages");
+            request.put("crop", entry.cropType().name());
+            request.put("prediction_date", today.toString());
+            request.put("sowing_date", entry.plantedAt().atZoneSameInstant(zone).toLocalDate().toString());
+            request.put("start_date", average.start().toString());
+            request.put("end_date", average.end().toString());
+            request.put("temperature", average.temperature());
+            request.put("soil", average.soil());
+            request.put("vpd", average.vpd());
+            request.put("sunshine_seconds", average.sunshine());
+            Prediction prediction = model.predict(request);
+            return "SYNTHETIC_DEMO".equals(prediction.status()) ? prediction
+                    : reference(entry, prediction.message());
         } catch (DataAccessException | DateTimeException failure) {
-            return new Prediction("UNAVAILABLE", null, null, "Compatible weather history is unavailable for this planting.");
+            return reference(entry, "Stored 14-day weather averages could not be read for this planting.");
         }
     }
 
-    private static Prediction pending() {
-        return new Prediction("INSUFFICIENT_DATA", null, null,
-                "A biomass estimate needs confirmed outdoor winter wheat and 14 complete days of matching weather.");
+    private Prediction reference(CropEntry entry, String reason) {
+        ZoneId zone = ZoneId.systemDefault();
+        Prediction target = model.predict(Map.of("mode", "reference", "crop", entry.cropType().name(),
+                "prediction_date", LocalDate.now(zone).toString(),
+                "sowing_date", entry.plantedAt().atZoneSameInstant(zone).toLocalDate().toString()));
+        return new Prediction(target.status(), null, target.unit(), reason,
+                null, target.referenceEstimate(), target.projectionDate());
     }
 
-    private record Day(LocalDate date, String timezone, Double temperature_min_c, Double temperature_max_c,
-                       Double soil_moisture_m3_m3, Double solar_radiation_mj_m2) {}
+    private record Average(LocalDate start, LocalDate end, Double temperature, Double soil,
+                           Double vpd, Double sunshine) {}
 }
