@@ -144,7 +144,8 @@ function renderDetails(data, cropTypes) {
     $('detail-date').textContent = `Planted ${formatDate(data.entry.plantedAt)}`;
     $('detail-latitude').textContent = data.entry.latitude;
     $('detail-longitude').textContent = data.entry.longitude;
-    $('detail-note').textContent = data.note;
+    $('detail-note').textContent = [data.note,
+        available ? prediction.message : null].filter(Boolean).join(' ');
     $('weather-date').textContent = weatherCaption(data.weather, data.weatherSource, data.weatherMessage);
     $('attention').hidden = !data.needsAttention;
     $('readings').replaceChildren();
