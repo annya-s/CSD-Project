@@ -20,10 +20,10 @@ class CropHealthServiceTest {
     @EnumSource(CropType.class)
     void allCropsIncludeTheirBoundariesAndDetectValuesOutsideThem(CropType type) {
         var conditions = CropConditions.forCrop(type);
-        double minimumTemperature = conditions.temperatureC().minimum();
-        double maximumTemperature = conditions.temperatureC().maximum();
-        double minimumSeconds = conditions.sunshineHours().minimum() * 3600;
-        double maximumSeconds = conditions.sunshineHours().maximum() * 3600;
+        double minimumTemperature = conditions.getTemperatureRange().getOptimalMinimum();
+        double maximumTemperature = conditions.getTemperatureRange().getOptimalMaximum();
+        double minimumSeconds = conditions.getSunshineRange().getOptimalMinimum() * 3600;
+        double maximumSeconds = conditions.getSunshineRange().getOptimalMaximum() * 3600;
 
         var atMinimum = health.assess(type, weather(minimumTemperature, minimumSeconds));
         var atMaximum = health.assess(type, weather(maximumTemperature, maximumSeconds));

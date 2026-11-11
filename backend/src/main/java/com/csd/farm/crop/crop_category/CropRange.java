@@ -35,4 +35,12 @@ public class CropRange {
 
         return "WITHIN_RANGE";
     }
+
+    public double getOptimalMinimum() {
+        return optimalMinimum;
+    }
+
+    public double getOptimalMaximum() {
+        return optimalMaximum;
+    }
 }

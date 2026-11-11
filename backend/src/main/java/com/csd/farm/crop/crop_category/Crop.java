@@ -7,6 +7,18 @@ public abstract class Crop {
     protected CropRange temperatureRange;
     protected CropRange sunshineRange;
 
+    public CropType getCrop() {
+        return crop;
+    }
+
+    public CropRange getTemperatureRange() {
+        return temperatureRange;
+    }
+
+    public CropRange getSunshineRange() {
+        return sunshineRange;
+    }
+
     public String temperatureIssue(String reading) {
         if (reading == null) {
             return null;
