@@ -2,18 +2,21 @@ import { $, api, jsonPost, showMessage } from './api.js';
 
 let authMode = 'login';
 
-function loginDestination() {
+function loginDestination(role) {
     const next = new URLSearchParams(window.location.search).get('next');
-    const allowedPages = ['/dashboard.html', '/crop-details.html', '/new-entry.html'];
+    const farmerPages = ['/dashboard.html', '/crop-details.html', '/new-entry.html'];
+    const adminPages = ['/admin.html'];
+    const allowedPages = role === 'ADMIN' ? adminPages : farmerPages;
+    const defaultPage = role === 'ADMIN' ? '/admin.html' : '/dashboard.html';
     try {
-        const destination = new URL(next || '/dashboard.html', window.location.origin);
+        const destination = new URL(next || defaultPage, window.location.origin);
         if (destination.origin === window.location.origin && allowedPages.includes(destination.pathname)) {
             return destination.pathname + destination.search;
         }
     } catch {
         // Invalid links return to the dashboard instead of leaving this website.
     }
-    return '/dashboard.html';
+    return defaultPage;
 }
 
 function setAuthMode(mode) {
@@ -131,7 +134,8 @@ $('auth-form').addEventListener('submit', async (event) => {
             showMessage('global-message', 'We emailed a 6-digit code to your address.');
             return;
         }
-        window.location.replace(loginDestination());
+        const me = await api('/api/auth/me');
+        window.location.replace(loginDestination(me.role));
     } catch (error) {
         showMessage('auth-error', error.message);
     } finally {
@@ -144,8 +148,8 @@ $('auth-form').addEventListener('submit', async (event) => {
 
 async function start() {
     try {
-        await api('/api/auth/me');
-        window.location.replace(loginDestination());
+        const me = await api('/api/auth/me');
+        window.location.replace(loginDestination(me.role));
     } catch (error) {
         $('loading').hidden = true;
         $('login-page').hidden = false;

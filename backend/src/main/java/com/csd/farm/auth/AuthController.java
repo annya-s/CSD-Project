@@ -49,8 +49,9 @@ public class AuthController {
                 null,
                 request.username(), 
                 request.email(),
-                false,
-                false);
+                false,      // boolean emailVerified
+                false,      // boolean twoFactorEnabled
+                "FARMER");  // user role is ONLY ever "FARMER"
     
         farmer = farmers.save(farmer, passwords.encode(request.password()));
         accountTokens.issueEmailVerificationCode(farmer);

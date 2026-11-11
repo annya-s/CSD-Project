@@ -1,0 +1,12 @@
+{
+  "id": "88966829-0280-43d4-aaca-6bf9062efe01",
+  "schema_version": "database-prediction-error-v1",
+  "value": null,
+  "unit": "g/m2",
+  "status": "INVALID_INPUT",
+  "support_reasons": [
+    "INVALID_INPUT"
+  ],
+  "created_at": "2026-10-28T02:10:37.184166+00:00",
+  "message": "Check the input and provide 14 complete days of weather history."
+}

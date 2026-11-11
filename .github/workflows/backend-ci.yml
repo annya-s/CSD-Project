@@ -18,6 +18,24 @@ jobs:
     name: Build and test
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: farm_ci
+          POSTGRES_USER: farm_ci
+          POSTGRES_PASSWORD: ci_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U farm_ci -d farm_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      TEST_DB_URL: jdbc:postgresql://127.0.0.1:5432/farm_ci
+      TEST_DB_USERNAME: farm_ci
+      TEST_DB_PASSWORD: ci_only
     defaults:
       run:
         working-directory: backend
@@ -36,7 +54,7 @@ jobs:
           cache: maven
           cache-dependency-path: backend/pom.xml
 
-      - name: Run tests and package application
+      - name: Test public schema on PostgreSQL and package application
         run: sh ./mvnw --batch-mode --no-transfer-progress clean verify
 
       - name: Save test reports

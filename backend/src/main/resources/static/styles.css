@@ -53,13 +53,14 @@ p { max-width: 65ch; }
 .text-button:hover { background: var(--deep-green); }
 
 /* Account dropdown */
+details > summary.text-button { display: inline-flex; align-items: center; padding: 8px 20px; border-radius: 12px; background: var(--deep-green); color: #d2e5c8; font-weight: 650; text-decoration: none; }
 details { position: relative; }
 details summary { cursor: pointer; list-style: none; }
 details summary::-webkit-details-marker { display: none; }
 details > div { position: absolute; top: 100%; right: 0; z-index: 30; display: grid; min-width: 170px; padding: 6px;
     background: white; color: var(--ink); border: 1px solid var(--border); border-radius: 10px; }
-details > div .text-button { width: 100%; text-align: left; color: var(--ink); } 
-details > div .text-button:hover { background: #e5ebdf; }
+details > div .text-button { display: flex; align-items: center; width: 100%; min-height: 40px; padding: 8px 12px; border: none; border-radius: 8px; background: transparent; color: var(--ink); font: inherit; font-weight: 600; font-size: 0.95rem; text-align: left; text-decoration: none; cursor: pointer;
+}details > div .text-button:hover { background: #e5ebdf; }
 
 main { min-height: calc(100vh - 137px); }
 .page { padding: 54px 5vw 72px; }
@@ -200,7 +201,6 @@ footer { display: flex; align-items: center; justify-content: space-between; min
     .topbar nav { gap: 12px; }
     #welcome, #brand-caption { display: none; }
     .overview-link { padding: 6px 12px; }
-    #logout { padding-inline: 4px; }
     .page { padding: 32px 5vw 48px; }
 
     .login-layout, .entry-layout, .detail-layout { grid-template-columns: 1fr; gap: 28px; }
