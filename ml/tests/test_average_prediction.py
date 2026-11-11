@@ -2,6 +2,7 @@
 import re
 import sys
 import unittest
+from unittest.mock import patch
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -29,8 +30,10 @@ class AveragePredictionTests(unittest.TestCase):
                 self.assertEqual(result['status'], 'SYNTHETIC_DEMO')
                 self.assertEqual(result['unit'], profile['unit'])
                 self.assertGreaterEqual(result['value'], 0)
-                self.assertAlmostEqual(result['value'], result['reference_conditions'])
-                self.assertEqual(result['projection_date'], '2026-11-24')
+                self.assertAlmostEqual(result['reference_conditions'],
+                                       profile['mature_target'])
+                self.assertEqual(result['projection_date'], str(date(2026, 10, 11)+timedelta(days=PROFILES[crop]['maturity_days'])))
+                self.assertLessEqual(result.get('value') or 0, PROFILES[crop]['mature_target'])
 
     def test_invalid_and_stale_data(self):
         for key, value in [('soil', True), ('temperature', float('nan')),
@@ -48,6 +51,34 @@ class AveragePredictionTests(unittest.TestCase):
             request.update(temperature=39, soil=.03, vpd=4)
             result = compare(request)
             self.assertLess(result['value'], result['reference_conditions'], crop)
+
+    def test_target_without_weather_or_model_files(self):
+        with patch('average_prediction.FOLDER', Path('missing-model-test-directory')):
+            for crop in PROFILES:
+                request = self.request(crop)
+                request = {k: request[k] for k in ['crop', 'prediction_date', 'sowing_date']}
+                request['mode'] = 'reference'
+                result = compare(request)
+                self.assertEqual(result['status'], 'REFERENCE_ONLY', crop)
+                self.assertIsNone(result['value'])
+                self.assertGreater(result['reference_conditions'], 0)
+                self.assertEqual(result['projection_date'], str(date(2026, 10, 11)+timedelta(days=PROFILES[crop]['maturity_days'])))
+                self.assertLessEqual(result.get('value') or 0, PROFILES[crop]['mature_target'])
+
+    def test_saved_cold_weather_produces_prediction(self):
+        request = self.request('CARROT')
+        request.update(temperature=-28.53125, soil=.339,
+                       vpd=.0142857142857142, sunshine_seconds=1545.68642857143)
+        result = compare(request)
+        self.assertEqual(result['status'], 'SYNTHETIC_DEMO')
+        self.assertGreaterEqual(result['value'], 0)
+        self.assertLess(result['value'], result['reference_conditions'])
+
+    def test_full_growth_target_is_independent_of_current_age(self):
+        for crop in PROFILES:
+            first = self.request(crop)
+            later = dict(first, sowing_date='2026-10-01')
+            self.assertEqual(compare(first)['reference_conditions'], compare(later)['reference_conditions'])
 
 
 if __name__ == '__main__':

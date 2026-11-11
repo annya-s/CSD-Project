@@ -1,0 +1,126 @@
+# References and provenance of the synthetic biomass dataset
+
+Prepared 11 November 2026 for the current ten-crop implementation.
+
+## Suggested methodology wording
+
+The project uses a synthetic dataset to demonstrate a crop-specific biomass prediction workflow. Selected published measurements provide reference biomass values or early growth anchors for some crops. Agricultural guidance provides context for crop duration and environmental requirements. Where matching observations were unavailable, the project introduced explicitly assumed growth curves and biomass targets. Hypothetical age and weather combinations were generated, and biomass labels were calculated using an assumed weather-response formula. Separate CatBoost models were trained for each crop. Evaluation against held-out synthetic rows measures reproduction of the simulation, not predictive accuracy on independent farms.
+
+The dataset should therefore be described as a **research-informed, assumption-based synthetic demonstration**, not a dataset of measured crop responses or a scientifically validated agronomic model.
+
+## 1. Carrot
+
+**Publication:** Turner, S. D., Maurizio, P. L., Valdar, W., Yandell, B. S., and Simon, P. W. (2018). *Dissecting the Genetic Architecture of Shoot Growth in Carrot (Daucus carota L.) Using a Diallel Mating Design*. G3: Genes, Genomes, Genetics, 8(2), 411–426. [Article and DOI](https://doi.org/10.1534/g3.117.300235).
+
+**Data:** [Carrot diallel repository](https://github.com/mishaploid/carrot-diallel) and [pinned source CSV](https://github.com/mishaploid/carrot-diallel/blob/9c45b01737b4c4e14cc8c8373591defffae065fb/data/diallelRawData.csv).
+
+**Used in this project:** the median of the numeric `dlw` dry-leaf-weight values, approximately 4.4133 g/plant, provides the 130-day endpoint. This is a project calculation from the data, not a universal optimal biomass reported by the authors. Earlier growth points and weather penalties are invented. Dry shoot biomass excludes the edible carrot root.
+
+## 2. Wheat
+
+**Dataset:** Dimitrov, P., et al. (2025). *In-situ and UAV dataset with crop and soil parameters obtained from winter wheat fields*, version 1.0.0. [Zenodo record](https://zenodo.org/records/17475742).
+
+**Used in this project:** the earlier processed winter-wheat observations supplied dry aboveground biomass medians by age. The maximum of those local age medians, 1,371 g/m², was retained as an assumed full-growth target. The current 263-day curve is synthetic: 5%, 35%, 85% and 100% of the target at approximately 20%, 50%, 80% and 100% of the growing period.
+
+**Limitation:** the source concerns particular winter-wheat fields in Bulgaria. It does not establish a universal optimum for all wheat varieties or regions, nor validate the project's weather formula. The historical wheat example has been removed from the application; wheat now uses the common synthetic workflow.
+
+## 3. Maize
+
+**Dataset and publication:** Chong et al., *MuST-C: Multi-Sensor, Multi-Temporal, Multiple Crops*. [University of Bonn project](https://www.ipb.uni-bonn.de/data/MuST-C/), [research publication](https://doi.org/10.1038/s41597-025-06462-y), and [metadata archive](https://bonndata.uni-bonn.de/api/access/datafile/:persistentId?persistentId=doi:10.60507/FK2/OX9XTM/CEFQFD).
+
+**Used in this project:** dated maize biomass observations from `LAI_biomass_and_metadata/md_Biomass.csv`, using median fresh biomass per full plot area and excluding records flagged `Dont_use_psqm == 1`. The original early anchors span days 36–84.
+
+**Assumed extension:** 10,000 g/m² fresh aboveground biomass at 150 days. This endpoint was invented for the demonstration, not extracted as a harvest optimum from MuST-C. Weather response is also assumed.
+
+## 4. Soybean
+
+**Dataset:** the same [MuST-C project](https://www.ipb.uni-bonn.de/data/MuST-C/) and [publication](https://doi.org/10.1038/s41597-025-06462-y).
+
+**Used in this project:** median fresh aboveground biomass per full plot area for soybean at the available measurement dates, spanning approximately days 41–97 under the project's sowing-date alignment.
+
+**Assumed extension:** 5,000 g/m² fresh aboveground biomass at 135 days. The endpoint and weather response are invented. This is not soybean grain yield.
+
+## 5. Potato
+
+**Reference:** FAO, *International Year of the Potato 2008: New Light on a Hidden Treasure*, section “The potato.” [FAO PDF](https://www.fao.org/4/i0500e/i0500e02.pdf).
+
+**Additional context:** [FAO crop water needs](https://www.fao.org/4/s2022e/s2022e02.htm).
+
+**Use:** background on potato development, water requirements and production duration. The FAO discussion includes an approximately 120-day production example. The project's 300 g/m² dry aboveground biomass target is an assumption; it was not extracted from the source. Published tuber yield was not converted into shoot biomass.
+
+## 6. Sugar cane
+
+**Reference:** FAO, *Crop Yield Response to Water*, Irrigation and Drainage Paper 66. [FAO report](https://www.fao.org/4/i2800e/i2800e.pdf).
+
+**Additional context:** [FAO crop water needs](https://www.fao.org/4/s2022e/s2022e02.htm).
+
+**Use:** context about crop water demand and fresh cane production. The project's 3,000 g/m² dry aboveground target at 365 days is an assumption. It is not a measured value taken from these references, and no validated fresh-to-dry conversion was used.
+
+## 7. Rice
+
+**References:** FAO, [Crop water needs—crop and climate effects](https://www.fao.org/4/s2022e/s2022e02.htm) and [Crop water needs—growth stages and crop coefficients](https://www.fao.org/4/s2022e/s2022e07.htm).
+
+**Use:** background on crop duration and water demand. The project's 1,200 g/m² dry aboveground target at 150 days is assumed, not extracted from a rice biomass experiment.
+
+**Investigated but not incorporated:** [Binyang Experiments rice dataset](https://huggingface.co/datasets/qiyang577/BinyangExperiments), containing rice crop-trait and weather data. This source must not be cited as the origin of the current synthetic rice labels. Flooded paddy management is not represented by the simple shallow-soil-moisture input.
+
+## 8. Tomato
+
+**Reference:** Virginia Cooperative Extension / Virginia Tech, *Basic Tomato (Lycopersicon esculentum) Physiology and Morphology*, publication SPES-508. [Publication](https://www.pubs.ext.vt.edu/SPES/spes-508/spes-508.html).
+
+**Additional context:** [FAO growth stages and crop water needs](https://www.fao.org/4/s2022e/s2022e07.htm).
+
+**Use:** background on temperature and crop development. These references did not supply the project's 600 g/m² dry aboveground biomass target at 150 days. That target and its growth curve are assumptions, not marketable tomato yield.
+
+## 9. Lettuce
+
+**Reference:** Jin, W., Formiga Lopez, D., Heuvelink, E., and Marcelis, L. F. M. (2023; first published online 2022). *Light use efficiency of lettuce cultivation in vertical farms compared with greenhouse and field*. Food and Energy Security, 12(1). [University research record](https://research.wur.nl/en/publications/light-use-efficiency-of-lettuce-cultivation-in-vertical-farms-com/) and [DOI](https://doi.org/10.1002/fes3.391).
+
+**Use:** context about shoot dry mass, light, planting density and differences between cultivation environments. The project's 200 g/m² dry aboveground target at 75 days is invented, not a reported experimental endpoint from this review. Findings from controlled environments were not treated as direct outdoor training observations.
+
+## 10. Apple
+
+**Reference:** Traas, C., Irish Apple Growers Association. *Submission to the National Planning Framework “Ireland 2040 – Our Plan”*. [Report](https://cdn.npf.ie/wp-content/uploads/0331-Con-Traas-Irish-Apple-Growers-Association.compressed.pdf).
+
+**Used in this project:** the report's example of approximately 24.8 kg dry aboveground mass for sampled 23-year trees provides the endpoint scale. Earlier points are invented. The application represents 23 years as 8,395 days, an approximate modelling convention.
+
+**Limitation:** this is an industry report, not a weather-to-biomass validation experiment. Twenty-three years is a reference age, not a universal apple maturity age. The target concerns tree wood, not fruit yield; rootstock, pruning, tree size and dormancy are omitted.
+
+## Weather data and input definitions
+
+- [Open-Meteo Forecast API](https://open-meteo.com/en/docs): current-weather variables.
+- [Open-Meteo Historical Forecast API](https://open-meteo.com/en/docs/historical-forecast-api): the previous 14 complete days used for application predictions. Current collection uses `soil_moisture_3_to_9cm` in m³/m³, temperature in °C, VPD in kPa and sunshine duration in seconds, converted to hours for the model.
+- [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api): previously used for the original observed wheat pipeline. Its archived 0–7 cm moisture definition must not be confused with the current 3–9 cm application input.
+
+Open-Meteo supplies live application weather. **The current synthetic training weather rows are random scenarios, not historical Open-Meteo observations.**
+
+## What has no direct research-derived numerical basis
+
+The following are implementation choices or assumptions and should not be attributed to the cited papers:
+
+- 1,000 generated rows per crop, 800/200 train/test split and random seed 42.
+- Independent sampling bounds: −50 to 50°C temperature; 0–0.6 m³/m³ moisture; 0–5 kPa VPD; 0–24 sunshine hours per day.
+- The exact crop-specific reference weather vectors in `crop_profiles.json`; background guidance does not validate each complete vector as an optimum.
+- The weather-penalty coefficients 0.025, 2, 0.12 and 0.025.
+- The assumption that deviations from each reference reduce biomass through the same formula for all crops.
+- The model's output bound of 0–100% of the chosen full-growth target.
+- Assuming the latest 14-day weather scenario persists through growth and represents a future full-growth outcome.
+
+Synthetic holdout performance tests whether CatBoost learns this constructed relationship. It is not evidence of field accuracy. Fresh versus dry mass and per-plant versus per-area targets must remain distinct.
+
+## Additional sources previously investigated, not used for current labels
+
+These belong in a related-work or dataset-search section, not under datasets used to train the current model:
+
+- Rice: [Binyang Experiments](https://huggingface.co/datasets/qiyang577/BinyangExperiments).
+- Maize: [Ghana dataset, Zenodo 6632083](https://zenodo.org/records/6632083) and [Texas dataset, Zenodo 19176737](https://zenodo.org/records/19176737).
+- Potato: [Agronomic dataset DOI](https://doi.org/10.7910/DVN/1LC6W7) and [Wageningen description](https://research.wur.nl/en/datasets/agronomic-dataset-on-potato-growth-and-yield-in-the-netherlands/). Files were not downloaded successfully during the original search.
+- Lettuce: [Dryad dataset](https://doi.org/10.5061/dryad.73n5tb3d4). Files were not downloaded successfully during the original search.
+- Multiple field crops: Reichenau et al. (2020), [Comprehensive vegetation, weather, management and soil dataset](https://essd.copernicus.org/articles/12/2333/2020/). Not fitted into the current models.
+- Faba bean, since removed from the supported crop set: Tsige et al. (2022), [Fertilizer effects on faba bean productivity](https://doi.org/10.1155/2022/2232961). Not a current ten-crop data source.
+
+## Reproducibility and attribution
+
+The exact implemented assumptions are in `crop_profiles.json`; generation and training are in `average_prediction.py`. The generated output is `data/synthetic_averages.csv`, with explicit SYNTHETIC origin, crop, units, split and soil-depth metadata. Keep these together with the model metadata when describing a particular version.
+
+Cite original datasets as well as their publications when using their measurements. Verify and preserve the source licence and attribution when redistributing extracted data. Merely using a source as background does not make the synthetic output scientifically validated.

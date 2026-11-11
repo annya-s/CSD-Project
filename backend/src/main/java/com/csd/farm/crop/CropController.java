@@ -31,11 +31,6 @@ public class CropController {
         return cropService.synthetic(crop, age, scenario);
     }
 
-    @GetMapping("/samples/winter-wheat")
-    public CropResponses.Prediction sampleWheat(){
-        return cropService.sampleWheat();
-    }
-
     @GetMapping("/crop-types") 
     public List<CropOption> cropTypes(){
         return cropService.cropTypes();

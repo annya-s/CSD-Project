@@ -36,28 +36,17 @@ public class MLPredictionClient {
     // stdin avoids temporary files and works with Windows Python launched from WSL.
     private static final String RUN = """
             import json, sys
-            from predict import predict
             request = json.load(sys.stdin)
-            if request.get('mode') == 'averages':
+            if request.get('mode') in ('averages', 'reference'):
                 from average_prediction import compare
                 result = compare(request)
             elif request.get('mode') == 'synthetic':
                 from synthetic_demo import simulate
                 result = simulate(request)
             else:
-                result = predict(request)
+                result = dict(status='INVALID_INPUT', message='Unknown prediction mode.')
             print(json.dumps(result, allow_nan=False))
             """;
-
-    CropResponses.Prediction sampleWheat() {
-        try {
-            var sample = json.readValue(Files.readString(directory.resolve("data/example_request.json")),
-                    new tools.jackson.core.type.TypeReference<Map<String,Object>>() {});
-            return predict(sample);
-        } catch (IOException | RuntimeException failure) {
-            return CropResponses.Prediction.unavailable();
-        }
-    }
 
     CropResponses.Prediction predict(Map<String, Object> input) {
         if (!slots.tryAcquire()) return CropResponses.Prediction.unavailable();
@@ -73,27 +62,24 @@ public class MLPredictionClient {
             try (var stdout = process.getInputStream()) {
                 var result = json.readTree(stdout);
                 String status = result.path("status").asString("");
-                if ("synthetic".equals(input.get("mode")) || "averages".equals(input.get("mode"))) {
+                if ("REFERENCE_ONLY".equals(status) && result.path("reference_conditions").isNumber())
+                    return new CropResponses.Prediction(status, null,
+                            result.path("unit").asString(), result.path("message").asString(),
+                            null, result.path("reference_conditions").asDouble(),
+                            result.path("projection_date").asString(null));
+                if ("synthetic".equals(input.get("mode")) || "averages".equals(input.get("mode"))
+                        || "reference".equals(input.get("mode"))) {
                     if ("SYNTHETIC_DEMO".equals(status) && result.path("value").isNumber())
                         return new CropResponses.Prediction(status, result.path("value").asDouble(),
                                 result.path("unit").asString(), result.path("message").asString(),
                                 result.path("current_estimate").isNumber() ? result.path("current_estimate").asDouble() : null,
                                 result.path("reference_conditions").isNumber() ? result.path("reference_conditions").asDouble() : null,
                                 result.path("projection_date").asString(null));
-                    if ("UNSUPPORTED".equals(status))
+                    if ("UNSUPPORTED".equals(status) || "INVALID_INPUT".equals(status) || "UNAVAILABLE".equals(status))
                         return new CropResponses.Prediction(status, null, null, result.path("message").asString());
                     return CropResponses.Prediction.unavailable();
                 }
-                if ("UNSUPPORTED".equals(status))
-                    return new CropResponses.Prediction(status, null, null, "This planting is outside the model's training region or growing conditions.");
-                if ("INVALID_INPUT".equals(status))
-                    return new CropResponses.Prediction(status, null, null, "Check the planting date and daily weather measurements.");
-                var value = result.path("value");
-                if ("EXPERIMENTAL".equals(status) && value.isNumber() && Double.isFinite(value.asDouble())
-                        && value.asDouble() >= 0 && "g/m2".equals(result.path("unit").asString(""))) {
-                    return new CropResponses.Prediction(status, value.asDouble(), "g/m2",
-                            String.format(java.util.Locale.ROOT, "Experimental dry aboveground biomass estimate: %.1f g/m².", value.asDouble()));
-                }
+
             }
         } catch (InterruptedException interrupted) {
             Thread.currentThread().interrupt();

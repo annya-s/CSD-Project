@@ -24,7 +24,6 @@ public class MLPredictionService {
         return model.predict(Map.of("mode", "synthetic", "crop", crop.name(), "age", age, "scenario", scenario));
     }
 
-    Prediction sampleWheat(){return model.sampleWheat();}
 
     // CropService verifies the logged-in farmer owns the cycle before this read.
     Prediction forPlanting(CropEntry entry) {
@@ -42,11 +41,12 @@ public class MLPredictionService {
                         r.getObject("Temperature_Mean", Double.class), r.getObject("Soil_Moisture_Mean", Double.class),
                         r.getObject("Vapour_Pressure_Deficit_Mean", Double.class),
                         r.getObject("Sunshine_Duration_Mean_Seconds", Double.class))).optional();
-            if (row.isEmpty()) return pending();
+            if (row.isEmpty()) return reference(entry, "No saved 14-day weather averages were found for this planting.");
             Average average = row.get();
             if (!today.minusDays(14).equals(average.start()) || !today.minusDays(1).equals(average.end())
                     || average.temperature() == null || average.soil() == null || average.vpd() == null
-                    || average.sunshine() == null) return pending();
+                    || average.sunshine() == null) return reference(entry,
+                            "Saved weather averages are incomplete or do not cover the previous 14 complete days.");
             var request = new java.util.HashMap<String, Object>();
             request.put("mode", "averages");
             request.put("crop", entry.cropType().name());
@@ -58,15 +58,21 @@ public class MLPredictionService {
             request.put("soil", average.soil());
             request.put("vpd", average.vpd());
             request.put("sunshine_seconds", average.sunshine());
-            return model.predict(request);
+            Prediction prediction = model.predict(request);
+            return "SYNTHETIC_DEMO".equals(prediction.status()) ? prediction
+                    : reference(entry, prediction.message());
         } catch (DataAccessException | DateTimeException failure) {
-            return new Prediction("UNAVAILABLE", null, null, "Stored 14-day weather averages are unavailable for this planting.");
+            return reference(entry, "Stored 14-day weather averages could not be read for this planting.");
         }
     }
 
-    private static Prediction pending() {
-        return new Prediction("INSUFFICIENT_DATA", null, null,
-                "Refresh this crop's historical averages for the previous 14 complete days before predicting.");
+    private Prediction reference(CropEntry entry, String reason) {
+        ZoneId zone = ZoneId.systemDefault();
+        Prediction target = model.predict(Map.of("mode", "reference", "crop", entry.cropType().name(),
+                "prediction_date", LocalDate.now(zone).toString(),
+                "sowing_date", entry.plantedAt().atZoneSameInstant(zone).toLocalDate().toString()));
+        return new Prediction(target.status(), null, target.unit(), reason,
+                null, target.referenceEstimate(), target.projectionDate());
     }
 
     private record Average(LocalDate start, LocalDate end, Double temperature, Double soil,

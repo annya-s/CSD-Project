@@ -1,82 +1,81 @@
-# Synthetic crop demonstrations
+# Synthetic full-growth biomass models
 
-Updated 10 November 2026. Covers the 10 crops listed in Java's CropConditions map.
-The database can contain additional names; those are not automatically supported by Java or ML.
+Updated 11 November 2026. This replaces the earlier age-plus-14-day comparison.
 
-## Run offline
+The last 14 complete days are the **weather input window**, not the prediction horizon.
+The product compares two scenarios at the same assumed full-growth date (saved planting
+ date plus the profile's maturity_days): continued recent weather and assumed optimal
+conditions. Neither is a measured current biomass estimate or validated harvest forecast.
 
-From the project root in WSL, with dependencies installed in your Linux venv:
+The target is the profile's mature_target. It does not change with current planting age.
+The model predicts a fraction of that target, explicitly bounded to [0, 1], then converts
+it to the crop's biomass unit. This bound is a simulation assumption, not evidence that
+real plants cannot exceed these reference numbers. Apple uses a 23-year woody biomass
+reference, not a universally established maturity age or apple fruit yield.
 
-```sh
-ml/.venv/bin/python ml/average_prediction.py
-ml/.venv/bin/python -m unittest discover -s ml/tests -p test_average_prediction.py
-```
+## Training and input contract
 
-Windows equivalent: `ml\.venv\Scripts\python.exe ml\average_prediction.py`.
-Training requires no database or downloads. The checked-in `crop_profiles.json` contains
-the compact anchor data and recipe assumptions. The generated static dataset is
-`data/synthetic_averages.csv`: 1,000 rows per crop, 10,000 total, with crop, units,
-SYNTHETIC origin and an explicit 800/200 train/test split per crop.
-Models and metadata are in `model/averages/`. These generated artifacts remain
-gitignored; package that directory with the deployed Python code. Do not deploy a venv.
+Run `ml/.venv/bin/python ml/average_prediction.py` from the project root in WSL.
+Windows: `ml\.venv\Scripts\python.exe ml\average_prediction.py`.
+No network or database is needed for offline training.
 
-## Meaning and limitations
+The static dataset is `ml/data/synthetic_averages.csv`, 1,000 rows per crop,
+10,000 total, with SYNTHETIC origin and 800/200 train/test split per crop.
+Saved models: `ml/model/averages/`. Metadata profile: `mature-fraction-v3`.
+Version 2 models must be rebuilt; they predicted absolute biomass, not fractions.
+Package all ten model files and their metadata for deployment; do not package a venv.
 
-Inputs: planting age in days, previous 14 complete days' mean temperature (C),
-mean volumetric soil moisture (m3/m3), mean VPD (kPa), and mean daily sunshine (hours).
-Java sends sunshine seconds; Python converts once. Java supplies the saved planting
-date and averages, and Python derives age. The historical weather producer uses
-0–7 cm moisture. These synthetic labels do not validate that depth as root-zone moisture.
+Features are age in days, mean temperature C, volumetric soil moisture m3/m3,
+VPD kPa and mean daily sunshine hours. Java supplies sunshine seconds, converted once.
+Training bounds: temperature -50 to 50 C, moisture 0 to 0.6, VPD 0 to 5, sunshine 0 to 24.
+Extreme cold scenarios now return very low values instead of the old generic error.
+Invalid or missing readings are still rejected, not replaced with invented weather.
 
-Each crop has its own CatBoost model. Biomass is interpolated between its age anchors
-and multiplied by an invented weather suitability factor:
-`clip(1 - .025*abs(T-Tref) - 2*abs(M-Mref) - .12*abs(V-Vref) - .025*abs(S-Sref), .05, 1)`.
-References are in the JSON, ordered temperature, moisture, VPD, sunshine.
-All moisture/VPD/sunshine reference values and response coefficients are teaching
-assumptions, not published crop-specific optima. Soil texture, irrigation, cultivar,
-density, fertility, dormancy, pests and past-season weather are not modelled.
+Seed 42. 200 rows have reference weather; 300 additional rows use the full-growth age.
+The synthetic fraction label is interpolated age biomass / mature_target multiplied by:
+`clip(1 - .025*abs(T-Tref) - 2*abs(M-Mref) - .12*abs(V-Vref) - .025*abs(S-Sref), 0, 1)`.
+All response coefficients and moisture/VPD/sunshine references are invented assumptions.
+At serving time the model is evaluated at the full-growth age, using recent weather.
+Current planting age determines the projected date and checks that the crop is not
+already past the chosen full-growth stage. The scenario ignores earlier weather,
+management, senescence and seasonal changes; it cannot estimate recoverable losses.
+Holdout MAE measures imitation of this recipe in fraction units, not field accuracy.
 
-Random seed 42 makes generation reproducible. 200 rows per crop use reference
-weather; 800 sample the allowed weather bounds. The shuffled holdout only measures
-how well CatBoost imitates this recipe. It does not measure real-world accuracy.
-Independent random weather draws include rare combinations; they are scenario coverage,
-not a simulated regional weather record.
+## Full-growth reference profiles
 
-Both displayed comparisons use age + 14 days. They are independent age/weather
-scenarios, not a growth simulation initialized from measured current biomass.
-They cannot establish recoverable losses or promise that changing weather now recovers
-the difference. The reference can occasionally be lower because of approximation error;
-the UI preserves the signed difference. Predictions beyond the profile's last age are
-unavailable instead of silently extending a crop's season.
+| Crop | Assumed age (days) | Target | Unit |
+|---|---:|---:|---|
+| CARROT | 130 | 4.413 | g/plant dry shoot |
+| MAIZE | 150 | 10000.000 | g/m2 fresh aboveground |
+| SOYBEAN | 135 | 5000.000 | g/m2 fresh aboveground |
+| WHEAT | 263 | 1371.000 | g/m2 dry aboveground |
+| POTATO | 120 | 300.000 | g/m2 dry aboveground |
+| SUGAR_CANE | 365 | 3000.000 | g/m2 dry aboveground |
+| RICE | 150 | 1200.000 | g/m2 dry aboveground |
+| TOMATO | 150 | 600.000 | g/m2 dry aboveground |
+| LETTUCE | 75 | 200.000 | g/m2 dry aboveground |
+| APPLE | 8395 | 24.800 | kg/tree dry aboveground wood |
 
-## Anchor provenance
+Carrot retains the observed dry-leaf median anchor; wheat uses the maximum of the
+existing observed age medians as a synthetic full-growth reference. Wheat's intermediate
+curve is now assumed at 5%, 35%, 85%, 100% of that target at 20%, 50%, 80%, 100% of
+its 263-day growing period, using the same curve recipe as the other assumed annual
+profiles. It has 1,000 synthetic rows with the same columns, generator and training
+split as the other nine crops. The historical wheat sample endpoint and button are
+removed; the original offline research files remain archived from the live flow. Maize and soybean
+retain measured early anchors but now extend to invented full-growth endpoints of
+10,000 g/m2 fresh at 150 days and 5,000 g/m2 fresh at 135 days respectively.
+These two extensions are design assumptions, not measurements from MuST-C.
+The remaining annual profiles are assumed curves informed by source context, not
+extracted field labels. Apple retains the published 23-year dry wood endpoint with
+invented earlier values. Details and source IDs remain in crop_profiles.json.
+Fresh biomass, dry biomass, shoot biomass, root yield and fruit yield are distinct.
 
-| Crop | Target unit | Anchor basis |
-|---|---|---|
-| Carrot | g/plant dry shoot | Existing dry leaf median 4.4133 at 130 days; earlier values invented |
-| Maize | g/m2 fresh aboveground | MuST-C dated plot medians, days 36–84 |
-| Soybean | g/m2 fresh aboveground | MuST-C dated plot medians, days 41–97 |
-| Winter wheat | g/m2 dry aboveground | Existing saved observations, median by planting age |
-| Potato | g/m2 dry aboveground | Assumed 300 at day 120; excludes tubers |
-| Sugar cane | g/m2 dry aboveground | Assumed 3,000 at day 365 |
-| Rice | g/m2 dry aboveground | Assumed 1,200 at day 150 |
-| Tomato | g/m2 dry aboveground | Assumed 600 at day 150; not marketable tomato yield |
-| Lettuce | g/m2 dry aboveground | Assumed 200 at day 75 |
-| Apple | kg/tree dry aboveground wood | Reported 24.8 kg at 23 years; earlier values invented |
-
-For the five new annual profiles, intermediate anchors are 5%, 35%, 85%, 100% of
-the assumed endpoint at 20%, 50%, 80%, 100% of the assumed duration. These curves
-omit senescence and harvest. Other than apple's endpoint and the original four
-profiles, **the biomass labels are invented, not extracted from the linked studies**.
-Published crop yield is not silently relabelled as aboveground biomass. For context,
-1 t/ha = 100 g/m2; fresh and dry masses are not interchangeable.
-
-Apple assumes a young transplanted tree at the saved planting date. Logging an
-already mature tree today does not establish its age. The demonstration excludes
-fruit yield, pruning and winter dormancy. Do not interpret two weeks of weather as
-a causal change to a mature tree's accumulated woody biomass.
+Targets can be shown without weather or model artifacts, but Python dependencies
+are still required. Runtime tests: `python -m unittest discover -s ml/tests -p test_average_prediction.py`.
 
 ## Research references (source IDs used in JSON)
+
 
 - FAO_DURATION / FAO_WATER: [FAO crop water needs](https://www.fao.org/4/s2022e/s2022e02.htm)
   and [growth stages](https://www.fao.org/4/s2022e/s2022e07.htm): duration and
@@ -104,10 +103,12 @@ a causal change to a mature tree's accumulated woody biomass.
 - EXISTING_WHEAT: existing `data/processed/observations.csv`; historical source and
   processing are documented in SOURCE_DATA.md. The separate observed wheat model is preserved.
 
-The historical wheat example now appears only on WHEAT pages. It is separate from
-the live synthetic comparison. Restart Spring Boot and reload the page after updates.
-Live estimates still need complete, current averages in the database; absent or stale
-readings correctly show unavailable rather than substituting wheat or invented weather.
 
-The six extra crop profiles and their generated rows/models were removed on request.
-Shared raw research archives are retained because they also contain maize and soybean data.
+## Soil-depth alignment
+
+Current and historical collection now both request soil_moisture_3_to_9cm.
+Synthetic input moisture represents volumetric water content at 3–9 cm. Generated
+CSV rows and model metadata record this depth. Numerical ranges and penalties remain
+assumptions: this is not a conversion or calibration of measured 0–7 cm data.
+Each planting refreshes once after application restart to replace old untagged averages,
+then reuses complete current rows. Missing values remain missing rather than being filled.
