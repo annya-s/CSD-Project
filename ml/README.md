@@ -1,5 +1,24 @@
 # Simple offline biomass ML
 
+## First-time installation (Windows Command Prompt)
+
+From the project root, with Python 3.12 installed:
+
+```cmd
+py -3.12 -m venv ml\.venv
+ml\.venv\Scripts\python.exe -m pip install -r ml\requirements.txt
+ml\.venv\Scripts\python.exe ml\average_prediction.py
+ml\.venv\Scripts\python.exe -m unittest discover -s ml\tests -p test_average_prediction.py
+```
+
+Restart Spring Boot after setup. Installing packages alone does not create the trained
+models; the third command builds all ten. Each teammate needs their own environment
+and model artifacts, because `.venv/`, `data/` and `model/` are gitignored.
+
+For WSL, create the environment using `python3 -m venv ml/.venv` and use
+`ml/.venv/bin/python` for the remaining commands. Use a separate checkout or venv
+directory if you also run Windows Python; do not mix Windows and Linux environments.
+
 **Current live crop pages:** use `average_prediction.py` and the 10 crop-specific
 synthetic models. See [SYNTHETIC_CROPS.md](SYNTHETIC_CROPS.md) for training, data,
 inputs and research/assumptions. Java integration is implemented through
