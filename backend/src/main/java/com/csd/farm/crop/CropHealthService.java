@@ -102,13 +102,13 @@ public class CropHealthService {
 
         String status;
         if (value < range.minimum()) {
-            if (value < range.minimum() * (1 - range.tolerance())) {
+            if (value < range.absMinimum()) {
                 status = "BELOW_RANGE_SEVERE";
             } else {
                 status = "BELOW_RANGE";
             }
         } else if (value > range.maximum()) {
-            if (value > range.maximum() * (1 + range.tolerance())) {
+            if (value > range.absMaximum()) {
                 status = "ABOVE_RANGE_SEVERE";
             } else {
                 status = "ABOVE_RANGE";
