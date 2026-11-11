@@ -56,6 +56,10 @@ public class CropController {
     public CropDetails details(Principal p,@PathVariable Long cropCycleId){
         return cropService.details(p.getName(),cropCycleId);
     }
+    @PostMapping("/crops/{cropCycleId}/prediction")
+    public CropResponses.Prediction predict(Principal p,@PathVariable Long cropCycleId){
+        return cropService.predict(p.getName(),cropCycleId);
+    }
     // [ERD-ALIGNMENT ADDITION] Repository delete includes the logged-in user's ownership.
     @DeleteMapping("/crops/{cropCycleId}") 
     @ResponseStatus(HttpStatus.NO_CONTENT)

@@ -88,6 +88,12 @@ public class CropService {
     public CropDetails details(String username,Long cycleId){
         Long owner=userId(username);return cropDetails(owner,findCrop(owner,cycleId));
     }
+
+    public CropResponses.Prediction predict(String username,Long cycleId){
+        CropEntry entry=findCrop(userId(username),cycleId);
+        refreshHistoricalAverages(entry);
+        return predictions.forPlanting(entry);
+    }
     
     public CropDetails updateWeather(String username,Long cycleId,DailyWeather weather){
         Long owner=userId(username);CropEntry entry=findCrop(owner,cycleId);
@@ -105,14 +111,15 @@ public class CropService {
             entry.latitude(),entry.longitude(),w,assessment.readings(),assessment.needsAttention(),result.source(),result.message());
     }
     private CropDetails cropDetails(Long owner,CropEntry entry){
-        var result=weatherService.load(owner,entry);DailyWeather w=result.weather();
+        // Page loading must never wait for Open-Meteo or a Python process.
+        DailyWeather w=weatherReadings.find(entry.cropCycleId()).orElse(null);
         var assessment=health.assess(entry.cropType(),w);
-        // Both callers have already verified ownership. Save before ML reads the database.
-        String refreshMessage=refreshHistoricalAverages(entry);
-        var prediction=predictions.forPlanting(entry);
+        var prediction=new CropResponses.Prediction("NOT_RUN",null,null,
+                "Press Run biomass prediction to calculate the estimate and target.");
         return new CropDetails(entry,null,assessment.readings(),assessment.recommendedActions(),
-            DETAILS_NOTE+refreshMessage+" "+prediction.message(),assessment.issues(),assessment.needsAttention(),
-            w,result.source(),result.message(),prediction);
+            DETAILS_NOTE,assessment.issues(),assessment.needsAttention(),
+            w,w==null?"UNAVAILABLE":"SAVED",
+            w==null?"No saved weather readings yet.":"Saved weather readings; check their date. Predictions use separate 14-day averages.",prediction);
     }
     private String refreshHistoricalAverages(CropEntry entry){
         // Respect offline/manual-weather mode. Existing saved averages can still be used.

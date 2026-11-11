@@ -1,4 +1,4 @@
-import { $, api, requireFarmer, showPageError, node, formatDate, readingMetric, weatherCaption, refreshPeriodically } from './api.js';
+import { $, api, requireFarmer, showPageError, node, formatDate, readingMetric, weatherCaption } from './api.js';
 
 // One reference photo for each supported crop.
 const cropPhotos = {
@@ -171,8 +171,8 @@ async function start() {
         }
         const detailsUrl = '/api/crops/' + encodeURIComponent(cycleId);
         const [details, cropTypes] = await Promise.all([
-            api(detailsUrl),
-            api('/api/crop-types')
+            api(detailsUrl, { signal: AbortSignal.timeout(15000) }),
+            api('/api/crop-types', { signal: AbortSignal.timeout(15000) })
         ]);
         renderDetails(details, cropTypes);
         let refreshing = false;
@@ -184,9 +184,12 @@ async function start() {
             button.disabled = true;
             if (manual) status.textContent = 'Checking saved weather, refreshing it if needed, and running your crop model…';
             try {
-                // The existing details endpoint checks ownership, refreshes stale averages,
+                // The prediction endpoint checks ownership, refreshes stale averages,
                 // reads them from the database and runs this planting's model.
-                const updated = await api(detailsUrl);
+                const prediction = await api(detailsUrl + '/prediction', {
+                    method: 'POST', signal: AbortSignal.timeout(60000)
+                });
+                const updated = { ...details, prediction };
                 renderDetails(updated, cropTypes);
                 if (manual) status.textContent = updated.prediction?.status === 'SYNTHETIC_DEMO'
                     ? 'Prediction updated. Compare the estimate and target below for the same date.'
@@ -202,8 +205,8 @@ async function start() {
         $('run-prediction').addEventListener('click', () => refreshPrediction(true));
         $('loading').hidden = true;
         $('detail-page').hidden = false;
-        refreshPeriodically(() => refreshPrediction());
     } catch (error) {
+        $('loading').hidden = true;
         showPageError(error);
     }
 }
