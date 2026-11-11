@@ -1,0 +1,77 @@
+{
+  "model_version": "wheat-biomass-five-v2",
+  "profile": "ifs-daily-soil-0-7-v2",
+  "features": [
+    "days_since_sowing",
+    "temperature_min_mean_14d",
+    "temperature_max_mean_14d",
+    "soil_moisture_mean_14d",
+    "solar_radiation_total_14d"
+  ],
+  "input_features": [
+    "days_since_sowing",
+    "temperature_min_mean_14d",
+    "temperature_max_mean_14d",
+    "soil_moisture_mean_14d",
+    "solar_radiation_total_14d"
+  ],
+  "selected_model": "catboost",
+  "crop": "winter_wheat",
+  "growing_system": "outdoor_soil",
+  "unit": "g/m2",
+  "target": "target_dry_biomass_g_m2",
+  "model_sha256": "666da0a091da0e187eb14d9f09881f2f0cafdf33b8ef1b118214913746ca1065",
+  "data_sha256": "63da804b59d28c6c657119aaf5bf88d9bae0cd9c23f6670135ccc7ca43ddd3e4",
+  "training_ranges": {
+    "days_since_sowing": {
+      "min": 148.0,
+      "max": 263.0
+    },
+    "temperature_min_mean_14d": {
+      "min": 4.8999999999999995,
+      "max": 17.77857142857143
+    },
+    "temperature_max_mean_14d": {
+      "min": 12.257142857142856,
+      "max": 28.635714285714283
+    },
+    "soil_moisture_mean_14d": {
+      "min": 0.20644345238095238,
+      "max": 0.37481547619047617
+    },
+    "solar_radiation_total_14d": {
+      "min": 137.29,
+      "max": 347.53
+    },
+    "latitude": {
+      "min": 43.37253536437972,
+      "max": 43.47365228135659
+    },
+    "longitude": {
+      "min": 23.994280488303776,
+      "max": 24.144481516530426
+    }
+  },
+  "metrics_mae_g_m2": {
+    "age_only": {
+      "validation": 183.9705232666569,
+      "test": 58.0384228947449
+    },
+    "catboost": {
+      "validation": 49.9284867667878,
+      "test": 71.29287523429058
+    }
+  },
+  "counts": {
+    "train": 88,
+    "validation": 32,
+    "test": 58
+  },
+  "limitations": [
+    "Experimental biomass, not health or water stress.",
+    "One Bulgarian winter-wheat region; not validated for other crops.",
+    "The historical test season has been inspected previously; this is a comparison, not a new blind test.",
+    "Nearby fields share weather; field grouping alone does not ensure independent weather samples.",
+    "No calibrated confidence or prediction interval."
+  ]
+}
