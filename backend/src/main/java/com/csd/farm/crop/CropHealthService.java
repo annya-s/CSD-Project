@@ -15,6 +15,7 @@ public class CropHealthService {
      * @param weather The weather conditions to compare to.
      * @return An Assessment instance representing the health of the crop.
      */
+    
     public Assessment assess(CropType cropType, DailyWeather weather) {
         var conditions = CropConditions.forCrop(cropType);
         Double temperature = weather == null ? null : weather.temperatureMeanC();

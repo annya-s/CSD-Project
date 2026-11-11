@@ -10,7 +10,7 @@ public final class CropConditions {
     private static final Map<CropType, Conditions> CONDITIONS = Map.of(
             CropType.POTATO, new Conditions(new Range(15, 25, 7, 30),
             new Range(6, 8, 5, 9)),
-            CropType.SUGAR_CANE, new Conditions(new Range(24, 37, 15, 41), 
+            CropType.SUGAR_CANE, new Conditions(new Range(24, 37, 15, 41),
             new Range(7, 9, 6, 8)),
             CropType.APPLE, new Conditions(new Range(14, 27, 8, 33), 
             new Range(6, 8, 5, 9)),
