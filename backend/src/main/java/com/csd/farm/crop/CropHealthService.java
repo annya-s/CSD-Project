@@ -22,9 +22,6 @@ public class CropHealthService {
 
     public Assessment assess(CropType cropType, DailyWeather weather) {
         var conditions = CropConditions.forCrop(cropType);
-        if (conditions == null) {return new Assessment(new ArrayList<>(), List.of(),
-                List.of("Reference growing conditions have not been configured for this crop."), false);
-        }
 
         Double temperature = weather == null ? null : weather.temperatureMeanC();
         Double sunshineSeconds = weather == null ? null : weather.sunshineDurationSeconds();
@@ -50,11 +47,7 @@ public class CropHealthService {
 
         Reading temperatureReading = findReading("Temperature", temperature, "°C", conditions.getTemperatureRange());
         Reading sunshineReading = findReading("Sunlight", sunshineHours, "hours/day", conditions.getSunshineRange());
-        List<Reading> readings = List.of(temperatureReading,
-                new Reading("Vapour pressure deficit", weather == null ? null : weather.vapourPressureDeficitMeanKpa(),
-                        "kPa", "NOT_ASSESSED", null),
-                new Reading("Soil moisture", soilPercent, "% by volume", "NOT_ASSESSED", null),
-                sunshineReading);
+        List<Reading> readings = List.of(temperatureReading, vpdReading, soilReading, sunshineReading);
 
         List<String> issues = new ArrayList<>();
         List<String> actions = new ArrayList<>();
