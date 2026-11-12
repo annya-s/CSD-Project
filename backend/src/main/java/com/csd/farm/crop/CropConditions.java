@@ -32,4 +32,8 @@ public final class CropConditions {
     public static Crop forCrop(CropType cropType) {
         return CONDITIONS.get(cropType);
     }
+
+    public record Range(double minimum, double maximum) {
+        
+    }
 }
