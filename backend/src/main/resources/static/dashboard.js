@@ -36,11 +36,10 @@ function renderDashboard(data) {
         date.dateTime = crop.plantedAt;
         card.append(date, node('p', crop.farmName, 'field-hint'));
         if (crop.needsAttention) card.append(node('p', 'Needs attention', 'attention-label'));
-        card.append(node('p', weatherCaption(crop.weather, crop.weatherSource, crop.weatherMessage), 'field-hint'));
         const readings = node('dl');
         crop.readings.forEach((reading) => readings.append(readingMetric(reading)));
         card.append(readings);
-        const details = node('a', 'View planting details →', 'card-footer');
+        const details = node('a', '', 'card-link');
         details.href = detailsUrl;
         card.append(details);
         const remove = node('button', 'Delete entry', 'delete-entry');
