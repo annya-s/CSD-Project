@@ -36,7 +36,6 @@ public class EnvironmentClient {
 
     public OpenMeteoResponse fetchHistoricalMeteoData(double latitude, double longitude) {
         ZoneId timeZone = ZoneId.systemDefault();
-        System.out.println(timeZone);
 
         LocalDate today = LocalDate.now(timeZone);
         LocalDate startDate = today.minusDays(14);
@@ -52,7 +51,7 @@ public class EnvironmentClient {
             .queryParam("end_date", endDate)
             .queryParam("timezone", timeZone.toString())
             .queryParam("daily", "sunshine_duration")
-            .queryParam("hourly", "temperature_2m,soil_moisture_0_to_7cm,vapour_pressure_deficit")
+            .queryParam("hourly", "temperature_2m,soil_moisture_3_to_9cm,vapour_pressure_deficit")
             .build()).retrieve();
         return response.body(OpenMeteoResponse.class);
     }

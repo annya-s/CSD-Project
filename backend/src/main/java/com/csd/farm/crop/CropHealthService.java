@@ -39,6 +39,9 @@ public class CropHealthService {
                 new Reading("Soil moisture", soilPercent, "% by volume", "NOT_ASSESSED", null),
                 sunshineReading);
 
+        if (conditions == null) return new Assessment(readings, List.of(),
+                List.of("Reference growing conditions have not been configured for this crop."), false);
+
         List<String> issues = new ArrayList<>();
         List<String> actions = new ArrayList<>();
 

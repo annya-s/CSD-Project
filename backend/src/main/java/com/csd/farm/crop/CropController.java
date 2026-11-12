@@ -23,22 +23,50 @@ public class CropController {
     private final CropService cropService;
     public CropController(CropService cropService){this.cropService=cropService;}
 
-    @GetMapping("/crop-types") public List<CropOption> cropTypes(){return cropService.cropTypes();}
-    @GetMapping("/crops") public List<CropEntry> list(Principal p){return cropService.list(p.getName());}
-    @GetMapping("/dashboard") public Dashboard dashboard(Principal p){return cropService.dashboard(p.getName());}
-    @PostMapping("/crops") @ResponseStatus(HttpStatus.CREATED)
+    @GetMapping("/samples/synthetic/{crop}/{age}/{scenario}")
+    public CropResponses.Prediction synthetic(@PathVariable CropType crop, @PathVariable int age,
+                                              @PathVariable String scenario) {
+        if (!java.util.Set.of("mild", "hot-dry", "cool").contains(scenario))
+            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown scenario");
+        return cropService.synthetic(crop, age, scenario);
+    }
+
+    @GetMapping("/crop-types") 
+    public List<CropOption> cropTypes(){
+        return cropService.cropTypes();
+    }
+
+    @GetMapping("/crops") 
+    public List<CropEntry> list(Principal p){
+        return cropService.list(p.getName());
+    }
+
+    @GetMapping("/dashboard") 
+    public Dashboard dashboard(Principal p) {
+        return cropService.dashboard(p.getName());
+    }
+
+    @PostMapping("/crops") 
+    @ResponseStatus(HttpStatus.CREATED)
     public CropEntry create(Principal p,@Valid @RequestBody CreateCropRequest request){
         return cropService.create(p.getName(),request);
     }
+
     @GetMapping("/crops/{cropCycleId}")
     public CropDetails details(Principal p,@PathVariable Long cropCycleId){
         return cropService.details(p.getName(),cropCycleId);
     }
+    @PostMapping("/crops/{cropCycleId}/prediction")
+    public CropResponses.Prediction predict(Principal p,@PathVariable Long cropCycleId){
+        return cropService.predict(p.getName(),cropCycleId);
+    }
     // [ERD-ALIGNMENT ADDITION] Repository delete includes the logged-in user's ownership.
-    @DeleteMapping("/crops/{cropCycleId}") @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/crops/{cropCycleId}") 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(Principal p,@PathVariable Long cropCycleId){
         cropService.delete(p.getName(),cropCycleId);
     }
+    
     @PostMapping("/crops/{cropCycleId}/weather")
     public CropDetails updateWeather(Principal p,@PathVariable Long cropCycleId,
                                      @Valid @RequestBody DailyWeather weather){

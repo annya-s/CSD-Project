@@ -1,0 +1,17 @@
+# Python 3.12 recommended. Install from the project root:
+# python -m pip install -r ml/requirements.txt
+# Versions match the project's working local ML environment.
+
+# Synthetic dataset generation and CatBoost prediction
+catboost==1.2.10
+pandas==3.1.0
+numpy==2.5.4
+
+# Existing offline training / data preparation utilities
+scikit-learn==1.9.1
+joblib==1.6.0
+requests==2.34.2
+tzdata==2026.5
+
+# Tests
+pytest==9.1.1

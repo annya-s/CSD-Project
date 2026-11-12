@@ -118,7 +118,7 @@ class EnvironmentClientTest {
             .andExpect(queryParam(
                 "hourly",
                 equalTo(
-                    "temperature_2m,soil_moisture_0_to_7cm,vapour_pressure_deficit"
+                    "temperature_2m,soil_moisture_3_to_9cm,vapour_pressure_deficit"
                 )
             ))
             .andRespond(withSuccess(

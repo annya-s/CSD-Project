@@ -1,4 +1,4 @@
-import { $, api, requireFarmer, showPageError, node, formatDate, readingMetric, weatherCaption, refreshPeriodically } from './api.js';
+import { $, api, requireFarmer, showPageError, node, formatDate, readingMetric, weatherCaption } from './api.js';
 
 // One reference photo for each supported crop.
 const cropPhotos = {
@@ -115,13 +115,37 @@ function renderCropPhoto(cropType, cropName) {
 // Only this file handles the crop-details screen.
 function renderDetails(data, cropTypes) {
     const name = cropTypes.find((type) => type.code === data.entry.cropType)?.name || data.entry.cropType;
+    $('run-prediction').textContent = `Run ${name.toLowerCase()} biomass prediction`;
+    const prediction = data.prediction;
+    const comparison = $('biomass-comparison');
+    const available = prediction?.status === 'SYNTHETIC_DEMO'
+        && Number.isFinite(prediction.value) && Number.isFinite(prediction.referenceEstimate)
+        && prediction.projectionDate;
+    const hasTarget = Number.isFinite(prediction?.referenceEstimate) && prediction.projectionDate;
+    comparison.hidden = !hasTarget;
+    $('biomass-reference').textContent = hasTarget
+        ? 'Full-growth target under assumed optimal conditions: ' + prediction.referenceEstimate.toFixed(1)
+            + ' ' + prediction.unit + ' on ' + prediction.projectionDate + '.'
+        : '';
+    if (available) {
+        const unit = prediction.unit;
+        $('biomass-result').textContent = 'Predicted biomass at full growth if recent conditions continue: '
+            + prediction.value.toFixed(1) + ' ' + unit + ' on ' + prediction.projectionDate + '.';
+        const difference = prediction.referenceEstimate - prediction.value;
+        $('biomass-gap').textContent = 'Difference from full-growth target: '
+            + (difference > 0 ? '+' : '') + difference.toFixed(1) + ' ' + unit + '.';
+    } else {
+        $('biomass-result').textContent = prediction?.message || 'Biomass estimate unavailable.';
+        $('biomass-gap').textContent = '';
+    }
     document.title = `Dome · ${name}`;
     $('detail-title').textContent = name;
     renderCropPhoto(data.entry.cropType, name);
     $('detail-date').textContent = `Planted ${formatDate(data.entry.plantedAt)}`;
     $('detail-latitude').textContent = data.entry.latitude;
     $('detail-longitude').textContent = data.entry.longitude;
-    $('detail-note').textContent = data.note;
+    $('detail-note').textContent = [data.note,
+        available ? prediction.message : null].filter(Boolean).join(' ');
     $('weather-date').textContent = weatherCaption(data.weather, data.weatherSource, data.weatherMessage);
     $('attention').hidden = !data.needsAttention;
     $('readings').replaceChildren();
@@ -148,14 +172,42 @@ async function start() {
         }
         const detailsUrl = '/api/crops/' + encodeURIComponent(cycleId);
         const [details, cropTypes] = await Promise.all([
-            api(detailsUrl),
-            api('/api/crop-types')
+            api(detailsUrl, { signal: AbortSignal.timeout(15000) }),
+            api('/api/crop-types', { signal: AbortSignal.timeout(15000) })
         ]);
         renderDetails(details, cropTypes);
+        let refreshing = false;
+        async function refreshPrediction(manual = false) {
+            if (refreshing) return;
+            refreshing = true;
+            const button = $('run-prediction');
+            const status = $('prediction-run-status');
+            button.disabled = true;
+            if (manual) status.textContent = 'Checking saved weather, refreshing it if needed, and running your crop model…';
+            try {
+                // The prediction endpoint checks ownership, refreshes stale averages,
+                // reads them from the database and runs this planting's model.
+                const prediction = await api(detailsUrl + '/prediction', {
+                    method: 'POST', signal: AbortSignal.timeout(60000)
+                });
+                const updated = { ...details, prediction };
+                renderDetails(updated, cropTypes);
+                if (manual) status.textContent = updated.prediction?.status === 'SYNTHETIC_DEMO'
+                    ? 'Prediction updated. Compare the estimate and target below for the same date.'
+                    : 'Prediction unavailable. See the explanation below.';
+            } catch (error) {
+                if (!manual) throw error;
+                status.textContent = 'Could not run the prediction. Previously displayed values have not been updated. Please try again.';
+            } finally {
+                refreshing = false;
+                button.disabled = false;
+            }
+        }
+        $('run-prediction').addEventListener('click', () => refreshPrediction(true));
         $('loading').hidden = true;
         $('detail-page').hidden = false;
-        refreshPeriodically(async () => renderDetails(await api(detailsUrl), cropTypes));
     } catch (error) {
+        $('loading').hidden = true;
         showPageError(error);
     }
 }

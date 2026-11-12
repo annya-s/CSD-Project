@@ -1,0 +1,1 @@
+{"profile": "mature-fraction-v3", "age_min": 0, "age_max": 8395, "unit": "kg/tree dry aboveground wood", "reference": [20, 0.28, 1, 8], "features": ["age", "temperature", "soil", "vpd", "sunshine_hours"], "synthetic_holdout_mae": 0.024757643876797714, "field_accuracy": "unknown", "soil_moisture_depth_cm": "3-9"}

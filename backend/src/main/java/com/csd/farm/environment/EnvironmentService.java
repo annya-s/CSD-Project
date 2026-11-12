@@ -3,11 +3,15 @@ package com.csd.farm.environment;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.function.Function;
 
 import org.springframework.stereotype.Service;
+
+import com.csd.farm.crop.CropRepository;
 
 /** In charge of packaging the returned data from the (multiple) external API calls into EnvironmentReading(s)
  * 
@@ -15,23 +19,20 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class EnvironmentService {
-
-    // TODO: add the CropRepo or whatever to get latitude/longitude from DB
     private final EnvironmentClient envClient;
-    //private final CropRepository cropRepo;
+    private final CropRepository cropRepo;
 
-    public EnvironmentService(EnvironmentClient envClient) {
+    public EnvironmentService(EnvironmentClient envClient, CropRepository cropRepo) {
         this.envClient = envClient;
-        //this.cropRepo = cropRepo;
+        this.cropRepo = cropRepo;
     }
 
-    // TODO: Change parameter to ONLY "int cropId"
-    // When DB gets integrated
-    public List<EnvironmentReading> getAllReadings(double latitude, double longitude) throws RuntimeException {
-        // TODO: Get longitude/latitude from DB
-        // CropEntry crop = cropRepo.getCrop(cropId);
-        // double latitude = crop.latitude;
-        // double longitude = crop.longitude;
+    public List<EnvironmentReading> getAllReadings(int cropId) throws RuntimeException {
+        CropRepository.FarmCoordinates coords = cropRepo.findCoordinatesForFarm(cropId)
+            .orElseThrow(() -> new NoSuchElementException("Crop coordinates not found"));
+
+        double latitude = coords.latitude();
+        double longitude = coords.longitude();
 
         if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
             throw new IllegalArgumentException("Invalid longitude/latitude inputs");
@@ -77,14 +78,20 @@ public class EnvironmentService {
     }
 
     // TODO: Change the parameter to ONLY "int cropId"
-    public EnvironmentReading getLatestReading(double latitude, double longitude) {
+    public EnvironmentReading getLatestReading(int cropId) {
         int currentHour = LocalTime.now().getHour();
 
         // TODO: Change these arguments to cropId
-        return getAllReadings(latitude, longitude).get(currentHour);
+        return getAllReadings(cropId).get(currentHour);
     }
 
-    public List<EnvironmentReading> getHistoricalReading(double latitude, double longitude) {
+    public List<EnvironmentReading> getHistoricalReading(int cropId) {
+        CropRepository.FarmCoordinates coords = cropRepo.findCoordinatesForFarm(cropId)
+            .orElseThrow(() -> new NoSuchElementException("Crop coordinates not found"));
+
+        double latitude = coords.latitude();
+        double longitude = coords.longitude();
+
         if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
             throw new IllegalArgumentException("Invalid longitude/latitude inputs");
         }
@@ -128,6 +135,47 @@ public class EnvironmentService {
         }
 
         return readings;
+    }
+
+    public void storeAverageHistoricalReading(int cropCycleId) {
+        LocalDate today = getTodayDate();
+
+        LocalDate startDate = today.minusDays(14);
+        LocalDate endDate = today.minusDays(1);
+
+        List<EnvironmentReading> historicalReadings = getHistoricalReading(cropCycleId);
+
+        HistoricalReadingAverage average = new HistoricalReadingAverage(
+            cropCycleId,
+            startDate,
+            endDate,
+            calculateAverage(historicalReadings, EnvironmentReading::temperature),
+            calculateAverage(historicalReadings, EnvironmentReading::soilMoisture),
+            calculateAverage(historicalReadings, EnvironmentReading::vapourPressureDeficit),
+            calculateAverage(historicalReadings, EnvironmentReading::sunshineDuration)
+        );
+
+        cropRepo.saveHistoricalAverageReading(average);
+    }
+
+    private Double calculateAverage(List<EnvironmentReading> readings, Function<EnvironmentReading, Double> extractor) {
+        double total = 0;
+        int count = 0;
+
+        for (EnvironmentReading reading : readings) {
+            Double value = extractor.apply(reading);
+            
+            if (value != null) {
+                total += value;
+                count++;
+            }
+        }
+
+        return count != 0 ? total / count : null;
+    }
+
+    private LocalDate getTodayDate() { 
+        return LocalDate.now(ZoneId.systemDefault());
     }
 
     private Double getValue(List<Double> values, int index) {

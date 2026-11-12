@@ -32,6 +32,16 @@
                 <a class="button primary" href="/new-entry.html">+ Add new entry</a>
             </div>
             <p id="summary" class="summary" aria-live="polite"></p>
+            <section class="crop-filters" aria-labelledby="filter-title">
+                <div class="filter-heading"><h2 id="filter-title">Filter crops</h2><button id="clear-filters" class="secondary" type="button">Clear filters</button></div>
+                <div class="filter-controls">
+                    <label>Crop type<select id="filter-crop-type"><option value="">All crop types</option></select></label>
+                    <label>Farm name<select id="filter-farm"><option value="">All farms</option></select></label>
+                    <label>Health status<select id="filter-health"><option value="">All statuses</option><option value="healthy">Healthy</option><option value="attention">Needs attention</option></select></label>
+                    <label>Date planted<select id="filter-date"><option value="">Default order</option><option value="earliest">Earliest first</option><option value="latest">Latest first</option></select></label>
+                </div>
+            </section>
+            <p id="filter-empty" class="filter-empty" role="status" hidden>No crops match the selected filters.</p>
             <div id="crop-grid" class="crop-grid"></div>
             <div id="empty-state" class="empty-state" hidden>
                 <span class="empty-mark" aria-hidden="true">↗</span>

@@ -9,11 +9,24 @@ import com.csd.farm.crop.CropHealthService.Reading;
 public final class CropResponses {
     private CropResponses(){}
     public record CropOption(String code,String name){}
+
     public record Dashboard(String summary,List<DashboardCrop> crops){}
+
     public record DashboardCrop(Long cropCycleId,String farmName,CropType cropType,
             OffsetDateTime plantedAt,double latitude,double longitude,DailyWeather weather,
             List<Reading> readings,boolean needsAttention,String weatherSource,String weatherMessage){}
+
     public record CropDetails(CropEntry entry,Integer healthScore,List<Reading> readings,
             List<String> recommendedActions,String note,List<String> issues,boolean needsAttention,
-            DailyWeather weather,String weatherSource,String weatherMessage){}
+            DailyWeather weather,String weatherSource,String weatherMessage,Prediction prediction){}
+            
+    public record Prediction(String status,Double value,String unit,String message,
+            Double currentEstimate, Double referenceEstimate, String projectionDate){
+        public Prediction(String status,Double value,String unit,String message){
+            this(status,value,unit,message,null,null,null);
+        }
+        static Prediction unavailable(){
+            return new Prediction("UNAVAILABLE",null,null,"The biomass model is temporarily unavailable.");
+        }
+    }
 }

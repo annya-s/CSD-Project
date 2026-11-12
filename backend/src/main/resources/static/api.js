@@ -2,7 +2,7 @@
 export async function api(path, options = {}) {
     const headers = { ...options.headers };
     if (options.method && options.method !== 'GET') {
-        const response = await fetch('/api/auth/csrf', { credentials: 'same-origin' });
+        const response = await fetch('/api/auth/csrf', { credentials: 'same-origin', signal: options.signal });
         if (!response.ok) throw new Error('Unable to prepare your request. Please refresh.');
         const token = await response.json();
         headers[token.headerName] = token.token;

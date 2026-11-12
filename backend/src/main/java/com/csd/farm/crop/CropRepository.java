@@ -11,11 +11,14 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.csd.farm.environment.HistoricalReadingAverage;
+
 @Repository
 public class CropRepository {
     private final JdbcClient jdbc;
     private final FarmRepository farms;
     private final CropTypeRepository cropTypes;
+
     @Autowired
     public CropRepository(JdbcClient jdbc,FarmRepository farms,CropTypeRepository cropTypes){
         this.jdbc=jdbc;this.farms=farms;this.cropTypes=cropTypes;
@@ -33,14 +36,53 @@ public class CropRepository {
                 .param("planted",crop.plantedAt()).param("lat",crop.latitude()).param("lon",crop.longitude()).update();
             return new CropEntry(null,"",crop.cropType(),crop.plantedAt(),crop.latitude(),crop.longitude());
         }
-        long farmId=farms.findOrCreate(userId,crop.farmName(),crop.latitude(),crop.longitude());
+        // Check if farm exists, if it does, overwrite the inputted coords and use existing coords
+        FarmLocation farmLocation = farms.findOrCreate(userId,crop.farmName(),crop.latitude(),crop.longitude());
         long typeId=cropTypes.idFor(crop.cropType());
         Long cycleId=jdbc.sql("""
             INSERT INTO public."CROP_CYCLES" ("Farm_ID","Crop_Type_ID","Date_Planted")
             VALUES (:farmId,:typeId,:plantedAt) RETURNING "Crop_Cycle_ID"
-            """).param("farmId",farmId).param("typeId",typeId).param("plantedAt",crop.plantedAt())
+            """).param("farmId",farmLocation.farmId()).param("typeId",typeId).param("plantedAt",crop.plantedAt())
             .query(Long.class).single();
-        return new CropEntry(cycleId,crop.farmName(),crop.cropType(),crop.plantedAt(),crop.latitude(),crop.longitude());
+        return new CropEntry(cycleId,crop.farmName(),crop.cropType(),crop.plantedAt(),farmLocation.latitude(),farmLocation.longitude());
+    }
+
+    @Transactional
+    public void saveHistoricalAverageReading(HistoricalReadingAverage average) {
+        jdbc.sql("""
+            INSERT INTO public."CROP_WEATHER_HISTORICAL_AVERAGE" (
+                "Crop_Cycle_ID",
+                "Start_Date",
+                "End_Date",
+                "Temperature_Mean",
+                "Soil_Moisture_Mean",
+                "Vapour_Pressure_Deficit_Mean",
+                "Sunshine_Duration_Mean_Seconds"
+            ) VALUES (
+                :cropCycleId,
+                :startDate,
+                :endDate,
+                :temperatureMean,
+                :soilMoistureMean,
+                :vpdMean,
+                :sunshineDurationMean
+            ) ON CONFLICT ("Crop_Cycle_ID")
+            DO UPDATE SET
+                "Start_Date" = EXCLUDED."Start_Date",
+                "End_Date" = EXCLUDED."End_Date",
+                "Temperature_Mean" = EXCLUDED."Temperature_Mean",
+                "Soil_Moisture_Mean" = EXCLUDED."Soil_Moisture_Mean",
+                "Vapour_Pressure_Deficit_Mean" = EXCLUDED."Vapour_Pressure_Deficit_Mean",
+                "Sunshine_Duration_Mean_Seconds" = EXCLUDED."Sunshine_Duration_Mean_Seconds"
+            """)
+            .param("cropCycleId", average.cropCycleId())
+            .param("startDate", average.startDate())
+            .param("endDate", average.endDate())
+            .param("temperatureMean", average.temperatureMean())
+            .param("soilMoistureMean", average.soilMoistureMean())
+            .param("vpdMean", average.vpdMean())
+            .param("sunshineDurationMean", average.sunshineDurationMean())
+            .update();
     }
 
     public List<CropEntry> findAllForFarmer(Long userId){
@@ -78,6 +120,24 @@ public class CropRepository {
             WHERE c."Farm_ID"=f."Farm_ID" AND f."User_ID"=:userId
               AND c."Crop_Cycle_ID"=:cycleId
             """).param("userId",userId).param("cycleId",cycleId).update()==1;
+    }
+
+    public Optional<FarmCoordinates> findCoordinatesForFarm(int cropCycleId) {
+        return jdbc.sql("""
+            SELECT f."Latitude" AS latitude, f."Longitude" as longitude
+            FROM public."CROP_CYCLES" c
+            JOIN public."FARMS" f on c."Farm_ID" = f."Farm_ID"
+            WHERE c."Crop_Cycle_ID" = :cropCycleId
+            """)
+            .param("cropCycleId", cropCycleId)
+            .query(this::mapCoords)
+            .optional();
+    }
+
+    public record FarmCoordinates(double latitude, double longitude) {}
+
+    public FarmCoordinates mapCoords(ResultSet row, int number) throws SQLException {
+        return new FarmCoordinates(row.getDouble("latitude"), row.getDouble("longitude"));
     }
 
     private String select(){

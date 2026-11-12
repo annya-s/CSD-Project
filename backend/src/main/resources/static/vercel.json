@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://csd-project-g98a.onrender.com/api/:path*"
+    }
+  ]
+}

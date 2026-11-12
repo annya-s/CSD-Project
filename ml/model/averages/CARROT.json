@@ -1,0 +1,1 @@
+{"profile": "mature-fraction-v3", "age_min": 0, "age_max": 130, "unit": "g/plant dry shoot", "reference": [18, 0.28, 0.8, 7], "features": ["age", "temperature", "soil", "vpd", "sunshine_hours"], "synthetic_holdout_mae": 0.020614663888348962, "field_accuracy": "unknown", "soil_moisture_depth_cm": "3-9"}

@@ -1,15 +1,19 @@
 package com.csd.farm.crop;
 
 import java.time.OffsetDateTime;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import com.csd.farm.auth.FarmerRepository;
+import com.csd.farm.environment.EnvironmentService;
 import com.csd.farm.crop.CropResponses.CropDetails;
 import com.csd.farm.crop.CropResponses.CropOption;
 import com.csd.farm.crop.CropResponses.Dashboard;
 import com.csd.farm.crop.CropResponses.DashboardCrop;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,14 +28,38 @@ public class CropService {
     private final CropWeatherRepository weatherReadings;
     private final CropHealthService health;
     private final CropWeatherService weatherService;
+    private final MLPredictionService predictions;
+    private final EnvironmentService environmentService;
+    private final JdbcClient jdbc;
+    // Re-fetch once per application run so old, untagged soil-depth rows are not reused.
+    private final java.util.Set<Long> refreshedSoilDepth = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     public CropService(CropRepository crops,CropTypeRepository cropTypes,FarmerRepository farmers,FarmRepository farms,
-            CropWeatherRepository weatherReadings,CropHealthService health,CropWeatherService weatherService){
-        this.crops=crops;this.cropTypes=cropTypes;this.farmers=farmers;this.farms=farms;
-        this.weatherReadings=weatherReadings;this.health=health;this.weatherService=weatherService;
+            CropWeatherRepository weatherReadings,CropHealthService health,CropWeatherService weatherService, 
+            MLPredictionService predictions,EnvironmentService environmentService,JdbcClient jdbc){
+        this.crops=crops;
+        this.cropTypes=cropTypes;
+        this.farmers=farmers;
+        this.farms=farms;
+        this.weatherReadings=weatherReadings;
+        this.health=health;
+        this.weatherService=weatherService;
+        this.predictions=predictions;
+        this.environmentService=environmentService;
+        this.jdbc=jdbc;
     }
-    public List<CropOption> cropTypes(){return cropTypes.findAll();}
-    public List<CropEntry> list(String username){return crops.findAllForFarmer(userId(username));}
+    CropResponses.Prediction synthetic(CropType crop, int age, String scenario){
+        return predictions.synthetic(crop, age, scenario);
+    }
+
+    public List<CropOption> cropTypes(){
+        return cropTypes.findAll();
+    }
+
+    public List<CropEntry> list(String username){
+        return crops.findAllForFarmer(userId(username));
+    }
+
     public Dashboard dashboard(String username){
         Long owner=userId(username);
         List<DashboardCrop> entries=crops.findAllForFarmer(owner).stream().map(e->dashboardCrop(owner,e)).toList();
@@ -56,9 +84,17 @@ public class CropService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Crop entry not found.");
         if(crops.countForFarm(farmId)==0) farms.deleteForUser(owner,farmId);
     }
+
     public CropDetails details(String username,Long cycleId){
         Long owner=userId(username);return cropDetails(owner,findCrop(owner,cycleId));
     }
+
+    public CropResponses.Prediction predict(String username,Long cycleId){
+        CropEntry entry=findCrop(userId(username),cycleId);
+        refreshHistoricalAverages(entry);
+        return predictions.forPlanting(entry);
+    }
+    
     public CropDetails updateWeather(String username,Long cycleId,DailyWeather weather){
         Long owner=userId(username);CropEntry entry=findCrop(owner,cycleId);
         if(weatherService.isEnabled()) throw new ResponseStatusException(HttpStatus.CONFLICT,
@@ -75,10 +111,45 @@ public class CropService {
             entry.latitude(),entry.longitude(),w,assessment.readings(),assessment.needsAttention(),result.source(),result.message());
     }
     private CropDetails cropDetails(Long owner,CropEntry entry){
-        var result=weatherService.load(owner,entry);DailyWeather w=result.weather();
+        // Page loading must never wait for Open-Meteo or a Python process.
+        DailyWeather w=weatherReadings.find(entry.cropCycleId()).orElse(null);
         var assessment=health.assess(entry.cropType(),w);
-        return new CropDetails(entry,null,assessment.readings(),assessment.recommendedActions(),DETAILS_NOTE,
-            assessment.issues(),assessment.needsAttention(),w,result.source(),result.message());
+        var prediction=new CropResponses.Prediction("NOT_RUN",null,null,
+                "Press Run biomass prediction to calculate the estimate and target.");
+        return new CropDetails(entry,null,assessment.readings(),assessment.recommendedActions(),
+            DETAILS_NOTE,assessment.issues(),assessment.needsAttention(),
+            w,w==null?"UNAVAILABLE":"SAVED",
+            w==null?"No saved weather readings yet.":"Saved weather readings; check their date. Predictions use separate 14-day averages.",prediction);
+    }
+    private String refreshHistoricalAverages(CropEntry entry){
+        // Respect offline/manual-weather mode. Existing saved averages can still be used.
+        if(!weatherService.isEnabled()) return "";
+        try {
+            LocalDate today=LocalDate.now(ZoneId.systemDefault());
+            boolean current=jdbc.sql("""
+                SELECT EXISTS (
+                    SELECT 1 FROM public."CROP_WEATHER_HISTORICAL_AVERAGE"
+                    WHERE "Crop_Cycle_ID" = :cycle
+                      AND "Start_Date" = :start AND "End_Date" = :end
+                      AND "Temperature_Mean" IS NOT NULL
+                      AND "Soil_Moisture_Mean" IS NOT NULL
+                      AND "Vapour_Pressure_Deficit_Mean" IS NOT NULL
+                      AND "Sunshine_Duration_Mean_Seconds" IS NOT NULL
+                )
+                """).param("cycle",entry.cropCycleId()).param("start",today.minusDays(14))
+                    .param("end",today.minusDays(1)).query(Boolean.class).single();
+            if(!current || !refreshedSoilDepth.contains(entry.cropCycleId())) {
+                environmentService.storeAverageHistoricalReading(Math.toIntExact(entry.cropCycleId()));
+                refreshedSoilDepth.add(entry.cropCycleId());
+            }
+            return "";
+        } catch(RuntimeException failure){
+            // Keep the page and synthetic target available if the API or database fails.
+            org.slf4j.LoggerFactory.getLogger(CropService.class).warn(
+                "Historical weather refresh failed for crop cycle {} ({})",
+                entry.cropCycleId(),failure.getClass().getSimpleName());
+            return " Could not refresh the 14-day weather averages. Reopen this page to retry.";
+        }
     }
     private CropEntry findCrop(Long owner,Long cycleId){
         return crops.findForFarmer(owner,cycleId)
