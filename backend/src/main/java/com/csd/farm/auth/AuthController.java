@@ -1,15 +1,23 @@
 package com.csd.farm.auth;
 
 import java.security.Principal;
+import java.util.Map;
 
-
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,13 +35,16 @@ public class AuthController {
     private final FarmerRepository farmers;
     private final PasswordEncoder passwords;
     private final AccountTokenService accountTokens;
+    private final SecurityContextRepository securityContextRepository;
 
     public AuthController(FarmerRepository farmers, 
                           PasswordEncoder passwords,
-                          AccountTokenService accountTokens) {
+                          AccountTokenService accountTokens,
+                          SecurityContextRepository securityContextRepository) {
         this.farmers = farmers;
         this.passwords = passwords;
         this.accountTokens = accountTokens;
+        this.securityContextRepository = securityContextRepository;
     }
 
     @GetMapping("/csrf")
@@ -115,6 +126,61 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/username")
+    public ResponseEntity<Map<String, String>> changeUsername(
+            Principal principal, @RequestBody ChangeUsernameRequest request,
+            HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+
+        String newUsername = request.newUsername() == null ? "" : request.newUsername().trim();
+        if (!newUsername.matches("[a-z0-9_]{3,40}"))
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Use 3–40 lowercase letters, numbers, or underscores."));
+        Farmer current = farmers.findByUsername(principal.getName()).orElseThrow();
+        if (newUsername.equals(current.username()))
+            return ResponseEntity.badRequest().body(Map.of(
+                        "message", "New username cannot be the same as your current username."));
+        if (farmers.usernameExists(newUsername))
+            return ResponseEntity.badRequest().body(Map.of("message", "Username is already taken."));
+
+        farmers.updateUsername(current.id(), newUsername);
+
+        UserDetails updatedUser = farmers.loadUserByUsername(newUsername);
+        Authentication newAuth =
+                UsernamePasswordAuthenticationToken.authenticated(
+                        updatedUser, null, updatedUser.getAuthorities());
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(newAuth);
+        SecurityContextHolder.setContext(context);
+        securityContextRepository.saveContext(context, httpRequest, httpResponse);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/email")
+    public ResponseEntity<Map<String, String>> changeEmail(
+            Principal principal, @RequestBody ChangeEmailRequest request) {
+
+        String newEmail = request.newEmail() == null ? "" : request.newEmail().trim();
+        if (newEmail.isBlank() || !newEmail.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"))
+            return ResponseEntity.badRequest().body(Map.of("message", "Enter a valid email address."));
+        Farmer current = farmers.findByUsername(principal.getName()).orElseThrow();
+        if (newEmail.equalsIgnoreCase(current.email()))
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", "New email cannot be the same as your current email."));
+        if (farmers.emailExists(newEmail))
+            return ResponseEntity.badRequest().body(Map.of("message", "Email is already in use."));
+
+        farmers.updateEmail(current.id(), newEmail);
+
+        // create&send a new verif token for the new email
+        Farmer updatedFarmer = new Farmer(
+            current.id(), current.username(), newEmail, false, false, current.role());
+        accountTokens.issueEmailVerificationCode(updatedFarmer);
+
+        return ResponseEntity.noContent().build();
+    }
+
+
     @PostMapping("/password")
     public ResponseEntity<Void> changePassword(
             Principal principal, @RequestBody ChangePasswordRequest request) {
@@ -172,6 +238,8 @@ public class AuthController {
             @NotBlank @Size(min = 6, max = 6) String code,
             @NotBlank @Size(min = 10, max = 128) String password) {
     }
+    public record ChangeUsernameRequest(String newUsername) {}
+    public record ChangeEmailRequest(String newEmail) {}
     public record TwoFactorToggle(
             boolean enabled) {
     }

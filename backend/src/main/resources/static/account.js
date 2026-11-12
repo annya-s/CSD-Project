@@ -30,6 +30,48 @@ function updateAccountPage() {
     toggle.disabled = !verified; // greyed out until the email is verified
 }
 
+$('update-username').addEventListener('click', async () => {
+    showMessage('username-error');
+    showMessage('global-message');
+    const newUsername = $('username').value.trim();
+    if (newUsername === account.username) {
+        showMessage('username-error', 'New username cannot be the same as your current username.' );
+        return;
+    }
+    const button = $('update-username');
+    button.disabled = true;
+    try {
+        await api('/api/auth/username', jsonPost({ newUsername }));
+        showMessage('global-message', 'Your username was updated.');
+        await start();
+    } catch (error) {
+        showMessage('username-error', error.message);
+    } finally {
+        button.disabled = false;
+    }
+});
+
+$('update-email').addEventListener('click', async () => {
+    showMessage('email-error');
+    showMessage('global-message');
+    const newEmail = $('new-email').value.trim();
+    if (newEmail === account.email) {
+        showMessage('email-error', 'New email cannot be the same as your current email.');
+        return;
+    }
+    const button = $('update-email');
+    button.disabled = true;
+    try {
+        await api('/api/auth/email', jsonPost({ newEmail }));
+        showMessage('global-message', 'Your email was updated.');
+        await start();
+    } catch (error) {
+        showMessage('email-error', error.message);
+    } finally {
+        button.disabled = false;
+    }
+});
+
 $('verify-email').addEventListener('click', async () => {
     showMessage('global-message');
     try {

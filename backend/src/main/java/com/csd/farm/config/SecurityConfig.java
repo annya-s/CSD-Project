@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import com.csd.farm.auth.AccountTokenService;
 
@@ -19,7 +20,10 @@ public class SecurityConfig {
 		// PBKDF2 handles long passwords without bcrypt's 72-byte limit.
 		return Pbkdf2PasswordEncoder.defaultsForSpringSecurity_v5_8();
     }
-
+	@Bean
+	public SecurityContextRepository securityContextRepository() {
+		return new HttpSessionSecurityContextRepository();
+	}
     @Bean
     public SecurityFilterChain securityFilterChain(
 			HttpSecurity http, AccountTokenService accTokens) throws Exception {
