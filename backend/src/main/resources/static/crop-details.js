@@ -152,12 +152,42 @@ function renderDetails(data, cropTypes) {
     for (const reading of data.readings) {
         $('readings').append(readingMetric(reading, true));
     }
-    $('actions').replaceChildren(...data.recommendedActions.map((action) => node('li', action)));
     $('issues').replaceChildren(...data.issues.map((issue) => node('li', issue)));
     $('no-issues').hidden = data.issues.length !== 0;
     $('no-issues').textContent = data.readings.some((reading) => reading.referenceRange && reading.value !== null)
         ? 'No attention flags in the available readings. This is not a complete crop health assessment.'
         : 'Not assessed. Daily weather readings are needed.';
+}
+
+async function runAssessment(cycleId) {
+    const actions = $('actions');
+
+    actions.replaceChildren(
+        node('li', 'Generating crop recommendations...')
+    );
+
+    try {
+        const result = await api(`/api/crops/${encodeURIComponent(cycleId)}/assessment`,
+        {
+            method: 'POST',
+            signal: AbortSignal.timeout(60000)
+        }
+    );
+
+    actions.replaceChildren(
+        node('li', result.recommendation),
+        node(
+            'li',
+            result.confidencePercent == null
+                ? 'Confidence unavailable for this crop.'
+                : `Confidence: ${result.confidencePercent.toFixed(2)}%`
+        )
+    );
+    } catch (error) {
+        actions.replaceChildren(
+            node('li', 'Unable to generate crop recommendations. Please try again later.')
+        );
+    }
 }
 
 async function start() {
@@ -206,6 +236,7 @@ async function start() {
         $('run-prediction').addEventListener('click', () => refreshPrediction(true));
         $('loading').hidden = true;
         $('detail-page').hidden = false;
+        runAssessment(cycleId);
     } catch (error) {
         $('loading').hidden = true;
         showPageError(error);

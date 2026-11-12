@@ -3,10 +3,10 @@ package com.csd.farm.crop;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.csd.farm.crop.CropConditions.Range;
-import com.csd.farm.ai.AIRecommenderService;
-import com.csd.farm.crop.crop_category.*;
 import org.springframework.stereotype.Service;
+
+import com.csd.farm.crop.CropConditions.Range;
+import com.csd.farm.crop.crop_category.CropRange;
 
 @Service
 public class CropHealthService {
@@ -62,31 +62,7 @@ public class CropHealthService {
             issues.add(sunshineIssue);
         }
 
-        if (temperature == null || sunshineHours == null) {
-            actions.add(
-                    "Daily weather values are missing or incomplete. Refresh the forecast before the agent can assess temperature and sunlight.");
-            return new Assessment(readings, List.copyOf(issues), List.copyOf(actions), !issues.isEmpty());
-        }
-
-        AIRecommenderService ai = new AIRecommenderService();
-        String aiOutput = ai.getRecommendation(temperature, sunshineHours, conditions);
-        if (aiOutput == null || aiOutput.equals("No AI Response")) {
-            actions.add(
-                    "The agent could not formulate a response. Please contact an admin to investigate what went wrong.");
-            return new Assessment(readings, List.copyOf(issues), List.copyOf(actions), !issues.isEmpty());
-        }
-
-        actions.add(aiOutput);
-
-        double confidenceInterval = conditions.checkAction(temperatureReading.status, sunshineReading.status, aiOutput)
-                * 100;
-        String confidenceString = "Confidence Interval: ";
-        confidenceString += String.format("%.2f", confidenceInterval);
-        confidenceString += "%";
-
-        actions.add(confidenceString);
-
-        return new Assessment(readings, List.copyOf(issues), List.copyOf(actions), !issues.isEmpty());
+        return new Assessment(readings, List.copyOf(issues), null, !issues.isEmpty());
     }
 
     /**
