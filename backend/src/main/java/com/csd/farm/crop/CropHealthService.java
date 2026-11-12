@@ -31,16 +31,23 @@ public class CropHealthService {
                 ? null
                 : weather.soilMoistureMeanM3M3() * 100.0;
 
+        Reading vpdReading = new Reading("Vapour pressure deficit",
+                weather == null ? null : weather.vapourPressureDeficitMeanKpa(), "kPa", "NOT_ASSESSED", null);
+        Reading soilReading = new Reading("Soil moisture", soilPercent, "% by volume", "NOT_ASSESSED", null);
+
+        // Crop types without configured reference conditions must not crash the dashboard.
+        if (conditions == null) {
+            List<Reading> unassessed = List.of(
+                    new Reading("Temperature", temperature, "°C", "NOT_ASSESSED", null),
+                    vpdReading, soilReading,
+                    new Reading("Sunlight", sunshineHours, "hours/day", "NOT_ASSESSED", null));
+            return new Assessment(unassessed, List.of(),
+                    List.of("Reference growing conditions have not been configured for this crop."), false);
+        }
+
         Reading temperatureReading = findReading("Temperature", temperature, "°C", conditions.getTemperatureRange());
         Reading sunshineReading = findReading("Sunlight", sunshineHours, "hours/day", conditions.getSunshineRange());
-        List<Reading> readings = List.of(temperatureReading,
-                new Reading("Vapour pressure deficit", weather == null ? null : weather.vapourPressureDeficitMeanKpa(),
-                        "kPa", "NOT_ASSESSED", null),
-                new Reading("Soil moisture", soilPercent, "% by volume", "NOT_ASSESSED", null),
-                sunshineReading);
-
-        if (conditions == null) return new Assessment(readings, List.of(),
-                List.of("Reference growing conditions have not been configured for this crop."), false);
+        List<Reading> readings = List.of(temperatureReading, vpdReading, soilReading, sunshineReading);
 
         List<String> issues = new ArrayList<>();
         List<String> actions = new ArrayList<>();
