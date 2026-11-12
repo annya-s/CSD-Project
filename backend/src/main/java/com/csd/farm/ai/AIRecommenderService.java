@@ -10,7 +10,11 @@ import com.google.genai.gaos.models.operations.CreateInteractionRequestBody;
 import com.csd.farm.crop.crop_category.*;
 
 public class AIRecommenderService {
-    Client client = new Client();
+    // private static final String key = "my_test_api_key"; // Used for manually testing a key
+    // private static final Client client = Client.builder().apiKey(key).build();
+    private static final Client client = new Client();
+    private static final int maxTries = 5;
+
 
     public AIRecommenderService() {
         
