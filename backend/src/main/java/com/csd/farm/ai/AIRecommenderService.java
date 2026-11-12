@@ -29,12 +29,14 @@ public class AIRecommenderService {
             .input(InteractionsInput.of(prompt))
             .build();
 
+        Interaction interaction = null;
         try {
-            Interaction interaction = client.interactions.create(CreateInteractionRequestBody.of(params)).interaction().get();
-            return interaction.outputText().orElse("No AI Response");
+            interaction = client.interactions.create(CreateInteractionRequestBody.of(params)).interaction().get();
         } catch (Exception e) {
             return "No AI Response";
         }
+
+        return interaction.outputText().orElse("No AI Response");
     }
 
     public String formulatePrompt(Double temperature, Double sunshineHours, Crop crop) {
