@@ -42,14 +42,22 @@
                     </figure>
                     <dl class="location-data"><dt>Latitude</dt><dd id="detail-latitude"></dd><dt>Longitude</dt><dd id="detail-longitude"></dd></dl>
                     <section>
-                        <h2>Biomass estimate</h2>
-                        <p>Compare biomass at the crop's assumed full-growth stage: recent weather continuing versus optimal conditions.</p>
-                        <button id="run-prediction" type="button">Run biomass prediction</button>
+                        <h2>Yield and biomass outlook</h2>
+                        <p>Uses the last 14 days of weather at your planting, as if it continued all season.</p>
+                        <button id="run-prediction" type="button">Run prediction</button>
                         <p id="prediction-run-status" role="status"></p>
+                        <div id="yield-outlook" hidden>
+                            <h3>Yield outlook (machine learning)</h3>
+                            <p id="yield-result"></p>
+                            <p id="yield-normal"></p>
+                            <p id="yield-note" class="field-hint"></p>
+                        </div>
+                        <h3>Biomass at full growth</h3>
                         <p id="biomass-result" role="status"></p>
                         <div id="biomass-comparison" hidden>
                             <p id="biomass-reference"></p>
                             <p id="biomass-gap"></p>
+                            <ul id="biomass-causes"></ul>
                             <p class="field-hint"></p>
                         </div>
                     </section>

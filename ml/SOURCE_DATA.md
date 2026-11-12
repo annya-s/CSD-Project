@@ -44,40 +44,12 @@ These are candidate source datasets, NOT incorporated into training.csv or the d
 
 Next preparation step: select a crop with verified labels and dates, normalize its units, join compatible weather, and split by field/season before adapting the three Python scripts for that crop. Never fill missing observed biomass or planting dates with invented values. Simply copying these files into data/raw does not make the current wheat pipeline multicrop.
 
-## Synthetic biomass scenarios
-Run `synthetic_demo.py` offline to rebuild 1,500 seeded synthetic examples per crop in data/synthetic_biomass.csv and four CatBoost artifacts in model/synthetic/. Ship those artifacts, their age-range JSON files and synthetic_demo.py with the existing ML runtime. Data and models are ignored by Git. No simulation is used as a wheat training label or saved as a farmer observation.
+## Growth-curve anchors for the biomass formula
+The live app uses the formula in [docs/biomass-formula.md](../docs/biomass-formula.md) with the
+growth curves in `backend/src/main/resources/crop-profiles.json`. The synthetic CatBoost models
+that previously imitated it were removed on 13 November 2026. These sources anchor some curves:
 
 Carrot: Turner et al., https://github.com/mishaploid/carrot-diallel/blob/9c45b01737b4c4e14cc8c8373591defffae065fb/data/diallelRawData.csv . Use the median raw dry leaf weight (dlw), grams per plant, at the study's 130-day harvest. Day 14 and 65 anchors at 3% and 31% of that median are invented. Source study: https://academic.oup.com/g3journal/article/8/2/411/6029812.
 
 Maize, soybean and sugar beet: Chong et al., MuST-C, CC BY 4.0, https://www.ipb.uni-bonn.de/data/MuST-C/ and https://doi.org/10.1038/s41597-025-06462-y . Source archive: https://bonndata.uni-bonn.de/api/access/datafile/:persistentId?persistentId=doi:10.60507/FK2/OX9XTM/CEFQFD . Use table 1 sowing dates, omit individual-plant records flagged Dont_use_psqm, and interpolate median fresh aboveground biomass per full plot area between observed dates. This fresh weight includes water and cannot be directly compared with wheat dry mass or carrot dry shoot mass per plant.
 
-The generator samples ranges of 14-day weather summaries, applies explicitly assumed weather penalties to each growth curve, and fits each model to those simulated values. These scenarios demonstrate the assumed relationship; they have no field accuracy estimate. No synthetic record is treated as independent field validation.
-
-
-## Stored-average comparison (2026-11-10)
-average_prediction.py trains offline and writes model/averages/*.cbm and *.json.
-Run: python average_prediction.py. It uses the existing carrot/Bonn curves from
-synthetic_demo.py and observed wheat age/biomass medians from
-data/processed/observations.csv. Every training label in this comparison model
-is synthetic, including wheat. The historical observed-data wheat example
-continues to use its original saved model.
-
-The live Java reader uses public.CROP_WEATHER_HISTORICAL_AVERAGE by authenticated
-crop cycle ID. Required values are Start_Date, End_Date, Temperature_Mean,
-Soil_Moisture_Mean, Vapour_Pressure_Deficit_Mean, Sunshine_Duration_Mean_Seconds.
-Its date window must end yesterday and begin 14 days ago. It uses the server
-timezone because EnvironmentClient uses that timezone. Date_Planted determines age.
-Missing/stale averages cause INSUFFICIENT_DATA. This reader never fetches weather.
-The API producer must call storeAverageHistoricalReading for each planting and
-ensure complete source data. Its current calculation skips nulls, and the table
-has no sample counts, so date validation alone cannot prove completeness.
-
-The model compares now, age+14 under constant recent averages, and age+14 under
-assumed reference means (20 C, 0.26 m3/m3 soil water, 1 kPa VPD, 8 sunshine hours/day).
-Reference assumptions are shared demonstration settings, not validated crop optima.
-The generator's penalties are explicitly synthetic. No growth beyond the observed
-age endpoints is extrapolated. One recent average window cannot establish a real
-crop's accumulated biomass or causally predict management benefits.
-The metadata's synthetic_holdout_mae measures imitation of the generator only.
-It is not field accuracy or a confidence interval. Deploy model/averages plus both
-average_prediction.py and synthetic_demo.py and the installed Python dependencies.

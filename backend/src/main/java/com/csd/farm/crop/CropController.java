@@ -23,14 +23,6 @@ public class CropController {
     private final CropService cropService;
     public CropController(CropService cropService){this.cropService=cropService;}
 
-    @GetMapping("/samples/synthetic/{crop}/{age}/{scenario}")
-    public CropResponses.Prediction synthetic(@PathVariable CropType crop, @PathVariable int age,
-                                              @PathVariable String scenario) {
-        if (!java.util.Set.of("mild", "hot-dry", "cool").contains(scenario))
-            throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown scenario");
-        return cropService.synthetic(crop, age, scenario);
-    }
-
     @GetMapping("/crop-types") 
     public List<CropOption> cropTypes(){
         return cropService.cropTypes();

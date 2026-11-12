@@ -1,1 +1,0 @@
-{"profile": "mature-fraction-v3", "age_min": 0, "age_max": 365, "unit": "g/m2 dry aboveground", "reference": [27, 0.32, 1.2, 9], "features": ["age", "temperature", "soil", "vpd", "sunshine_hours"], "synthetic_holdout_mae": 0.021894598012554018, "field_accuracy": "unknown", "soil_moisture_depth_cm": "3-9"}
