@@ -167,18 +167,22 @@ async function runAssessment(cycleId) {
     );
 
     try {
-        const recommendations = await api(`/api/crops/${encodeURIComponent(cycleId)}/assessment`,
-            {
-                method: 'POST',
-                signal: AbortSignal.timeout(60000)
-            }
-        );
+        const result = await api(`/api/crops/${encodeURIComponent(cycleId)}/assessment`,
+        {
+            method: 'POST',
+            signal: AbortSignal.timeout(60000)
+        }
+    );
 
-        actions.replaceChildren(
-            ...recommendations.map((recommendation) =>
-                node('li', recommendation)
-            )
-        );
+    actions.replaceChildren(
+        node('li', result.recommendation),
+        node(
+            'li',
+            result.confidencePercent == null
+                ? 'Confidence unavailable for this crop.'
+                : `Confidence: ${result.confidencePercent.toFixed(2)}%`
+        )
+    );
     } catch (error) {
         actions.replaceChildren(
             node('li', 'Unable to generate crop recommendations. Please try again later.')

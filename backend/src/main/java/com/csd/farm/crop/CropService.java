@@ -110,10 +110,11 @@ public class CropService {
         return cropDetails(owner,entry);
     }
 
-    public List<String> assessWithAI(String username, Long cycleId) {
+    public CropResponses.AIRecommendation assessWithAI(String username, Long cycleId) {
         CropEntry entry = findCrop(userId(username), cycleId);
-
         DailyWeather weather = weatherReadings.find(cycleId).orElse(null);
+
+        CropHealthService.Assessment assessment = health.assess(entry.cropType(), weather);
 
         String recommendation = aiRecommender.getRecommendation(
                 entry.cropType(),
@@ -122,7 +123,32 @@ public class CropService {
                 weather == null ? null : weather.sunshineDurationSeconds()
         );
 
-        return List.of(recommendation);
+        Double confidencePercent = null;
+        var conditions = CropConditions.forCrop(entry.cropType());
+
+        if (conditions != null && recommendation != null && !recommendation.equals("No AI Response")) {
+            String temperatureStatus = assessment.readings().stream()
+                    .filter(r -> r.name().equals("Temperature"))
+                    .map(CropHealthService.Reading::status)
+                    .findFirst()
+                    .orElse("NOT_ASSESSED");
+
+            String sunshineStatus = assessment.readings().stream()
+                    .filter(r -> r.name().equals("Sunlight"))
+                    .map(CropHealthService.Reading::status)
+                    .findFirst()
+                    .orElse("NOT_ASSESSED");
+
+            Double confidence = conditions.checkAction(
+                    temperatureStatus,
+                    sunshineStatus,
+                    recommendation
+            );
+
+            confidencePercent = confidence == null ? null : confidence * 100;
+        }
+
+        return new CropResponses.AIRecommendation(recommendation, confidencePercent);
     }
 
     private DashboardCrop dashboardCrop(Long owner,CropEntry entry){

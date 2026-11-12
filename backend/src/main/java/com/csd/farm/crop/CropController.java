@@ -65,7 +65,7 @@ public class CropController {
     }
 
     @PostMapping("/crops/{cropCycleId}/assessment")
-    public List<String> assess(Principal p, @PathVariable Long cropCycleId) {
+    public CropResponses.AIRecommendation assess(Principal p, @PathVariable Long cropCycleId) {
         return cropService.assessWithAI(p.getName(), cropCycleId);
     }
     
