@@ -4,129 +4,113 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.csd.farm.crop.CropConditions.Range;
+import com.csd.farm.ai.AIRecommenderService;
+import com.csd.farm.crop.crop_category.*;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CropHealthService {
 
     /**
-     * Returns an assessment of a crop's health in the day's current weather conditions.
+     * Returns an assessment of a crop's health in the day's current weather
+     * conditions.
+     * 
      * @param cropType The type of crop.
-     * @param weather The weather conditions to compare to.
+     * @param weather  The weather conditions to compare to.
      * @return An Assessment instance representing the health of the crop.
      */
+
     public Assessment assess(CropType cropType, DailyWeather weather) {
         var conditions = CropConditions.forCrop(cropType);
+
         Double temperature = weather == null ? null : weather.temperatureMeanC();
         Double sunshineSeconds = weather == null ? null : weather.sunshineDurationSeconds();
         // Compare the unrounded number. Rounding is only for display in the browser.
         Double sunshineHours = sunshineSeconds == null ? null : sunshineSeconds / 3600.0;
         Double soilPercent = weather == null || weather.soilMoistureMeanM3M3() == null
-                ? null : weather.soilMoistureMeanM3M3() * 100.0;
+                ? null
+                : weather.soilMoistureMeanM3M3() * 100.0;
 
-        Reading temperatureReading = compare("Temperature", temperature, "°C", conditions == null ? null : conditions.temperatureC());
-        Reading sunshineReading = compare("Sunlight", sunshineHours, "hours/day", conditions == null ? null : conditions.sunshineHours());
-        List<Reading> readings = List.of(
-                temperatureReading,
-                new Reading("Vapour pressure deficit", weather == null ? null : weather.vapourPressureDeficitMeanKpa(),
-                        "kPa", "NOT_ASSESSED", null),
-                new Reading("Soil moisture", soilPercent, "% by volume", "NOT_ASSESSED", null),
-                sunshineReading);
+        Reading vpdReading = new Reading("Vapour pressure deficit",
+                weather == null ? null : weather.vapourPressureDeficitMeanKpa(), "kPa", "NOT_ASSESSED", null);
+        Reading soilReading = new Reading("Soil moisture", soilPercent, "% by volume", "NOT_ASSESSED", null);
 
-        if (conditions == null) return new Assessment(readings, List.of(),
-                List.of("Reference growing conditions have not been configured for this crop."), false);
+        // Crop types without configured reference conditions must not crash the dashboard.
+        if (conditions == null) {
+            List<Reading> unassessed = List.of(
+                    new Reading("Temperature", temperature, "°C", "NOT_ASSESSED", null),
+                    vpdReading, soilReading,
+                    new Reading("Sunlight", sunshineHours, "hours/day", "NOT_ASSESSED", null));
+            return new Assessment(unassessed, List.of(),
+                    List.of("Reference growing conditions have not been configured for this crop."), false);
+        }
+
+        Reading temperatureReading = findReading("Temperature", temperature, "°C", conditions.getTemperatureRange());
+        Reading sunshineReading = findReading("Sunlight", sunshineHours, "hours/day", conditions.getSunshineRange());
+        List<Reading> readings = List.of(temperatureReading, vpdReading, soilReading, sunshineReading);
 
         List<String> issues = new ArrayList<>();
         List<String> actions = new ArrayList<>();
 
-        switch (temperatureReading.status()) {
-            case "BELOW_RANGE_SEVERE":
-                issues.add("Daily mean temperature is significantly below this crop's reference range.");
-                actions.add("Closely monitor temperatures for next few days. Add any preventative measures for cold temperatures quickly.");
-                break;
-            case "BELOW_RANGE":
-                issues.add("Daily mean temperature is below this crop's reference range.");
-                actions.add("Check temperatures at the crop and inspect for cold stress. Consider suitable protection if cold conditions persist.");
-                break;
-            case "ABOVE_RANGE":
-                issues.add("Daily mean temperature is above this crop's reference range.");
-                actions.add("Check temperature of the crop and inspect for heat stress. Check soil water before deciding whether to irrigate.");
-                break;
-            case "ABOVE_RANGE_SEVERE":
-                issues.add("Daily mean temperature is significantly above this crop's reference range.");
-                actions.add("Heavily consider irrigation to reduce the crop's temperature. Ensure the crop's temperature lowers in the next few days.");
-                break;
-            default:
-                break;
-        }
+        String temperatureIssue = conditions.temperatureIssue(temperatureReading.status);
+        String sunshineIssue = conditions.sunshineIssue(sunshineReading.status);
 
-        switch (sunshineReading.status()) {
-            case "BELOW_RANGE_SEVERE":
-                issues.add("Daily sunshine is significantly below this crop's estimated reference range.");
-                actions.add("Closely monitor sunshine over next few days, and prepare for a long-term deficiency of sunshine.");
-                break;
-            case "BELOW_RANGE":
-                issues.add("Daily sunshine is below this crop's estimated reference range.");
-                actions.add("Check for shading and monitor sunshine over the next few days. One cloudy day does not establish crop damage.");
-                break;
-            case "ABOVE_RANGE":
-                actions.add("Continue monitoring. Temperature and sunlight are within their reference ranges; vapour pressure deficit and soil moisture remain unassessed.");
-                break;
-            case "ABOVE_RANGE_SEVERE":
-                issues.add("Daily sunshine is significantly above this crop's estimated reference range.");
-                actions.add("Closely monitor sunshine over next few days, and possibly take corrective actions to reduce sunshine.");
-                break;
-            default:
+        if (temperatureIssue != null) {
+            issues.add(temperatureIssue);
+        }
+        if (sunshineIssue != null) {
+            issues.add(sunshineIssue);
         }
 
         if (temperature == null || sunshineHours == null) {
-            actions.add("Daily weather values are missing or incomplete. Refresh the forecast before assessing temperature and sunlight.");
+            actions.add(
+                    "Daily weather values are missing or incomplete. Refresh the forecast before the agent can assess temperature and sunlight.");
+            return new Assessment(readings, List.copyOf(issues), List.copyOf(actions), !issues.isEmpty());
         }
-        if (actions.isEmpty()) {
-            actions.add("Continue monitoring. Temperature and sunlight are within their reference ranges; vapour pressure deficit and soil moisture remain unassessed.");
+
+        AIRecommenderService ai = new AIRecommenderService();
+        String aiOutput = ai.getRecommendation(temperature, sunshineHours, conditions);
+        if (aiOutput == null || aiOutput.equals("No AI Response")) {
+            actions.add(
+                    "The agent could not formulate a response. Please contact an admin to investigate what went wrong.");
+            return new Assessment(readings, List.copyOf(issues), List.copyOf(actions), !issues.isEmpty());
         }
+
+        actions.add(aiOutput);
+
+        double confidenceInterval = conditions.checkAction(temperatureReading.status, sunshineReading.status, aiOutput)
+                * 100;
+        String confidenceString = "Confidence Interval: ";
+        confidenceString += String.format("%.2f", confidenceInterval);
+        confidenceString += "%";
+
+        actions.add(confidenceString);
 
         return new Assessment(readings, List.copyOf(issues), List.copyOf(actions), !issues.isEmpty());
     }
 
     /**
      * Returns a reading of whether a specific condition is within the range.
-     * @param name Name of the reading.
+     * 
+     * @param name  Name of the reading.
      * @param value The value to compare to the range.
-     * @param unit The unit of measurement.
+     * @param unit  The unit of measurement.
      * @param range The range to be compared to.
-     * @return A Reading instance representing a reading of whether the condition is within optimal range.
+     * @return A Reading instance representing a reading of whether the condition is
+     *         within optimal range.
      */
-    private Reading compare(String name, Double value, String unit, Range range) {
-
-        if (value == null || range == null) {
-            return new Reading(name, value, unit, "NOT_ASSESSED", range);
-        }
-
-        String status;
-        if (value < range.minimum()) {
-            if (value < range.minimum() * (1 - range.tolerance())) {
-                status = "BELOW_RANGE_SEVERE";
-            } else {
-                status = "BELOW_RANGE";
-            }
-        } else if (value > range.maximum()) {
-            if (value > range.maximum() * (1 + range.tolerance())) {
-                status = "ABOVE_RANGE_SEVERE";
-            } else {
-                status = "ABOVE_RANGE";
-            }
-        } else {
-            status = "WITHIN_RANGE";
-        }
-
-        return new Reading(name, value, unit, status, range);
+    private Reading findReading(String name, Double value, String unit, CropRange range) {
+        return new Reading(name, value, unit, range.getReading(value), new Range(range.getOptimalMinimum(), range.getOptimalMaximum()));
     }
 
-    // Represents a reading of a crop harvest's specific condition in comparison to the optimum range.
-    public record Reading(String name, Double value, String unit, String status, Range referenceRange) { }
+    // Represents a reading of a crop harvest's specific condition in comparison to
+    // the optimum range.
+    public record Reading(String name, Double value, String unit, String status, Range referenceRange) {
+    }
 
-    // Represents an assessment for a specific crop harvest, alongside how to rectify any issues.
+    // Represents an assessment for a specific crop harvest, alongside how to
+    // rectify any issues.
     public record Assessment(List<Reading> readings, List<String> issues,
-                             List<String> recommendedActions, boolean needsAttention) { }
+            List<String> recommendedActions, boolean needsAttention) {
+    }
 }

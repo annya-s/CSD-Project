@@ -127,7 +127,7 @@ input::placeholder { color: #5d6a5b; opacity: 1; }
 .button-row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 18px; }
 
 .crop-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; }
-.crop-card { display: block; background: white; border: 1px solid #d2dacd; border-radius: 24px; padding: 25px; text-decoration: none; transition: border-color 180ms, transform 180ms; }
+.crop-card { position: relative; display: block; background: white; border: 1px solid #d2dacd; border-radius: 24px; padding: 25px; text-decoration: none; transition: border-color 180ms, transform 180ms; }
 .crop-card:hover { border-color: var(--green); transform: translateY(-2px); }
 .crop-card h2 { text-decoration: underline; text-underline-offset: 5px; font-size: 1.4rem; margin-bottom: 5px; }
 .crop-card time { font-size: .85rem; color: var(--muted); }
@@ -141,9 +141,11 @@ input::placeholder { color: #5d6a5b; opacity: 1; }
 .attention-label, .health-panel .attention-label { color: #8b3e16; font-weight: 600; margin: 12px 0; }
 .metric dt { flex-shrink: 0; }
 .metric dd { text-align: right; overflow-wrap: anywhere; }
-.card-footer { display: block; padding-top: 15px; color: var(--green); font-size: .8rem; }
+.card-link { position: absolute; inset: 0; z-index: 1; }
 /* [ERD-ALIGNMENT ADDITION] Dashboard delete control. */
-.delete-entry { display: block; min-height: 38px; margin-top: 14px; padding: 7px 12px; border: 1px solid #b65b4c; background: white; color: #8e3c30; font-size: .85rem; }
+.delete-entry { position: relative; z-index: 2; display: block; min-height: 38px; margin-top: 14px; padding: 7px 12px; border: 1px solid #b65b4c; background: white; color: #8e3c30; font-size: .85rem; 
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease; }
+.delete-entry:hover { background: #8e3c30; color: white; border-color: #8e3c30; }
 .empty-state { text-align: center; padding: 40px 20px; }
 .empty-state p { margin: 0 auto 24px; color: var(--muted); max-width: 49ch; }
 .empty-mark { font-size: 3rem; color: var(--green); display: block; margin-bottom: 12px; }

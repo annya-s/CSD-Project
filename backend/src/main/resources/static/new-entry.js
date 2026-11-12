@@ -48,14 +48,18 @@ $('entry-form').addEventListener('submit', async (event) => {
 function loadMap() {
     var mapMarker;
 
-    var map = L.map("map").setView([40.19, -96.64], 3);
+    const worldBound = L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180));
+
+    var map = L.map("map", {maxBounds: worldBound}).setView([1.37, 103.83], 12);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { // Base map
         maxZoom: 19,
+        noWrap: true,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
     L.tileLayer('https://stadiamaps.com/{z}/{x}/{y}{r}.png', { // Add country, city, small town names etc.
         maxZoom: 19,
+        noWrap: true,
         attribution: '&copy; <a href="https://stadiamaps.com" target="_blank">Stadia Maps</a> &copy; <a href="https://stamen.com" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org" target="_blank">OpenMapTiles</a> &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
     }).addTo(map);
     
