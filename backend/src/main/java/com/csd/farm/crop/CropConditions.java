@@ -13,6 +13,7 @@ public final class CropConditions {
         CropType.POTATO, new Potato(),
         CropType.SUGAR_CANE, new SugarCane(),
         CropType.APPLE, new Apple(),
+        CropType.RICE, new Rice(),
         CropType.WHEAT, new Wheat(),
         CropType.MAIZE, new Maize(),
         CropType.TOMATO, new Tomato(),
