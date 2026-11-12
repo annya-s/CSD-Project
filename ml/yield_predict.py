@@ -14,8 +14,6 @@ from pathlib import Path
 import joblib
 import pandas as pd
 
-import yield_train  # noqa: F401  (defines CatBoostWithCrop, needed to unpickle that model)
-
 ROOT = Path(__file__).resolve().parent
 MODEL_DIR = ROOT / "model/yield"
 LOCATIONS = {loc["id"]: loc for loc in
@@ -55,13 +53,19 @@ def predict(request):
     if outside:
         labels = {"temperature": "temperature", "soil_moisture": "soil moisture",
                   "vpd": "vapour pressure deficit", "sunshine_hours": "sunshine"}
-        return dict(status="OUT_OF_RANGE", message="Recent " + ", ".join(labels[n] for n in outside)
-                    + " is outside the growing-season conditions the yield model was trained on"
+        names = [labels[n] for n in outside]
+        listed = names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
+        return dict(status="OUT_OF_RANGE", message=f"Recent {listed} {'is' if len(names) == 1 else 'are'}"
+                    " outside the growing-season conditions the yield model was trained on"
                     " (for example, it may be winter). No yield outlook is shown.")
 
     nearest = min((n for n in normals if n["crop"] == crop),
                   key=lambda n: distance_km(lat, lon, n["lat"], n["lon"]))
-    row = pd.DataFrame([dict(crop=crop, **weather, abs_latitude=abs(lat))])[metadata["features"]]
+    usual = metadata["climatology"][nearest["location"]]
+    # shortcut: compares 14 days with a whole-season average, so early or late in the season
+    # the anomalies are biased; upgrade by storing month-by-month climatology.
+    anomalies = {f"{name}_anomaly": value - usual[name] for name, value in weather.items()}
+    row = pd.DataFrame([dict(crop=crop, **weather, abs_latitude=abs(lat), **anomalies)])[metadata["features"]]
     ratio = float(model.predict(row)[0])
     location = LOCATIONS[nearest["location"]]
     test = metadata["metrics"][metadata["selected_model"]]["test"]

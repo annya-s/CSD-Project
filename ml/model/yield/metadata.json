@@ -1,0 +1,317 @@
+{
+  "model_version": "yield-ratio-v2",
+  "selected_model": "catboost",
+  "target": "yield_ratio",
+  "features": [
+    "crop",
+    "temperature",
+    "soil_moisture",
+    "vpd",
+    "sunshine_hours",
+    "abs_latitude",
+    "temperature_anomaly",
+    "soil_moisture_anomaly",
+    "vpd_anomaly",
+    "sunshine_hours_anomaly"
+  ],
+  "crops": [
+    "APPLE",
+    "CARROT",
+    "LETTUCE",
+    "MAIZE",
+    "POTATO",
+    "RICE",
+    "SOYBEAN",
+    "SUGAR_CANE",
+    "TOMATO",
+    "WHEAT"
+  ],
+  "climatology": {
+    "ARG": {
+      "temperature": 21.4384,
+      "soil_moisture": 0.2628,
+      "vpd": 0.9531,
+      "sunshine_hours": 11.3177
+    },
+    "AUS": {
+      "temperature": 21.8647,
+      "soil_moisture": 0.2095,
+      "vpd": 1.4457,
+      "sunshine_hours": 11.626
+    },
+    "BGD": {
+      "temperature": 28.2072,
+      "soil_moisture": 0.3618,
+      "vpd": 0.6896,
+      "sunshine_hours": 8.6129
+    },
+    "BGR": {
+      "temperature": 20.3848,
+      "soil_moisture": 0.2361,
+      "vpd": 0.9955,
+      "sunshine_hours": 11.8752
+    },
+    "BRA": {
+      "temperature": 22.752,
+      "soil_moisture": 0.4168,
+      "vpd": 0.6581,
+      "sunshine_hours": 10.2583
+    },
+    "CAN": {
+      "temperature": 14.3005,
+      "soil_moisture": 0.2739,
+      "vpd": 0.6816,
+      "sunshine_hours": 11.6531
+    },
+    "CHN": {
+      "temperature": 23.9261,
+      "soil_moisture": 0.2378,
+      "vpd": 1.086,
+      "sunshine_hours": 9.2417
+    },
+    "DEU": {
+      "temperature": 15.6903,
+      "soil_moisture": 0.2954,
+      "vpd": 0.5618,
+      "sunshine_hours": 10.8026
+    },
+    "EGY": {
+      "temperature": 27.0413,
+      "soil_moisture": 0.1153,
+      "vpd": 1.757,
+      "sunshine_hours": 12.5151
+    },
+    "ESP": {
+      "temperature": 18.8977,
+      "soil_moisture": 0.0892,
+      "vpd": 1.1628,
+      "sunshine_hours": 12.4297
+    },
+    "FRA": {
+      "temperature": 16.346,
+      "soil_moisture": 0.2699,
+      "vpd": 0.6086,
+      "sunshine_hours": 10.7283
+    },
+    "GBR": {
+      "temperature": 14.6372,
+      "soil_moisture": 0.3346,
+      "vpd": 0.4441,
+      "sunshine_hours": 10.0832
+    },
+    "IDN": {
+      "temperature": 25.8347,
+      "soil_moisture": 0.4635,
+      "vpd": 0.5224,
+      "sunshine_hours": 8.4782
+    },
+    "IND": {
+      "temperature": 29.781,
+      "soil_moisture": 0.2484,
+      "vpd": 1.7632,
+      "sunshine_hours": 10.4692
+    },
+    "IRN": {
+      "temperature": 21.5627,
+      "soil_moisture": 0.1498,
+      "vpd": 1.4695,
+      "sunshine_hours": 12.1565
+    },
+    "ITA": {
+      "temperature": 21.1102,
+      "soil_moisture": 0.3455,
+      "vpd": 0.9266,
+      "sunshine_hours": 11.8855
+    },
+    "JPN": {
+      "temperature": 20.782,
+      "soil_moisture": 0.3275,
+      "vpd": 0.5235,
+      "sunshine_hours": 8.703
+    },
+    "KEN": {
+      "temperature": 16.402,
+      "soil_moisture": 0.3353,
+      "vpd": 0.4475,
+      "sunshine_hours": 10.5877
+    },
+    "KOR": {
+      "temperature": 21.2861,
+      "soil_moisture": 0.3982,
+      "vpd": 0.7129,
+      "sunshine_hours": 9.1532
+    },
+    "MEX": {
+      "temperature": 20.9331,
+      "soil_moisture": 0.3077,
+      "vpd": 0.8523,
+      "sunshine_hours": 10.8509
+    },
+    "NGA": {
+      "temperature": 24.459,
+      "soil_moisture": 0.3148,
+      "vpd": 0.6461,
+      "sunshine_hours": 8.8261
+    },
+    "NLD": {
+      "temperature": 15.2335,
+      "soil_moisture": 0.292,
+      "vpd": 0.4417,
+      "sunshine_hours": 10.9477
+    },
+    "NZL": {
+      "temperature": 14.2035,
+      "soil_moisture": 0.2907,
+      "vpd": 0.4765,
+      "sunshine_hours": 10.3746
+    },
+    "PAK": {
+      "temperature": 31.3851,
+      "soil_moisture": 0.2006,
+      "vpd": 2.3033,
+      "sunshine_hours": 11.2269
+    },
+    "PHL": {
+      "temperature": 27.0778,
+      "soil_moisture": 0.3679,
+      "vpd": 0.5834,
+      "sunshine_hours": 8.7856
+    },
+    "POL": {
+      "temperature": 16.4301,
+      "soil_moisture": 0.1675,
+      "vpd": 0.6444,
+      "sunshine_hours": 10.86
+    },
+    "ROU": {
+      "temperature": 20.1443,
+      "soil_moisture": 0.2484,
+      "vpd": 0.926,
+      "sunshine_hours": 11.6897
+    },
+    "RUS": {
+      "temperature": 16.9788,
+      "soil_moisture": 0.2471,
+      "vpd": 0.8099,
+      "sunshine_hours": 11.4772
+    },
+    "THA": {
+      "temperature": 28.1296,
+      "soil_moisture": 0.3285,
+      "vpd": 0.8919,
+      "sunshine_hours": 9.0548
+    },
+    "TUR": {
+      "temperature": 20.0427,
+      "soil_moisture": 0.1467,
+      "vpd": 1.3833,
+      "sunshine_hours": 12.5638
+    },
+    "UKR": {
+      "temperature": 18.4698,
+      "soil_moisture": 0.2385,
+      "vpd": 0.906,
+      "sunshine_hours": 11.64
+    },
+    "USA": {
+      "temperature": 20.1216,
+      "soil_moisture": 0.2895,
+      "vpd": 0.7818,
+      "sunshine_hours": 10.837
+    },
+    "VNM": {
+      "temperature": 27.123,
+      "soil_moisture": 0.3907,
+      "vpd": 0.5285,
+      "sunshine_hours": 8.4948
+    },
+    "ZAF": {
+      "temperature": 21.2109,
+      "soil_moisture": 0.3053,
+      "vpd": 1.1738,
+      "sunshine_hours": 11.57
+    }
+  },
+  "training_ranges": {
+    "temperature": {
+      "min": 12.949,
+      "max": 32.396
+    },
+    "soil_moisture": {
+      "min": 0.034,
+      "max": 0.478
+    },
+    "vpd": {
+      "min": 0.33,
+      "max": 2.781
+    },
+    "sunshine_hours": {
+      "min": 7.903,
+      "max": 12.873
+    }
+  },
+  "rows": 4109,
+  "test_years": [
+    2022,
+    2023,
+    2024
+  ],
+  "locations": 34,
+  "years": [
+    2011,
+    2024
+  ],
+  "metrics": {
+    "baseline_normal_year": {
+      "validation": {
+        "mae_pct": 6.93,
+        "r2": -0.001
+      },
+      "test": {
+        "mae_pct": 6.09,
+        "r2": -0.033
+      }
+    },
+    "ridge": {
+      "validation": {
+        "mae_pct": 7.05,
+        "r2": -0.005
+      },
+      "test": {
+        "mae_pct": 6.32,
+        "r2": -0.049
+      }
+    },
+    "random_forest": {
+      "validation": {
+        "mae_pct": 6.85,
+        "r2": 0.03
+      },
+      "test": {
+        "mae_pct": 6.24,
+        "r2": -0.03
+      }
+    },
+    "catboost": {
+      "validation": {
+        "mae_pct": 6.84,
+        "r2": 0.024
+      },
+      "test": {
+        "mae_pct": 6.32,
+        "r2": -0.055
+      }
+    }
+  },
+  "data_sha256": "a600cb4269c3b788d80f43e7e173c29493c434e71f6f21674fa84aae396d5380",
+  "sources": [
+    "FAOSTAT Crops and livestock products (FAO, CC BY 4.0)",
+    "Open-Meteo historical weather API (ERA5 reanalysis)"
+  ],
+  "limitations": [
+    "Country-level yields paired with weather at one representative point per country.",
+    "Six-month hemisphere-based season, not each crop's real calendar.",
+    "Soil moisture is 0-7 cm in training; the app supplies 3-9 cm.",
+    "In the app, the last 14 days stand in for a whole season."
+  ]
+}

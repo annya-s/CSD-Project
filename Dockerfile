@@ -21,9 +21,8 @@ WORKDIR /app
 COPY ml/requirements.txt /app/ml/requirements.txt
 RUN python -m venv /opt/venv \
     && /opt/venv/bin/python -m pip install --no-cache-dir -r /app/ml/requirements.txt
-COPY ml/*.py /app/ml/
-COPY ml/crop_profiles.json /app/ml/
-COPY ml/model/averages/ /app/ml/model/averages/
+COPY ml/*.py ml/yield_locations.json /app/ml/
+COPY ml/model/yield/ /app/ml/model/yield/
 COPY --from=build /build/target/farm-0.0.1-SNAPSHOT.jar /app/app.jar
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1

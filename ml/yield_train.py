@@ -32,14 +32,22 @@ ROOT = Path(__file__).resolve().parent
 MODEL_DIR = ROOT / "model/yield"
 TEST_YEARS = {2022, 2023, 2024}
 WEATHER = ["temperature", "soil_moisture", "vpd", "sunshine_hours"]
-COLUMNS = ["crop"] + FEATURES
+# The label is an anomaly (this year vs normal), so the model also sees weather anomalies:
+# this season minus that location's usual season.
+ANOMALIES = [f"{name}_anomaly" for name in WEATHER]
+NUMERIC = FEATURES + ANOMALIES
+COLUMNS = ["crop"] + NUMERIC
 
 
-class CatBoostWithCrop(CatBoostRegressor):
-    """CatBoost that treats the crop column as categorical."""
+def climatology(frame):
+    """Each location's usual season weather (mean over the given years)."""
+    return frame.groupby("location")[WEATHER].mean()
 
-    def fit(self, X, y, **kwargs):
-        return super().fit(X, y, cat_features=["crop"], **kwargs)
+
+def add_anomalies(frame, climate):
+    usual = climate.loc[frame.location].to_numpy()
+    return frame.assign(**{f"{name}_anomaly": frame[name].to_numpy() - usual[:, i]
+                           for i, name in enumerate(WEATHER)})
 
 
 def models():
@@ -48,12 +56,12 @@ def models():
     return {
         # Squared terms let a linear model express "too hot" and "too cold" both hurting.
         "ridge": make_pipeline(ColumnTransformer([("crop", crop, ["crop"]),
-                                                  ("weather", numeric, FEATURES)]), Ridge(alpha=10)),
+                                                  ("weather", numeric, NUMERIC)]), Ridge(alpha=10)),
         "random_forest": make_pipeline(
             ColumnTransformer([("crop", crop, ["crop"])], remainder="passthrough"),
             RandomForestRegressor(n_estimators=300, min_samples_leaf=15, max_features=0.5,
                                   random_state=42, n_jobs=2)),
-        "catboost": CatBoostWithCrop(iterations=400, depth=4, learning_rate=0.05, l2_leaf_reg=10,
+        "catboost": CatBoostRegressor(cat_features=["crop"], iterations=400, depth=4, learning_rate=0.05, l2_leaf_reg=10,
                                      loss_function="MAE", random_seed=42, verbose=False,
                                      allow_writing_files=False, thread_count=2),
     }
@@ -69,6 +77,9 @@ def main():
     # Ratios outside 0.4-1.6 are mostly reporting breaks (area changes, data revisions), not weather.
     frame = frame[frame.yield_ratio.between(0.4, 1.6)].reset_index(drop=True)
     train, test = frame[~frame.year.isin(TEST_YEARS)], frame[frame.year.isin(TEST_YEARS)]
+    # Usual climate from training years only, so the test years stay unseen.
+    climate = climatology(train)
+    train, test = add_anomalies(train, climate), add_anomalies(test, climate)
     results = {"baseline_normal_year": dict(validation=scores(train.yield_ratio, np.ones(len(train))),
                                             test=scores(test.yield_ratio, np.ones(len(test))))}
     fitted = {}
@@ -86,14 +97,18 @@ def main():
 
     # Choose on validation only; the test years stay a fair final check.
     selected = min(fitted, key=lambda name: results[name]["validation"]["mae_pct"])
-    final = models()[selected].fit(frame[COLUMNS], frame.yield_ratio)  # refit on all years for the app
+    climate = climatology(frame)  # the app uses all years' climate and model
+    frame = add_anomalies(frame, climate)
+    final = models()[selected].fit(frame[COLUMNS], frame.yield_ratio)
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
     joblib.dump(final, MODEL_DIR / "model.joblib")
     normals = json.loads((ROOT / "data/yield_normals.json").read_text(encoding="utf-8"))
     (MODEL_DIR / "normals.json").write_text(json.dumps(normals, indent=1), encoding="utf-8")
     metadata = dict(
-        model_version="yield-ratio-v1", selected_model=selected, target="yield_ratio",
+        model_version="yield-ratio-v2", selected_model=selected, target="yield_ratio",
         features=COLUMNS, crops=sorted(frame.crop.unique()),
+        climatology={loc: {k: round(float(v), 4) for k, v in row.items()}
+                     for loc, row in climate.iterrows()},
         training_ranges={c: dict(min=round(float(frame[c].min()), 3), max=round(float(frame[c].max()), 3))
                          for c in WEATHER},
         rows=len(frame), test_years=sorted(TEST_YEARS), locations=int(frame.location.nunique()),
