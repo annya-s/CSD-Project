@@ -29,7 +29,12 @@ public class AIRecommenderService {
             .input(InteractionsInput.of(prompt))
             .build();
 
-        Interaction interaction = client.interactions.create(CreateInteractionRequestBody.of(params)).interaction().get();
+        Interaction interaction = null;
+        try {
+            interaction = client.interactions.create(CreateInteractionRequestBody.of(params)).interaction().get();
+        } catch (Exception e) {
+            return "No AI Response";
+        }
 
         return interaction.outputText().orElse("No AI Response");
     }
