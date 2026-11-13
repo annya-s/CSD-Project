@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 import com.csd.farm.crop.CropHealthService.Reading;
+import com.csd.farm.crop.crop_category.GuidelineAgreement;
 
 // [ERD-ALIGNMENT CHANGE] Dashboard includes Crop_Cycle_ID for detail and delete operations.
 public final class CropResponses {
@@ -20,7 +21,8 @@ public final class CropResponses {
             List<String> recommendedActions,String note,List<String> issues,boolean needsAttention,
             DailyWeather weather,String weatherSource,String weatherMessage,Prediction prediction){}
     
-    public record AIRecommendation(String recommendation, Double confidencePercent) {}
+    /** Both null when the advisor gave no usable result; agreement is also null for crops without guidelines. */
+    public record AIRecommendation(String recommendation, GuidelineAgreement agreement) {}
             
     public record Prediction(String status,Double value,String unit,String message,
             Double currentEstimate, Double referenceEstimate, String projectionDate, List<Cause> causes,

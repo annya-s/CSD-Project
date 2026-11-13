@@ -6,6 +6,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -19,6 +20,8 @@ import com.csd.farm.crop.CropResponses.CropDetails;
 import com.csd.farm.crop.CropResponses.CropOption;
 import com.csd.farm.crop.CropResponses.Dashboard;
 import com.csd.farm.crop.CropResponses.DashboardCrop;
+import com.csd.farm.crop.crop_category.Crop;
+import com.csd.farm.crop.crop_category.GuidelineAgreement;
 import com.csd.farm.environment.EnvironmentReading;
 import com.csd.farm.environment.EnvironmentService;
 
@@ -109,44 +112,27 @@ public class CropService {
 
     public CropResponses.AIRecommendation assessWithAI(String username, Long cycleId) {
         CropEntry entry = findCrop(userId(username), cycleId);
-        DailyWeather weather = weatherReadings.find(cycleId).orElse(null);
-
-        CropHealthService.Assessment assessment = health.assess(entry.cropType(), weather);
-
         List<EnvironmentReading> historicalReadings = environmentService.getHistoricalReading(cycleId.intValue());
         historicalReadings.add(environmentService.getLatestReading(cycleId.intValue()));
 
-        String recommendation = aiRecommender.getRecommendation(
-                entry.cropType(),
-                historicalReadings
-        );
+        var advice = aiRecommender.getRecommendation(entry.cropType(), historicalReadings).orElse(null);
+        if (advice == null) return new CropResponses.AIRecommendation(null, null);
 
-        Double confidencePercent = null;
-        var conditions = CropConditions.forCrop(entry.cropType());
+        Crop conditions = CropConditions.forCrop(entry.cropType());
+        if (conditions == null) return new CropResponses.AIRecommendation(advice.recommendation(), null);
 
-        if (conditions != null && recommendation != null && !recommendation.equals("No AI Response")) {
-            String temperatureStatus = assessment.readings().stream()
-                    .filter(r -> r.name().equals("Temperature"))
-                    .map(CropHealthService.Reading::status)
-                    .findFirst()
-                    .orElse("NOT_ASSESSED");
+        // Judge against the same 14-day window the advisor saw, not only the latest day.
+        String temperatureStatus = conditions.getTemperatureRange().getReading(mean(historicalReadings, EnvironmentReading::temperature));
+        Double sunshineHours = mean(historicalReadings, EnvironmentReading::sunshineDuration);
+        String sunshineStatus = conditions.getSunshineRange().getReading(sunshineHours == null ? null : sunshineHours / 3600.0);
+        var agreement = GuidelineAgreement.of(conditions.guidelinesFor(temperatureStatus, sunshineStatus), advice.actions());
+        return new CropResponses.AIRecommendation(advice.recommendation(), agreement);
+    }
 
-            String sunshineStatus = assessment.readings().stream()
-                    .filter(r -> r.name().equals("Sunlight"))
-                    .map(CropHealthService.Reading::status)
-                    .findFirst()
-                    .orElse("NOT_ASSESSED");
-
-            Double confidence = conditions.checkAction(
-                    temperatureStatus,
-                    sunshineStatus,
-                    recommendation
-            );
-
-            confidencePercent = confidence == null ? null : confidence * 100;
-        }
-
-        return new CropResponses.AIRecommendation(recommendation, confidencePercent);
+    // Same averaging as the stored 14-day historical average (EnvironmentService.calculateAverage).
+    private static Double mean(List<EnvironmentReading> readings, java.util.function.Function<EnvironmentReading, Double> value) {
+        var mean = readings.stream().map(value).filter(Objects::nonNull).mapToDouble(Double::doubleValue).average();
+        return mean.isPresent() ? mean.getAsDouble() : null;
     }
 
     private DashboardCrop dashboardCrop(Long owner,CropEntry entry){
