@@ -210,10 +210,25 @@ async function runAssessment(cycleId) {
         const row = node('div', undefined, 'ai-row');
         const tag = node('span', undefined, 'ai-tag');
         tag.append(icon('i-sparkle', 'icon-sm'), 'AI recommendation');
-        row.append(tag, node('p', response.recommendation),
+
+        const sentences = (response.recommendation || '')
+            .split(/\.(?=\s|$)/)
+            .map(sentence => sentence.trim())
+            .filter(sentence => sentence.length > 0);
+
+        const recommendation = node(
+            'p',
+            sentences.map(sentence => sentence + '.').join('\n\n'),
+            'recommendation'
+        );
+
+        row.append(
+            tag,
+            recommendation,
             node('p', response.confidencePercent == null
                 ? 'Confidence unavailable'
-                : `Confidence ${response.confidencePercent.toFixed(2)}%`, 'confidence'));
+                : `Confidence ${response.confidencePercent.toFixed(2)}%`, 'confidence')
+        );
         result.replaceChildren(row);
     } catch (error) {
         if (error.status === 401) return showPageError(error);

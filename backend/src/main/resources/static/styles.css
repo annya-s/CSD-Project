@@ -982,3 +982,7 @@ h3.subhead + .biomass-layout { margin-top: 16px; }
     .readings { grid-template-columns: 1fr; }
     .tiles { grid-template-columns: 1fr 1fr; }
 }
+
+.recommendation {
+    white-space: pre-line;
+}
