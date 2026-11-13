@@ -1,78 +1,96 @@
-import { $, api, jsonPost, requireFarmer, showPageError, showMessage, node } from './api.js';
+import { $, api, jsonPost, requireFarmer, showPageError, showMessage, node, setBusy, pinIcon, tileLayer, formatCoord } from './api.js';
 
-let coords = null; // For interactive map
+let coords = null; // chosen on the map
+let map;
+let marker;
 
-function localDateTime() {
+// Local calendar date as YYYY-MM-DD (the date input's format).
+function today() {
     const now = new Date();
-    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-    return local.toISOString().slice(0, 19);
+    return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 }
 
-$('planted-at').addEventListener('focus', () => {
-    $('planted-at').max = localDateTime();
+function setLocation(latlng, pan = false) {
+    coords = latlng;
+    if (!marker) marker = window.L.marker(latlng, { icon: pinIcon(), keyboard: false }).addTo(map);
+    else marker.setLatLng(latlng);
+    if (pan) map.setView(latlng, Math.max(map.getZoom(), 14));
+    $('coords-text').textContent = `${formatCoord(latlng.lat)}, ${formatCoord(latlng.lng)}`;
+    $('coords').classList.add('is-set');
+    if ($('entry-error').dataset.field === 'map') showMessage('entry-error');
+}
+
+function loadMap() {
+    const world = window.L.latLngBounds(window.L.latLng(-90, -180), window.L.latLng(90, 180));
+    map = window.L.map('map', { maxBounds: world, zoomControl: true }).setView([1.37, 103.83], 11);
+    tileLayer().addTo(map);
+    map.on('click', (event) => setLocation(event.latlng));
+}
+
+function fail(message, field, element) {
+    showMessage('entry-error', message);
+    $('entry-error').dataset.field = field;
+    if (element) {
+        element.setAttribute('aria-invalid', 'true');
+        element.focus();
+    }
+}
+
+document.querySelectorAll('#entry-form .input, #entry-form .select').forEach((element) => {
+    element.addEventListener('input', () => element.removeAttribute('aria-invalid'));
+});
+
+$('locate').addEventListener('click', () => {
+    if (!navigator.geolocation) {
+        fail('Your browser cannot share its location. Click the map instead.', 'map');
+        return;
+    }
+    const button = $('locate');
+    setBusy(button, true, 'Locating…');
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            setBusy(button, false);
+            setLocation(window.L.latLng(position.coords.latitude, position.coords.longitude), true);
+        },
+        () => {
+            setBusy(button, false);
+            fail('We couldn’t get your location. Allow location access, or click the map instead.', 'map');
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
 });
 
 $('entry-form').addEventListener('submit', async (event) => {
     event.preventDefault();
-
-    if (!coords) {
-        showMessage("entry-error", "Please click on the map to select the location of your planted crops");
-        return;
-    }
-
     showMessage('entry-error');
-    $('entry-submit').disabled = true;
-    $('entry-submit').textContent = 'Saving…';
+    const farmName = $('farm-name').value.trim();
+    const cropType = $('crop-type').value;
+    const planted = $('planted-at').value;
+
+    if (!farmName) return fail('Give this farm or field a name.', 'farm', $('farm-name'));
+    if (!cropType) return fail('Choose which crop is planted.', 'crop', $('crop-type'));
+    if (!planted) return fail('Choose the date it was planted.', 'date', $('planted-at'));
+    if (planted > today()) return fail('The planting date can’t be in the future.', 'date', $('planted-at'));
+    if (!coords) return fail('Drop a pin on the map to set the field location.', 'map');
+
+    const button = $('entry-submit');
+    setBusy(button, true, 'Saving…');
     try {
         await api('/api/crops', jsonPost({
-            // [ERD-ALIGNMENT CHANGE] The backend resolves this user's FARMS row.
-            farmName: $('farm-name').value.trim(),
-            cropType: $('crop-type').value,
-            plantedAt: new Date($('planted-at').value).toISOString(),
-            latitude: Number((coords.lat).toFixed(5)), // Round to 5 d.p
-            longitude: Number((coords.lng).toFixed(5))
+            farmName,
+            cropType,
+            // Local midnight of the chosen day, sent with its UTC offset.
+            plantedAt: new Date(`${planted}T00:00`).toISOString(),
+            latitude: Number(coords.lat.toFixed(6)),
+            longitude: Number(window.L.Util.wrapNum(coords.lng, [-180, 180], true).toFixed(6))
         }));
         window.location.assign('/dashboard.html');
     } catch (error) {
-        if (error.status === 401) {
-            showPageError(error);
-        } else {
-            showMessage('entry-error', error.message);
-        }
-    } finally {
-        $('entry-submit').disabled = false;
-        $('entry-submit').textContent = 'Save crop entry';
+        setBusy(button, false);
+        if (error.status === 401) showPageError(error);
+        else fail(error.message, 'api');
     }
 });
-
-function loadMap() {
-    var mapMarker;
-
-    const worldBound = L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180));
-
-    var map = L.map("map", {maxBounds: worldBound}).setView([1.37, 103.83], 12);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { // Base map
-        maxZoom: 19,
-        noWrap: true,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
-
-    L.tileLayer('https://stadiamaps.com/{z}/{x}/{y}{r}.png', { // Add country, city, small town names etc.
-        maxZoom: 19,
-        noWrap: true,
-        attribution: '&copy; <a href="https://stadiamaps.com" target="_blank">Stadia Maps</a> &copy; <a href="https://stamen.com" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org" target="_blank">OpenMapTiles</a> &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
-    }).addTo(map);
-    
-    map.on("click", function(e) {
-        coords = e.latlng;
-
-        if (!mapMarker) {
-            mapMarker = L.marker(coords).addTo(map);
-        } else {
-            mapMarker.setLatLng(coords);
-        }
-    })
-}
 
 async function start() {
     try {
@@ -83,8 +101,8 @@ async function start() {
             option.value = crop.code;
             $('crop-type').append(option);
         }
-        $('planted-at').max = localDateTime();
-        $('planted-at').value = localDateTime();
+        $('planted-at').max = today();
+        $('planted-at').value = today();
         $('loading').hidden = true;
         $('entry-page').hidden = false;
         loadMap();

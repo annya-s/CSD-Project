@@ -3,72 +3,96 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#495f49">
-    <title>Dome · Add a crop</title>
+    <meta name="theme-color" content="#F6F3EC">
+    <title>Dome · Add crop entry</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
     <link rel="stylesheet" href="/styles.css">
-    <script type="module" src="new-entry.js"></script>
-    <!-- Leaflet.js imports for interactive maps below -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""></script>
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script type="module" src="/new-entry.js"></script>
 </head>
 <body>
     <header class="topbar">
-        <a class="brand" href="/dashboard.html" aria-label="Dome home">dome<span class="brand-leaf" aria-hidden="true">↗</span></a>
-        <nav id="navigation" aria-label="Main navigation">
-            <a id="overview-link" class="overview-link"></a>
-            <span id="welcome"></span>
-        </nav>
-        <details>
-            <summary class="text-button">Account</summary>
-            <div>
-                <a href="/account.html" class="text-button">Manage account</a>
-                <button id="logout" class="text-button" type="button">Log out</button>
-            </div>
-        </details>
-    </header>
-    <main id="main">
-        <p id="global-message" role="alert" hidden></p>
-        <section id="entry-page" class="page workspace" hidden aria-labelledby="entry-title">
-            <a class="back-link" href="/dashboard.html">← Back to overview</a>
-            <div class="entry-layout">
-                <div><span class="small-label">A new beginning</span><h1 id="entry-title" tabindex="-1">What’s growing?</h1>
-                    <p class="intro-copy">Save a planting record for your farm. You can plant the same crop again at a different time.</p>
-                    <p class="field-hint">Planting time uses your device’s local timezone.</p>
+        <div class="topbar-inner">
+            <a class="brand" data-home href="/dashboard.html"><span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-leaf"></use></svg></span>Dome</a>
+            <button id="nav-toggle" class="icon-btn nav-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="site-nav"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-menu"></use></svg></button>
+            <nav id="site-nav" class="nav" aria-label="Main navigation">
+                <div class="nav-links">
+                    <a class="nav-link" data-home href="/dashboard.html">Dashboard</a>
+                    <a class="nav-link" href="/account.html"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-user"></use></svg>Manage account</a>
+                    <button id="logout" class="nav-link logout" type="button"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-logout"></use></svg>Log out</button>
                 </div>
-                <form id="entry-form" class="entry-form">
-                    <!-- [ERD-ALIGNMENT CHANGE] A crop cycle belongs to a named farm. -->
-                    <label for="farm-name">Farm name</label>
-                    <input id="farm-name" type="text" maxlength="100" required placeholder="e.g. North Field">
-                    <label for="crop-type">Crop</label>
-                    <select id="crop-type" required><option value="">Choose a crop</option></select>
-                    <label for="planted-at">Date and time planted</label>
-                    <input id="planted-at" type="datetime-local" step="1" required>
-                    <div id="map"></div>
-                    <p id="entry-error" class="form-error" role="alert" hidden></p>
-                    <div class="form-actions"><button id="entry-submit" class="primary" type="submit">Save crop entry</button><a href="/dashboard.html">Cancel</a></div>
-                </form>
+                <span id="welcome" class="welcome"></span>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main">
+        <div class="banner"><p id="global-message" role="alert" hidden></p></div>
+
+        <div id="loading" class="page page-narrow" role="status">
+            <span class="visually-hidden">Loading…</span>
+            <div class="sk-stack" aria-hidden="true">
+                <div class="skeleton sk-line sk-w30"></div>
+                <div class="skeleton sk-title"></div>
+                <div class="skeleton sk-card"></div>
             </div>
+        </div>
+
+        <section id="entry-page" class="page page-narrow" hidden aria-labelledby="entry-title">
+            <a class="text-link back-link" data-home href="/dashboard.html"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-chevron-left"></use></svg>Back</a>
+            <div class="page-head">
+                <div>
+                    <span class="eyebrow">New field record</span>
+                    <h1 id="entry-title" class="display" tabindex="-1">Add crop entry</h1>
+                    <p class="lede">Record the essentials. Dome will track conditions from here.</p>
+                </div>
+            </div>
+
+            <form id="entry-form" class="card entry-card" novalidate>
+                <div class="entry-cols">
+                    <div class="entry-col">
+                        <span class="step" aria-hidden="true">01</span>
+                        <h2>Crop details</h2>
+                        <p class="col-desc">What is growing and when it went into the ground.</p>
+                        <div class="field">
+                            <label class="label" for="farm-name">Farm or field name</label>
+                            <input id="farm-name" class="input" type="text" maxlength="100" required placeholder="e.g. West Orchard" autocomplete="off">
+                        </div>
+                        <div class="field">
+                            <label class="label" for="crop-type">Crop type</label>
+                            <select id="crop-type" class="select" required><option value="">Select a crop</option></select>
+                        </div>
+                        <div class="field">
+                            <label class="label" for="planted-at">Date planted</label>
+                            <input id="planted-at" class="input" type="date" required>
+                        </div>
+                    </div>
+
+                    <div class="entry-col">
+                        <span class="step" aria-hidden="true">02</span>
+                        <div class="col-head">
+                            <div>
+                                <h2>Field location</h2>
+                                <p class="col-desc">Click the map to drop a pin.</p>
+                            </div>
+                            <button id="locate" class="btn btn-outline btn-sm" type="button"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-locate"></use></svg>Use my location</button>
+                        </div>
+                        <div class="map-box"><div id="map" aria-label="Map. Click to place your field’s pin."></div></div>
+                        <p id="coords" class="coords" aria-live="polite"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-pin"></use></svg><span id="coords-text">No location selected yet</span></p>
+                    </div>
+                </div>
+
+                <div class="entry-foot">
+                    <p id="entry-error" class="form-error" role="alert" hidden></p>
+                    <a class="btn btn-outline btn-lg" data-home href="/dashboard.html">Cancel</a>
+                    <button id="entry-submit" class="btn btn-primary btn-lg" type="submit"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-check"></use></svg>Save crop entry</button>
+                </div>
+            </form>
         </section>
-        <p id="loading" class="loading" role="status">Loading…</p>
-        <noscript><p class="loading">Please enable JavaScript to use your farm dashboard.</p></noscript>
+        <noscript><p class="page">Please enable JavaScript to add a crop.</p></noscript>
     </main>
-    <footer id="site-footer">
-        <p class="footer-tagline">Made for a clearer view of your farm.</p>
-        <ul class="bottom-bar">
-            <li>
-                <a href="https://github.com/annya-s/CSD-Project" target="_blank" rel="noopener noreferrer">
-                    <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24">
-                        <use href="/icons.svg#github-icon"></use>
-                    </svg>
-                    <span>GitHub</span>
-                </a>
-            </li>
-        </ul>
-    </footer>
 </body>
 </html>
