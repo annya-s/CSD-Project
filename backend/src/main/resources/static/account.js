@@ -1,163 +1,145 @@
-import { $, api, jsonPost, requireFarmer, showMessage } from './api.js';
+import { $, api, jsonPost, requireFarmer, showMessage, showPageError, setBusy, toast } from './api.js';
 
 let account = null;
 
 function updateAccountPage() {
     $('username').value = account.username;
-    $('email').textContent = account.email;
+    $('new-email').value = account.email;
 
     const verified = Boolean(account.emailVerified);
     $('email-status').textContent = verified ? 'Verified' : 'Unverified';
-    $('email-status').className = `status ${verified ? 'verified' : 'unverified'}`;
+    $('email-status').className = `pill email-pill ${verified ? 'ok' : 'warn'}`;
     $('verify-email-section').hidden = verified;
     if (!verified) {
-        $('verify-email-description').textContent = `A 6-digit verification code was sent to ${account.email}.`;
+        $('verify-email-description').textContent =
+            `Enter the 6-digit code sent to ${account.email}. Need a new one? Send another code.`;
     }
-    $('password-section').hidden = false;
 
     const twoFactor = Boolean(account.twoFactorEnabled);
-    $('two-factor-section').hidden = false;
-    $('two-factor-status').textContent = 
-        !verified ? 
-            'Verify your email to enable two-factor authentication.'
-            : twoFactor
-                ? 'Two-factor authentication is on. A code is emailed when you log in.'
-                : 'Two-factor authentication is off.';
-
+    $('two-factor-state').textContent = twoFactor ? 'Enabled' : 'Disabled';
+    $('two-factor-dot').classList.toggle('ok', twoFactor);
+    $('two-factor-status').textContent = !verified
+        ? 'Verify your email to turn on two-factor authentication.'
+        : twoFactor
+            ? 'A one-time code is emailed to you each time you sign in.'
+            : 'Turn on to require an emailed code when you sign in.';
     const toggle = $('two-factor-toggle');
-    toggle.textContent = twoFactor ? 'Turn off' : 'Turn on';
-    toggle.dataset.enabled = twoFactor;
-    toggle.disabled = !verified; // greyed out until the email is verified
+    toggle.textContent = twoFactor ? 'Disable 2FA' : 'Enable 2FA';
+    toggle.className = `btn btn-sm ${twoFactor ? 'btn-outline' : 'btn-primary'}`;
+    toggle.dataset.enabled = String(twoFactor);
+    toggle.disabled = !verified && !twoFactor; // the backend rejects enabling while unverified
 }
 
-$('update-username').addEventListener('click', async () => {
-    showMessage('username-error');
-    showMessage('global-message');
+async function reload() {
+    account = await requireFarmer();
+    updateAccountPage();
+}
+
+// Runs one card's action with busy state, inline error and a success toast.
+async function run(button, errorId, action, success) {
+    showMessage(errorId);
+    setBusy(button, true);
+    try {
+        await action();
+    } catch (error) {
+        setBusy(button, false);
+        if (error.status === 401) showPageError(error);
+        else showMessage(errorId, error.message);
+        return;
+    }
+    setBusy(button, false); // before reload, so re-rendered labels are not overwritten
+    toast(success);
+    try { await reload(); } catch (error) { showPageError(error); }
+}
+
+$('username-form').addEventListener('submit', (event) => {
+    event.preventDefault();
     const newUsername = $('username').value.trim();
     if (newUsername === account.username) {
-        showMessage('username-error', 'New username cannot be the same as your current username.' );
+        showMessage('username-error', 'That’s already your username.');
         return;
     }
-    const button = $('update-username');
-    button.disabled = true;
-    try {
-        await api('/api/auth/username', jsonPost({ newUsername }));
-        showMessage('global-message', 'Your username was updated.');
-        await start();
-    } catch (error) {
-        showMessage('username-error', error.message);
-    } finally {
-        button.disabled = false;
+    if (!/^[a-z0-9_]{3,40}$/.test(newUsername)) {
+        showMessage('username-error', 'Use 3–40 lowercase letters, numbers or underscores.');
+        return;
     }
+    run($('update-username'), 'username-error',
+        () => api('/api/auth/username', jsonPost({ newUsername })), 'Your username was updated.');
 });
 
-$('update-email').addEventListener('click', async () => {
-    showMessage('email-error');
-    showMessage('global-message');
+$('email-form').addEventListener('submit', (event) => {
+    event.preventDefault();
     const newEmail = $('new-email').value.trim();
-    if (newEmail === account.email) {
-        showMessage('email-error', 'New email cannot be the same as your current email.');
+    if (newEmail.toLowerCase() === account.email.toLowerCase()) {
+        showMessage('email-error', 'That’s already your email address.');
         return;
     }
-    const button = $('update-email');
-    button.disabled = true;
-    try {
-        await api('/api/auth/email', jsonPost({ newEmail }));
-        showMessage('global-message', 'Your email was updated.');
-        await start();
-    } catch (error) {
-        showMessage('email-error', error.message);
-    } finally {
-        button.disabled = false;
-    }
+    run($('update-email'), 'email-error',
+        () => api('/api/auth/email', jsonPost({ newEmail })), 'Email updated. Check your inbox for a verification code.');
 });
 
-$('verify-email').addEventListener('click', async () => {
-    showMessage('global-message');
-    try {
-        await api('/api/auth/verify-email', jsonPost({ email: account.email, code: $('verification-code').value.trim() }));
-        showMessage('global-message', 'Your email was verified.');
-        await start();
-    } catch (error) {
-        showMessage('global-message', error.message);
+$('verify-email').addEventListener('click', () => {
+    const code = $('verification-code').value.trim();
+    if (!/^\d{6}$/.test(code)) {
+        showMessage('email-error', 'Enter the 6-digit code from your email.');
+        return;
     }
+    run($('verify-email'), 'email-error', async () => {
+        await api('/api/auth/verify-email', jsonPost({ email: account.email, code }));
+        $('verification-code').value = '';
+    }, 'Your email is verified.');
 });
 
-let resendInProgress = false;
 $('resend-code').addEventListener('click', async () => {
-    if (resendInProgress) return;
-    const confirmed = confirm('Resend verification code? Any previous code will no longer work.');
-    if (!confirmed) return;
-
     const button = $('resend-code');
-    showMessage('global-message');
-    resendInProgress = true;
-    button.disabled = true;
+    showMessage('email-error');
+    setBusy(button, true, 'Sending…');
     try {
         await api('/api/auth/verification-code', jsonPost({}));
-        showMessage('global-message', 'A new verification code was sent. Check your email; it may take a moment.');
-        // prevent accidental spam clicks
+        toast('A new code is on its way. Earlier codes no longer work.');
+        setBusy(button, false);
+        // Prevent accidental repeat sends.
+        button.disabled = true;
         setTimeout(() => { button.disabled = false; }, 30000);
     } catch (error) {
-        showMessage('global-message', error.message);
-        resendInProgress = false;
-        button.disabled = false;
+        setBusy(button, false);
+        if (error.status === 401) showPageError(error); else showMessage('email-error', error.message);
     }
 });
 
-$('password-form').addEventListener('submit', async event => {
+$('password-form').addEventListener('submit', (event) => {
     event.preventDefault();
-
-    showMessage('password-error');
-    showMessage('global-message');
-
     const currentPassword = $('current-password').value;
     const newPassword = $('new-password').value;
-    const confirmPassword = $('confirm-password').value;
-
-    if (newPassword !== confirmPassword) {
-        showMessage('password-error', 'The new passwords do not match.');
-        return;
-    }
-    $('update-password').disabled = true;
-    try {
-        await api('/api/auth/password', jsonPost({ currentPassword, newPassword }));
-        showMessage('global-message', 'Your password was updated.');
+    if (!currentPassword) return showMessage('password-error', 'Enter your current password.');
+    if (newPassword.length < 10) return showMessage('password-error', 'The new password needs at least 10 characters.');
+    if (newPassword !== $('confirm-password').value) return showMessage('password-error', 'The new passwords do not match.');
+    run($('update-password'), 'password-error', async () => {
+        try {
+            await api('/api/auth/password', jsonPost({ currentPassword, newPassword }));
+        } catch (error) {
+            // The backend answers 400 with no message when the current password is wrong.
+            if (error.status === 400) error.message = 'Your current password is incorrect.';
+            throw error;
+        }
         $('password-form').reset();
-    } catch (error) {
-        showMessage('password-error', error.message);
-    } finally {
-        $('update-password').disabled = false;
-    }
+    }, 'Your password was updated.');
 });
 
-$('two-factor-toggle').addEventListener('click', async () => {
-    showMessage('global-message');
-
-    const toggle = $('two-factor-toggle');
-    const enable = toggle.dataset.enabled !== 'true';
-
-    toggle.disabled = true;
-    try {
-        await api('/api/auth/two-factor', jsonPost({ enabled: enable }));
-        showMessage('global-message', 'Two-factor authentication is ' + (enable ? 'on.' : 'off.'));
-        await start(); // reloads account, which re-renders the section
-    } catch (error) {
-        showMessage('global-message', error.message);
-        toggle.disabled = false;
-    }
+$('two-factor-toggle').addEventListener('click', () => {
+    const enable = $('two-factor-toggle').dataset.enabled !== 'true';
+    run($('two-factor-toggle'), 'two-factor-error',
+        () => api('/api/auth/two-factor', jsonPost({ enabled: enable })),
+        `Two-factor authentication is ${enable ? 'on' : 'off'}.`);
 });
 
 async function start() {
     try {
-        account = await requireFarmer();
-        updateAccountPage();
-
+        await reload();
         $('loading').hidden = true;
         $('account-page').hidden = false;
     } catch (error) {
-        $('loading').hidden = true;
-        showMessage('global-message', 'Cannot reach the server. Check the connection and refresh to try again.');
+        showPageError(error);
     }
 }
 

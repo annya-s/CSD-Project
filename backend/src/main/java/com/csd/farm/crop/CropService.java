@@ -19,6 +19,7 @@ import com.csd.farm.crop.CropResponses.CropDetails;
 import com.csd.farm.crop.CropResponses.CropOption;
 import com.csd.farm.crop.CropResponses.Dashboard;
 import com.csd.farm.crop.CropResponses.DashboardCrop;
+import com.csd.farm.environment.EnvironmentReading;
 import com.csd.farm.environment.EnvironmentService;
 
 @Service
@@ -112,12 +113,11 @@ public class CropService {
 
         CropHealthService.Assessment assessment = health.assess(entry.cropType(), weather);
 
+        List<EnvironmentReading> historicalReadings = environmentService.getHistoricalReading(cycleId.intValue());
+
         String recommendation = aiRecommender.getRecommendation(
                 entry.cropType(),
-                weather == null ? null : weather.temperatureMeanC(),
-                weather == null ? null : weather.soilMoistureMeanM3M3(),
-                weather == null ? null : weather.vapourPressureDeficitMeanKpa();
-                weather == null ? null : weather.sunshineDurationSeconds()
+                historicalReadings
         );
 
         Double confidencePercent = null;

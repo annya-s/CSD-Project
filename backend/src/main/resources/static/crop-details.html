@@ -3,89 +3,140 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#495f49">
+    <meta name="theme-color" content="#F6F3EC">
     <title>Dome · Crop details</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
     <link rel="stylesheet" href="/styles.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script type="module" src="/crop-details.js"></script>
 </head>
 <body>
     <header class="topbar">
-        <a class="brand" href="/dashboard.html" aria-label="Dome home">dome<span class="brand-leaf" aria-hidden="true">↗</span></a>
-        <nav id="navigation" aria-label="Main navigation">
-            <a id="overview-link" class="overview-link"></a>
-            <span id="welcome"></span>
-        </nav>
-        <details>
-            <summary class="text-button">Account</summary>
-            <div>
-                <a href="/account.html" class="text-button">Manage account</a>
-                <button id="logout" class="text-button" type="button">Log out</button>
-            </div>
-        </details>
+        <div class="topbar-inner">
+            <a class="brand" data-home href="/dashboard.html"><span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-leaf"></use></svg></span>Dome</a>
+            <button id="nav-toggle" class="icon-btn nav-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="site-nav"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-menu"></use></svg></button>
+            <nav id="site-nav" class="nav" aria-label="Main navigation">
+                <div class="nav-links">
+                    <a class="nav-link" data-home href="/dashboard.html">Dashboard</a>
+                    <a class="nav-link" href="/account.html"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-user"></use></svg>Manage account</a>
+                </div>
+                <div class="nav-end">
+                    <span id="welcome" class="welcome"></span>
+                    <button id="logout" class="nav-link logout" type="button"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-logout"></use></svg>Log out</button>
+                </div>
+            </nav>
+        </div>
     </header>
+
     <main id="main">
-        <p id="global-message" role="alert" hidden></p>
-        <section id="detail-page" class="page workspace" hidden aria-labelledby="detail-title">
-            <a class="back-link" href="/dashboard.html">← Back to overview</a>
-            <h1 id="detail-title" tabindex="-1"></h1>
-            <p id="detail-date" class="detail-date"></p>
-            <div class="detail-layout">
-                <div>
-                    <figure class="crop-photo">
-                        <img id="crop-photo" alt="" decoding="async" hidden>
-                        <p id="crop-photo-unavailable" hidden>Reference photo unavailable.</p>
-                        <figcaption>
-                            <p>Reference photo — not a photo of your planting.</p>
-                            <p id="crop-photo-credit"></p>
-                        </figcaption>
-                    </figure>
-                    <dl class="location-data"><dt>Latitude</dt><dd id="detail-latitude"></dd><dt>Longitude</dt><dd id="detail-longitude"></dd></dl>
-                    <section>
-                        <h2>Yield and biomass outlook</h2>
-                        <p>Uses the last 14 days of weather at your planting, as if it continued all season.</p>
-                        <button id="run-prediction" type="button">Run prediction</button>
-                        <p id="prediction-run-status" role="status"></p>
-                        <div id="yield-outlook" hidden>
-                            <h3>Yield outlook (machine learning)</h3>
-                            <p id="yield-result"></p>
-                            <p id="yield-normal"></p>                        </div>
-                        <h3>Biomass at full growth</h3>
-                        <p id="biomass-result" role="status"></p>
-                        <div id="biomass-comparison" hidden>
-                            <p id="biomass-reference"></p>
-                            <p id="biomass-gap"></p>
-                            <ul id="biomass-causes"></ul>
-                            <p class="field-hint"></p>
+        <div class="banner"><p id="global-message" role="alert" hidden></p></div>
+
+        <div id="loading" class="page" role="status">
+            <span class="visually-hidden">Loading crop details…</span>
+            <div class="sk-stack" aria-hidden="true">
+                <div class="skeleton sk-line sk-w30"></div>
+                <div class="skeleton sk-hero"></div>
+                <div class="detail-grid">
+                    <div class="sk-stack"><div class="skeleton sk-title"></div><div class="sk-grid"><div class="skeleton sk-reading"></div><div class="skeleton sk-reading"></div><div class="skeleton sk-reading"></div></div><div class="skeleton sk-card"></div></div>
+                    <div class="sk-stack"><div class="skeleton sk-card"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <section id="detail-page" class="page" hidden aria-labelledby="detail-title">
+            <a class="text-link back-link" data-home href="/dashboard.html"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-chevron-left"></use></svg>Back to dashboard</a>
+
+            <div class="hero">
+                <img id="crop-photo" alt="" decoding="async" hidden>
+                <div class="hero-actions">
+                    <button id="delete-crop" class="icon-btn" type="button" aria-label="Delete this crop"><svg class="icon" aria-hidden="true"><use href="/icons.svg#trash-icon"></use></svg></button>
+                </div>
+                <div><span id="hero-status" class="pill pill-dot on-photo"></span></div>
+                <span id="hero-farm" class="eyebrow"></span>
+                <h1 id="detail-title" tabindex="-1"></h1>
+                <div class="hero-meta">
+                    <span><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-calendar"></use></svg><span id="detail-date"></span></span>
+                    <span><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-pin"></use></svg><span id="detail-coords" class="tabular"></span></span>
+                </div>
+                <div id="hero-score" class="hero-score" role="img" hidden><b id="hero-score-value"></b><span>Health</span></div>
+            </div>
+            <p id="crop-photo-credit" class="photo-credit"></p>
+
+            <div class="detail-grid">
+                <div class="col">
+                    <section id="readings-section" aria-labelledby="readings-title">
+                        <div class="section-head">
+                            <div><span class="eyebrow">Live conditions</span><h2 id="readings-title" class="serif-title">Health readings</h2></div>
+                            <span id="weather-updated" class="updated"><span class="status-dot ok" aria-hidden="true"></span><span id="weather-updated-text"></span></span>
+                        </div>
+                        <div id="readings" class="readings"></div>
+                        <p id="weather-caption" class="weather-caption"></p>
+                    </section>
+
+                    <section id="biomass-card" class="card card-pad" aria-labelledby="biomass-title">
+                        <div class="card-head">
+                            <div>
+                                <span class="eyebrow">Growth outlook</span>
+                                <h2 id="biomass-title" class="serif-title">Yield &amp; biomass prediction</h2>
+                                <p class="card-desc">Machine-learning yield outlook, then likely growth under current and optimal field conditions.</p>
+                            </div>
+                            <button id="run-prediction" class="btn btn-primary btn-sm" type="button"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-sprout"></use></svg>Run prediction</button>
+                        </div>
+                        <p id="prediction-run-status" class="run-status" role="status"></p>
+                        <div id="biomass-body"></div>
+                    </section>
+
+                    <section id="timeline-card" class="card card-pad" aria-labelledby="timeline-title">
+                        <span class="eyebrow">Growth timeline</span>
+                        <div class="timeline-head">
+                            <div>
+                                <h2 id="timeline-title" class="serif-title"></h2>
+                                <p id="timeline-desc" class="card-desc"></p>
+                            </div>
+                            <p id="timeline-pct" class="timeline-pct"></p>
+                        </div>
+                        <div id="timeline-bar">
+                            <div class="progress" role="progressbar" aria-label="Time from planting to projection date" aria-valuemin="0" aria-valuemax="100" id="progress"><i id="progress-fill"></i></div>
+                            <div class="progress-labels"><span id="tl-start"></span><span id="tl-today" class="today"></span><span id="tl-end"></span></div>
                         </div>
                     </section>
-                    <h2>Notes</h2><p id="detail-note" class="intro-copy"></p>
                 </div>
-                <div class="health-panel">
-                    <h2>Growing conditions</h2>
-                    <p id="attention" class="attention-label" hidden>Needs attention</p>
-                    <p id="weather-date" class="field-hint"></p>
-                    <dl id="readings" class="readings"></dl>
-                    <h2>Next step</h2><ul id="actions"></ul>
-                    <h2>Issues in these readings</h2><ul id="issues"></ul><p id="no-issues"></p>
+
+                <div class="col">
+                    <section id="assessment-card" class="card card-pad assessment" aria-labelledby="assess-title">
+                        <span class="eyebrow">Current assessment</span>
+                        <h2 id="assess-title"></h2>
+                        <p id="detail-note"></p>
+                        <ul id="issues"></ul>
+                        <div id="score-block">
+                            <hr class="divider">
+                            <div class="score-row"><span>Overall health</span><b id="score-text"></b></div>
+                        </div>
+                    </section>
+
+                    <section id="actions-card" class="card card-pad" aria-labelledby="actions-title">
+                        <span class="eyebrow">Weather-based</span>
+                        <h2 id="actions-title" class="serif-title">Recommended actions</h2>
+                        <ul id="actions" class="actions-list"></ul>
+                        <div id="ai-result" aria-live="polite"></div>
+                        <div class="card-actions">
+                            <button id="ai-button" class="btn btn-outline btn-block" type="button"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-sparkle"></use></svg>Get AI recommendation</button>
+                        </div>
+                    </section>
+
+                    <section id="location-card" class="card card-pad" aria-labelledby="location-title">
+                        <span class="eyebrow">Location</span>
+                        <h2 id="location-title" class="serif-title"></h2>
+                        <div class="mini-map"><div id="mini-map" role="img" aria-label="Map of the field location"></div></div>
+                        <p class="coords is-set"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-pin"></use></svg><span id="location-coords"></span></p>
+                    </section>
                 </div>
             </div>
         </section>
-        <p id="loading" class="loading" role="status">Loading…</p>
-        <noscript><p class="loading">Please enable JavaScript to use your farm dashboard.</p></noscript>
+        <noscript><p class="page">Please enable JavaScript to view crop details.</p></noscript>
     </main>
-    <footer id="site-footer">
-        <p class="footer-tagline">Made for a clearer view of your farm.</p>
-        <ul class="bottom-bar">
-            <li>
-                <a href="https://github.com/annya-s/CSD-Project" target="_blank" rel="noopener noreferrer">
-                    <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24">
-                        <use href="/icons.svg#github-icon"></use>
-                    </svg>
-                    <span>GitHub</span>
-                </a>
-            </li>
-        </ul>
-    </footer>
 </body>
 </html>

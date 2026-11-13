@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dome-local",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "set GOOGLE_API_KEY=local-placeholder&& cd /dC:\\Users\\dayan\\Desktop\\CSD\\CSD-Proj_REAL\\CSD-Project\\backend && .\\mvnw.cmd -q spring-boot:run"],
+      "port": 8080
+    }
+  ]
+}

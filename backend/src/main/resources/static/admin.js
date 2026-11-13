@@ -1,177 +1,150 @@
-import { $, api, requireFarmer, showMessage, jsonPost, node } from './api.js';
+import { $, api, requireFarmer, showMessage, showPageError, jsonPost, node, icon, toast, confirmDialog, setBusy } from './api.js';
 
 let users = [];
+const filters = { q: '', verified: '', twoFactor: '' };
 
-$('logout').addEventListener('click', async () => {
-    const button = $('logout');
-    button.disabled = true;
-    showMessage('global-message');
-    try {
-        await api('/api/auth/logout', { method: 'POST' });
-        window.location.replace('/login.html');
-    } catch (error) {
-        showMessage('global-message', error.message);
-    } finally {
-        button.disabled = false;
-    }
-});
+const initials = (user) => (user.username || '?').split(/[_\s]+/).filter(Boolean).slice(0, 2)
+    .map((part) => part[0]).join('').toUpperCase() || '?';
+
+function cell(label, ...children) {
+    const td = node('td');
+    td.dataset.label = label;
+    td.append(...children);
+    return td;
+}
+
+function textAction(label, handler) {
+    const button = node('button', label, 'text-link');
+    button.type = 'button';
+    button.addEventListener('click', () => handler(button));
+    return button;
+}
 
 function renderUsers() {
-    const body = $('users-body');
-    body.replaceChildren();
+    const q = filters.q.toLowerCase();
+    const visible = users.filter((user) =>
+        (!q || user.username.toLowerCase().includes(q) || (user.email || '').toLowerCase().includes(q)) &&
+        (!filters.verified || (filters.verified === 'yes') === Boolean(user.emailVerified)) &&
+        (!filters.twoFactor || (filters.twoFactor === 'yes') === Boolean(user.twoFactorEnabled))
+    );
 
-    for (const user of users) {
+    $('admin-status').textContent = `${users.length} active ${users.length === 1 ? 'account' : 'accounts'} across your Dome workspace.`;
+    $('users-empty').hidden = visible.length !== 0;
+    $('users-empty').textContent = users.length ? 'No accounts match these filters.' : 'No farmer accounts yet.';
+
+    $('users-body').replaceChildren(...visible.map((user) => {
         const row = node('tr');
 
-        const username = node('td', user.username);
-        
-        // email verif - admin can only disable
-        const email = node('td', user.email);
-        const emailCell = node('td');
-        if (user.emailVerified) {
-            emailCell.append(node('span', 'Verified'));
-            const unverifyButton = node('button', 'Unverify');
-            unverifyButton.type = 'button';
-            unverifyButton.addEventListener('click', () => unverifyEmail(user, unverifyButton));
-            emailCell.append(unverifyButton);
-        } else {
-            emailCell.append(node('span', 'Unverified'));
-        }
+        const who = node('div', undefined, 'user-cell');
+        const text = node('div');
+        text.append(node('b', user.username), node('span', user.email));
+        who.append(node('span', initials(user), 'avatar'), text);
 
-        // 2fa - admin can only disable
-        const twoFactorCell = node('td');
-        if (user.twoFactorEnabled) {
-            const turnOffButton = node('button', 'Turn off');
-            turnOffButton.type = 'button';
-            turnOffButton.addEventListener('click', () => disable2fa(user, turnOffButton));
-            twoFactorCell.append(turnOffButton);
-        } else if (user.emailVerified) {
-            twoFactorCell.append(node('span', '2fa disabled'));
-        } else {
-            twoFactorCell.append(node('span', 'N.A.'));
-        }
+        const verification = node('div', undefined, 'status-cell');
+        verification.append(node('span', user.emailVerified ? 'Verified' : 'Unverified', `pill ${user.emailVerified ? 'ok' : 'warn'}`));
+        if (user.emailVerified) verification.append(textAction('Unverify', (button) => unverifyEmail(user, button)));
 
-        // reset password
-        const passwordCell = node('td');
-        const passwordInput = node('input');
-        passwordInput.type = 'password';
-        passwordInput.placeholder = 'New password';
-        passwordInput.minLength = 10;
-        passwordCell.append(passwordInput);
+        const twoFactor = node('div', undefined, 'status-cell');
+        twoFactor.append(node('span', user.twoFactorEnabled ? 'Enabled' : 'Disabled', `pill ${user.twoFactorEnabled ? 'ok' : ''}`));
+        if (user.twoFactorEnabled) twoFactor.append(textAction('Disable', (button) => disable2fa(user, button)));
 
-        const actionCell = node('td');
-        const passwordButton = node('button', 'Change password');
-        passwordButton.type = 'button';
-        passwordButton.addEventListener('click', () => changePassword(user, passwordInput, passwordButton));
+        const password = node('input', undefined, 'input pw-input');
+        password.type = 'password';
+        password.placeholder = 'New password';
+        password.autocomplete = 'new-password';
+        password.minLength = 10;
+        password.maxLength = 128;
+        password.setAttribute('aria-label', `New password for ${user.username}`);
 
-        const deleteButton = node('button');
-        deleteButton.type = 'button';
-        deleteButton.className = 'icon-button danger';
-        deleteButton.title = 'Delete user';
-        deleteButton.setAttribute('aria-label', `Delete ${user.username}`);
-        deleteButton.innerHTML = `<svg width="18" height="18"> <use href="/icons.svg#trash-icon"></use> </svg>`;
-        deleteButton.addEventListener('click', () => deleteUser(user, deleteButton));
-        actionCell.append(passwordButton, deleteButton);
+        const actions = node('div', undefined, 'row-actions');
+        const change = node('button', 'Change password', 'btn btn-outline');
+        change.type = 'button';
+        change.addEventListener('click', () => changePassword(user, password, change));
+        password.addEventListener('keydown', (event) => { if (event.key === 'Enter') change.click(); });
+        const remove = node('button', undefined, 'icon-btn danger');
+        remove.type = 'button';
+        remove.setAttribute('aria-label', `Delete ${user.username}`);
+        remove.title = 'Delete user';
+        remove.append(icon('trash-icon'));
+        remove.addEventListener('click', () => deleteUser(user, remove));
+        actions.append(change, remove);
 
-        row.append(username, email, emailCell, twoFactorCell, passwordCell, actionCell);
-
-        body.append(row);
-    }
+        row.append(cell('User', who), cell('Verification', verification), cell('2FA', twoFactor),
+            cell('New password', password), cell('Actions', actions));
+        return row;
+    }));
 }
 
 async function loadUsers() {
     users = await api('/api/admin/users');
     renderUsers();
 }
-async function unverifyEmail(user, button) {
-    showMessage('global-message');
-    const confirmed = confirm(`Unverify ${user.username}? 2fa will also be disabled.`);
-    if (!confirmed) return;
 
-    button.disabled = true;
+// Confirm, call the API, re-fetch the list and report the outcome.
+async function act(button, confirmation, request, success) {
+    showMessage('global-message');
+    if (!(await confirmDialog(confirmation))) return false;
+    setBusy(button, true);
     try {
-        await api(`/api/admin/users/${user.id}/unverify`, { method: 'POST' });
-        user.emailVerified = false;
-        user.twoFactorEnabled = false;
-        renderUsers();
-        showMessage('global-message', `Email verification disabled for ${user.username}.`);
+        await request();
+        await loadUsers();
+        toast(success);
+        return true;
     } catch (error) {
-        showMessage('global-message', error.message);
-        button.disabled = false;
+        if (error.status === 401) showPageError(error); else toast(error.message, 'error');
+        if (button.isConnected) setBusy(button, false);
+        return false;
     }
 }
-async function disable2fa(user, button) {
-    showMessage('global-message');
-    const confirmed = confirm(`Disable 2fa for ${user.username}?`);
-    if (!confirmed) return;
 
-    button.disabled = true;
-    try {
-        await api(`/api/admin/users/${user.id}/disable2fa`, { method: 'POST' });
-        user.twoFactorEnabled = false;
-        renderUsers();
-        showMessage('global-message', `Two-factor authentication disabled for ${user.username}.`);
-    } catch (error) {
-        showMessage('global-message', error.message);
-        button.disabled = false;
-    }
-}
-async function changePassword(user, input, button) {
-    showMessage('global-message');
-    const password = input.value;
-    if (password.length < 10) {
-        showMessage('global-message', 'Password must be at least 10 characters.');
+const unverifyEmail = (user, button) => act(button,
+    { title: `Unverify ${user.username}?`, message: 'Their email will need verifying again, and two-factor authentication will also be turned off.', confirm: 'Unverify' },
+    () => api(`/api/admin/users/${user.id}/unverify`, { method: 'POST' }),
+    `Email verification removed for ${user.username}.`);
+
+const disable2fa = (user, button) => act(button,
+    { title: `Disable 2FA for ${user.username}?`, message: 'They will sign in with just their password until they turn it back on.', confirm: 'Disable 2FA' },
+    () => api(`/api/admin/users/${user.id}/disable2fa`, { method: 'POST' }),
+    `Two-factor authentication disabled for ${user.username}.`);
+
+function changePassword(user, input, button) {
+    if (input.value.length < 10) {
+        input.setAttribute('aria-invalid', 'true');
+        input.focus();
+        toast('Passwords need at least 10 characters.', 'error');
         return;
     }
-    const confirmed = confirm(`Change password for ${user.username}?`);
-    if (!confirmed) return;
+    input.removeAttribute('aria-invalid');
+    const password = input.value;
+    act(button,
+        { title: `Change ${user.username}’s password?`, message: 'Their current password will stop working immediately.', confirm: 'Change password' },
+        () => api(`/api/admin/users/${user.id}/password`, jsonPost({ password })),
+        `Password updated for ${user.username}.`);
+}
 
-    button.disabled = true;
-    try {
-        await api(`/api/admin/users/${user.id}/password`, jsonPost({ password }));
-        input.value = '';
-        showMessage('global-message', `Password updated for ${user.username}.`);
-    } catch (error) {
-        showMessage('global-message', error.message);
-    } finally {
-        button.disabled = false;
-    }
-}
-async function deleteUser(user, button) {
-    showMessage('global-message');
-    const confirmed = confirm(`Delete ${user.username}? All related data will also be deleted.`);
-    if (!confirmed) return;
-    button.disabled = true;
-    try {
-        await api(`/api/admin/users/${user.id}`, { method: 'DELETE' });
-        users = users.filter(existing => existing.id !== user.id);
-        renderUsers();
-        showMessage('global-message', `${user.username} was deleted.`);
-    } catch (error) {
-        showMessage('global-message', error.message);
-        button.disabled = false;
-    }
-}
+const deleteUser = (user, button) => act(button,
+    { title: `Delete ${user.username}?`, message: 'Their account and all of their crop records will be permanently deleted. This cannot be undone.', confirm: 'Delete user', danger: true },
+    () => api(`/api/admin/users/${user.id}`, { method: 'DELETE' }),
+    `${user.username} was deleted.`);
+
+$('user-search').addEventListener('input', (event) => { filters.q = event.target.value.trim(); renderUsers(); });
+$('filter-verified').addEventListener('change', (event) => { filters.verified = event.target.value; renderUsers(); });
+$('filter-2fa').addEventListener('change', (event) => { filters.twoFactor = event.target.value; renderUsers(); });
 
 async function start() {
     try {
         await requireFarmer();
-        const admin = await api('/api/admin/check');
-        $('welcome').textContent = `Welcome, ${admin.username}`;
-        $('admin-status').textContent = 'Administrator access confirmed.';
-        $('admin-page').hidden = false;
-
+        await api('/api/admin/check');
         await loadUsers();
-        $('users-section').hidden = false;
-
+        $('loading').hidden = true;
+        $('admin-page').hidden = false;
     } catch (error) {
+        $('loading').hidden = true;
         if (error.status === 403) {
             showMessage('global-message', 'You do not have permission to access administration.');
             return;
         }
-        showMessage('global-message', error.message);
-    } finally {
-        $('loading').hidden = true;
+        showPageError(error);
     }
 }
 

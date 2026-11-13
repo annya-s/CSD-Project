@@ -57,6 +57,11 @@ public class Maize extends Crop {
                 reqs.addRequirement(new Requirement(List.of("shade"), 0.2));
                 break;
         }
+
+        if (sunshineReading.equals("WITHIN_RANGE") && temperatureReading.equals("WITHIN RANGE")) {
+            reqs.addRequirement(new Requirement(List.of("health"), 0.1));
+            reqs.addRequirement(new Requirement(List.of("no", "action"), 0.3));
+        }
         
         return reqs.confidenceInterval(aiOutput);
     }

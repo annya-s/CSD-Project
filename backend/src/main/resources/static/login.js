@@ -4,8 +4,8 @@ let authMode = 'login';
 
 function loginDestination(role) {
     const next = new URLSearchParams(window.location.search).get('next');
-    const farmerPages = ['/dashboard.html', '/crop-details.html', '/new-entry.html'];
-    const adminPages = ['/admin.html'];
+    const farmerPages = ['/dashboard.html', '/crop-details.html', '/new-entry.html', '/account.html'];
+    const adminPages = ['/admin.html', '/account.html'];
     const allowedPages = role === 'ADMIN' ? adminPages : farmerPages;
     const defaultPage = role === 'ADMIN' ? '/admin.html' : '/dashboard.html';
     try {
@@ -19,6 +19,20 @@ function loginDestination(role) {
     return defaultPage;
 }
 
+// Info notices are green, problems red; both share #global-message.
+function notice(message, info = true) {
+    showMessage('global-message', message);
+    $('global-message').classList.toggle('is-info', info);
+}
+
+const COPY = {
+    login: ['Welcome back', 'Sign in to Dome', '', 'Log in'],
+    register: ['New to Dome', 'Create your account', 'Track every planting, its weather and its growth in one place.', 'Create account'],
+    forgot: ['Account recovery', 'Reset your password', 'Enter your account email and we’ll send a 6-digit reset code.', 'Send reset code'],
+    reset: ['Account recovery', 'Choose a new password', 'Enter the code from your email and a new password.', 'Reset password'],
+    twofactor: ['Two-step sign in', 'Check your email', 'Enter the 6-digit code we emailed you.', 'Verify and sign in']
+};
+
 function setAuthMode(mode) {
     authMode = mode;
     const login = mode === 'login';
@@ -26,23 +40,17 @@ function setAuthMode(mode) {
     const forgot = mode === 'forgot';
     const resetting = mode === 'reset';
     const twoFactor = mode === 'twofactor';
+    const [eyebrow, title, description, submit] = COPY[mode];
 
-    $('login-title').textContent = 
-        login ? 'Start your growing season.' :
-        registering ? 'Let’s get you back in the field.' :
-        forgot ? 'Find your way back in.' :
-        twoFactor ? 'One more step.' :
-        "Choose a new password.";
-    $('auth-description').textContent =
-        login ? 'Log in to your farm overview.' :
-        registering ? 'Create an account for your farm.' :
-        forgot ? 'Enter your email to receive a reset code.' :
-        twoFactor ? 'Enter the 6-digit code emailed to you.' :
-        'Enter the reset code and choose a new password.';    
-    
+    $('auth-eyebrow').textContent = eyebrow;
+    $('login-title').textContent = title;
+    $('auth-description').textContent = description;
+    $('auth-description').hidden = !description;
+    $('auth-submit').textContent = submit;
+
     $('username-field').hidden = forgot || resetting || twoFactor;
     $('password-field').hidden = forgot || resetting || twoFactor;
-    $('username-hint').hidden = forgot || resetting || twoFactor;
+    $('username-hint').hidden = !registering;
     $('password-hint').hidden = !registering;
     $('email-field').hidden = login || twoFactor;
     $('reset-token-field').hidden = !resetting;
@@ -60,28 +68,48 @@ function setAuthMode(mode) {
 
     $('password').minLength = registering ? 10 : 1;
     $('password').autocomplete = registering ? 'new-password' : 'current-password';
-    
-    $('auth-submit').textContent = login ? 'Log in': 
-                                   registering ? 'Create account' : 
-                                   forgot ? 'Send reset code' : 
-                                   twoFactor ? 'Submit codw' :
-                                   'Reset Password';
+    $('password').placeholder = registering ? 'At least 10 characters' : 'Your password';
+    $('username').placeholder = registering ? 'e.g. river_farm' : 'Your username';
 
     $('auth-toggle').hidden = !(login || registering);
+    $('auth-toggle').textContent = registering ? 'Already have an account? Sign in' : 'Sign up';
     $('forgot-password-link').hidden = !login;
-    $('back-to-login').hidden = login;
-
-    $('auth-toggle').textContent = registering ? 'Already registered? Log in' : 'Create an account';
+    $('back-to-login').hidden = login || registering;
 
     showMessage('auth-error');
+    if (twoFactor) $('two-factor-code').focus();
 }
 
 $('auth-toggle').addEventListener('click', () => {
-    setAuthMode(authMode == 'register' ? 'login' : 'register');});
+    showMessage('global-message');
+    setAuthMode(authMode === 'register' ? 'login' : 'register');
+});
 $('forgot-password-link').addEventListener('click', () => {
-    setAuthMode('forgot');});
+    showMessage('global-message');
+    setAuthMode('forgot');
+});
 $('back-to-login').addEventListener('click', () => {
-    setAuthMode('login');});
+    showMessage('global-message');
+    $('two-factor-code').value = '';
+    setAuthMode('login');
+});
+
+// Show / hide password toggles.
+document.querySelectorAll('[data-reveal]').forEach((button) => {
+    button.addEventListener('click', () => {
+        const input = $(button.dataset.reveal);
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        button.setAttribute('aria-pressed', String(show));
+        button.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+        button.querySelector('use').setAttribute('href', `/icons.svg#${show ? 'i-eye-off' : 'i-eye'}`);
+    });
+});
+
+function setBusy(busy) {
+    for (const id of ['auth-submit', 'auth-toggle', 'forgot-password-link', 'back-to-login']) $(id).disabled = busy;
+    $('auth-submit').classList.toggle('is-busy', busy);
+}
 
 $('auth-form').addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -89,49 +117,43 @@ $('auth-form').addEventListener('submit', async (event) => {
     showMessage('global-message');
     const username = $('username').value.trim();
     const password = $('password').value;
-    $('auth-submit').disabled = true;
-    $('auth-toggle').disabled = true;
-    $('forgot-password-link').disabled = true;
-    $('back-to-login').disabled = true;
+    setBusy(true);
 
     try {
-        if (authMode == 'register') {
+        if (authMode === 'register') {
             const email = $('email').value.trim();
-            await api('/api/auth/register', jsonPost({
-                username, email, password}));
+            await api('/api/auth/register', jsonPost({ username, email, password }));
             setAuthMode('login');
-            showMessage('global-message', 'Your account is ready. Log in to continue.');
+            $('password').value = '';
+            notice('Your account is ready. Sign in to continue.');
             return;
         }
         if (authMode === 'forgot') {
             const email = $('email').value.trim();
             await api('/api/auth/forgot-password', jsonPost({ email }));
             setAuthMode('reset');
-            showMessage('global-message', 'If that email belongs to an account, a reset code was sent.');
+            notice('If that email belongs to an account, a reset code is on its way.');
             return;
         }
         if (authMode === 'reset') {
             const email = $('email').value.trim();
             const resetToken = $('reset-token').value.trim();
             const newPassword = $('new-password').value;
-            const confirmPassword = $('confirm-password').value;
-            if (newPassword !== confirmPassword)
-                throw new Error('The passwords do not match.');
-            await api('/api/auth/reset-password', jsonPost({
-                email, code: resetToken, password: newPassword}));
-            showMessage('global-message', 'Your password was reset. You can now log in.');
+            if (newPassword !== $('confirm-password').value) throw new Error('The passwords do not match.');
+            await api('/api/auth/reset-password', jsonPost({ email, code: resetToken, password: newPassword }));
+            $('auth-form').reset();
+            setAuthMode('login');
+            notice('Your password was reset. Sign in with the new password.');
             return;
         }
 
         const result = await api('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ username, password, 
-                                        code: $('two-factor-code').value.trim() })
+            body: new URLSearchParams({ username, password, code: $('two-factor-code').value.trim() })
         });
         if (result && result.twoFactorRequired) {
             setAuthMode('twofactor');
-            showMessage('global-message', 'We emailed a 6-digit code to your address.');
             return;
         }
         const me = await api('/api/auth/me');
@@ -139,10 +161,7 @@ $('auth-form').addEventListener('submit', async (event) => {
     } catch (error) {
         showMessage('auth-error', error.message);
     } finally {
-        $('auth-submit').disabled = false;
-        $('auth-toggle').disabled = false;
-        $('forgot-password-link').disabled = false;
-        $('back-to-login').disabled = false;
+        setBusy(false);
     }
 });
 
@@ -154,7 +173,7 @@ async function start() {
         $('loading').hidden = true;
         $('login-page').hidden = false;
         if (error.status !== 401) {
-            showMessage('global-message', 'Cannot reach the server. Check the connection and refresh to try again.');
+            notice('Cannot reach the server. Check the connection and refresh to try again.', false);
         }
     }
 }
