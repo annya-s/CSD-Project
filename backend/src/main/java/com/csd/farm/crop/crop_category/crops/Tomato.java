@@ -3,60 +3,22 @@ package com.csd.farm.crop.crop_category.crops;
 import com.csd.farm.crop.CropType;
 import com.csd.farm.crop.crop_category.Crop;
 import com.csd.farm.crop.crop_category.CropRange;
-import com.csd.farm.crop.crop_category.CropRequirements;
-import com.csd.farm.crop.crop_category.Requirement;
+import com.csd.farm.crop.crop_category.Guideline;
 
-import java.util.*;
+import static com.csd.farm.crop.crop_category.RecommendedAction.*;
+
+import java.util.Map;
 
 public class Tomato extends Crop {
     public Tomato() {
         super.crop = CropType.TOMATO;
         super.temperatureRange = new CropRange(20, 27, 7, 35);
         super.sunshineRange = new CropRange(6, 8, 5, 9);
-    }
-
-    @Override
-    public Double checkAction(String temperatureReading, String sunshineReading, String aiOutput) {
-        CropRequirements reqs = new CropRequirements();
-
-        switch(temperatureReading) {
-            case "BELOW_RANGE_SEVERE":
-                reqs.addRequirement(new Requirement(List.of("relocate"), 0.3));
-                reqs.addRequirement(new Requirement(List.of("prune", "dried"), 0.1));
-                reqs.addRequirement(new Requirement(List.of("warm"), 0.1));
-                break;
-            case "BELOW_RANGE":            
-                reqs.addRequirement(new Requirement(List.of("relocate"), 0.2));
-                reqs.addRequirement(new Requirement(List.of("warm"), 0.1));
-                break;
-            case "ABOVE_RANGE":
-                reqs.addRequirement(new Requirement(List.of("relocate"), 0.1));
-                reqs.addRequirement(new Requirement(List.of("water"), 0.1));
-                break;
-            case "ABOVE_RANGE_SEVERE":
-                reqs.addRequirement(new Requirement(List.of("relocate"), 0.2));
-                reqs.addRequirement(new Requirement(List.of("remove", "scorched"), 0.1));
-                reqs.addRequirement(new Requirement(List.of("water"), 0.2));
-                break;
-        }
-
-        switch(sunshineReading) {
-            case "BELOW_RANGE_SEVERE":
-                reqs.addRequirement(new Requirement(List.of("relocate"), 0.2));
-                reqs.addRequirement(new Requirement(List.of("artifical", "light"), 0.1));
-                break;
-            case "BELOW_RANGE":
-                reqs.addRequirement(new Requirement(List.of("relocate"), 0.2));
-                break;
-            case "ABOVE_RANGE":
-                reqs.addRequirement(new Requirement(List.of("relocate"), 0.1));
-                break;
-            case "ABOVE_RANGE_SEVERE":
-                reqs.addRequirement(new Requirement(List.of("relocate"), 0.2));
-                reqs.addRequirement(new Requirement(List.of("shade"), 0.2));
-                break;
-        }
-        
-        return reqs.confidenceInterval(aiOutput);
+        super.temperatureGuidelines = Map.of(
+            "BELOW_RANGE_SEVERE", new Guideline(Map.of(RELOCATE, 0.3, REMOVE_DAMAGED, 0.1, PROTECT_FROM_COLD, 0.1), COLD_HARMS),
+            "BELOW_RANGE", new Guideline(Map.of(RELOCATE, 0.2, PROTECT_FROM_COLD, 0.1), COLD_HARMS),
+            "ABOVE_RANGE", new Guideline(Map.of(RELOCATE, 0.1, WATER, 0.1), HEAT_HARMS),
+            "ABOVE_RANGE_SEVERE", new Guideline(Map.of(RELOCATE, 0.2, REMOVE_DAMAGED, 0.1, WATER, 0.2), HEAT_HARMS));
+        super.sunshineGuidelines = MOVABLE_SUNSHINE;
     }
 }
