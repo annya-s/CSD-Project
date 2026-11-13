@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -114,10 +115,14 @@ public class CropService {
         CropHealthService.Assessment assessment = health.assess(entry.cropType(), weather);
 
         List<EnvironmentReading> historicalReadings = environmentService.getHistoricalReading(cycleId.intValue());
+        EnvironmentReading latestReading = environmentService.getLatestReading(cycleId.intValue());
+        List<String> assessedStatuses = new ArrayList<>();
 
         String recommendation = aiRecommender.getRecommendation(
                 entry.cropType(),
-                historicalReadings
+                historicalReadings,
+                latestReading
+                assessedStatuses
         );
 
         Double confidencePercent = null;

@@ -3,12 +3,16 @@ package com.csd.farm.ai;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.TreeMap;
 
 import org.springframework.stereotype.Service;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import com.csd.farm.crop.CropType;
 import com.csd.farm.environment.EnvironmentReading;
@@ -38,28 +42,47 @@ public class AIRecommenderService {
     }
 
 
-    public String getRecommendation(CropType cropType, List<EnvironmentReading> historicalReadings) {
+    public String getRecommendation(CropType cropType, List<EnvironmentReading> historicalReadings,
+        EnvironmentReading latestReading, List<String> assessedStatuses
+    ) {
         String historicalSummary = formatHistoricalReadings(historicalReadings);
+        String latestSummary = formatHistoricalReadings(List.of(latestReading));
 
-        String prompt = formulatePrompt(cropType, historicalSummary);
+        String prompt = formulatePrompt(cropType, historicalSummary, latestSummary);
+        Map<String, Object> schema = formulateSchema();
+        CreateModelInteractionResponseFormat format = formulateFormat(schema);
+
 
         CreateModelInteraction params =
         CreateModelInteraction.builder()
             .model(Model.of("gemini-3.8-flash"))
             .input(InteractionsInput.of(prompt))
+            .responseFormat(format)
             .build();
 
         try {
             Interaction interaction = client.interactions.create(CreateInteractionRequestBody.of(params)).interaction().get();
-            return interaction.outputText().orElse("No AI response");
+
+            String output = interaction.outputText().orElse("No AI response");
+            List<String> stringOutputs = parseJson(output);
+
+                assessedStatuses.add(stringOutputs.remove(0));
+                assessedStatuses.add(stringOutputs.remove(0));
+                
+                return stringOutputs.remove(0);
         } catch (Exception e) {
             return "No AI Response";
         }
     }
 
-    private String formulatePrompt(CropType cropType, String historicalSummary) {
+    private String formulatePrompt(CropType cropType, String historicalSummary, String latestReading) {
         return """
                 You are an agricultural decision-support assistant.
+
+                %s
+
+                First analyse the current weather conditions and assign an assessment
+                of the crop's vapour pressure defecit and soil moisture.
 
 
                 %s
@@ -82,8 +105,59 @@ public class AIRecommenderService {
                 Do not invent missing measurements.
                 If information is unavailable, acknowledge it.
                 Keep your recommendation within three sentences.
-                """.formatted(cropType.displayName(), historicalSummary);
+                """.formatted(latestReading, cropType.displayName(), historicalSummary);
         }
+
+        private Map<String, Object> formulateSchema() {
+                Map<String, Object> properties = new HashMap<>();
+
+                Map<String, Object> vpdProp = new HashMap<>();
+                vpdProp.put("type", "string");
+                vpdProp.put("enum", Arrays.asList("WITHIN_RANGE", "BELOW_RANGE",
+                "BELOW_RANGE_SEVERE", "ABOVE_RANGE", "ABOVE_RANGE_SEVERE"));
+                vpdProp.put("description", "The assessment of the crop's vapour pressure defecit");
+                properties.put("vpd", vpdProp);
+
+                Map<String, Object> soilMoistureProp = new HashMap<>();
+                soilMoistureProp.put("type", "string");
+                soilMoistureProp.put("enum", Arrays.asList("WITHIN_RANGE", "BELOW_RANGE",
+                "BELOW_RANGE_SEVERE", "ABOVE_RANGE", "ABOVE_RANGE_SEVERE"));
+                soilMoistureProp.put("description", "The assessment of the crop's soil moisture");
+                properties.put("soil_moisture", soilMoistureProp);
+
+                Map<String, Object> recommendationProp = new HashMap<>();
+                recommendationProp.put("type", "string");
+                recommendationProp.put("description", "The recommended actions that the farmer should take");
+                properties.put("recommendation", recommendationProp);
+
+                Map<String, Object> jsonSchema = new HashMap<>();
+                jsonSchema.put("type", "object");
+                jsonSchema.put("properties", properties);
+                jsonSchema.put("required", Arrays.asList("vpd", "soil_moisture", "recommendation"));
+
+                return jsonSchema;
+        }
+
+        private CreateModelInteractionResponseFormat formulateFormat(Map<String, Object> schema) {
+                return CreateModelInteractionResponseFormat.of(
+                ResponseFormat.of(
+                TextResponseFormat.builder()
+                .mimeType(TextResponseFormatMimeType.APPLICATION_JSON)
+                .schema(schema)
+                .build()));
+        }
+
+        private List<String> parseJson(String jsonString) {
+                List<String> result = new ArrayList<>();
+                
+                JSONObject obj = (JSONObject) JSONValue.parse(jsonString);
+
+                result.add((String) obj.get("vpd"));
+                result.add((String) obj.get("soil_moisture"));
+                result.add((String) obj.get("recommendation"));
+
+                return result;
+        }      
 
     private String formatHistoricalReadings(List<EnvironmentReading> historicalReadings) {
         if (historicalReadings == null || historicalReadings.isEmpty()) {
