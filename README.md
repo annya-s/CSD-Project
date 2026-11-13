@@ -1,278 +1,198 @@
-# Updated Supabase integration
+# Dome — AI crop-health assistant
 
-Start with [SUPABASE-SETUP.md](SUPABASE-SETUP.md). It supersedes the database, registration, and demo instructions below. Do not run legacy SQL against your existing Supabase table.
+Farmers record their crops (type, planting date, location). Dome pulls live weather
+for each planting, checks it against the crop's ideal ranges, estimates growth and
+yield, and asks an AI model for a short recommendation with a confidence score.
 
-# CSD Project — crop records
+- **Weather:** Open-Meteo (live daily readings and 14-day averages per planting)
+- **Health check:** rule-based comparison against per-crop ranges (`CropHealthService`)
+- **Biomass:** documented formula, with the shortfall broken down by cause ([docs](docs/biomass-formula.md))
+- **Yield outlook:** CatBoost model trained on FAOSTAT yields and ERA5 weather ([ml/README.md](ml/README.md))
+- **AI recommendation:** Google Gemini, scored for confidence against the rule-based check
 
-A small Spring Boot application based on the four supplied mockups: login/sign-up,
-farm dashboard, crop details, and a new-entry form. It uses plain HTML, CSS and
-JavaScript, Spring Security, readable JDBC queries, and Supabase PostgreSQL.
-The previous standalone prototype is preserved in `dist/index.html`.
+Stack: Spring Boot 4 (Java 17), Supabase PostgreSQL, plain HTML/CSS/JS served by
+Spring, Python 3.12 for the ML model. Ten crops: potato, sugar cane, apple, rice,
+wheat, maize, tomato, carrot, lettuce, soybean.
 
-## CI for the public Supabase schema
+Deployed backend (Render, Docker): <https://csd-project-g98a.onrender.com>
 
-GitHub Actions starts a fresh PostgreSQL 17 service, loads the test-only schema
-from `backend/src/test/resources/db/ci/`, and runs `clean verify`. It checks the
-current account, farm, crop-cycle, and weather repositories, API access controls,
-foreign keys, duplicate entries, and weather snapshot updates. Successful builds
-save the application JAR and test reports. No Supabase credentials are needed.
+## Run locally
 
-The fixture follows the supplied ERD and SQL used by the application. It is not
-a production migration or an exact export of the live database. In particular,
-the weather repository currently expects one snapshot per `Crop_Cycle_ID` and
-the `Weather_Date`, `Weather_Timezone`, and mean-reading columns in that fixture.
-Review it against an actual schema export when live column definitions change.
-Supabase RLS policies and real provider connections are not covered by this job.
+Needs **Java 17+**. Maven comes with the wrapper. Commands are for PowerShell; on
+macOS/Linux use `sh ./mvnw` instead of `.\mvnw.cmd`.
 
-CI provisions both current weather tables: `public."CROP_WEATHER_READINGS"`
-for daily snapshots and `public."CROP_WEATHER_HISTORICAL_AVERAGE"` for the
-14-day averages written by PR #27. Schema tests verify their separate storage,
-cycle foreign keys, upserts, null measurements, validation, and deletion behavior.
-The combined suite also runs PR #27's averaging calculation tests and its
-`CropHistoricalAverageTest` against `CROP_WEATHER_HISTORICAL_AVERAGE`, matching
-the production repository. These tests share the CI PostgreSQL service and
-do not require a second Testcontainers database.
-
-To run the database tests locally, start a disposable database (Docker required):
-
-```powershell
-docker run --detach --name csd-ci-db --publish 127.0.0.1:15432:5432 --env POSTGRES_DB=farm_ci --env POSTGRES_USER=farm_ci --env POSTGRES_PASSWORD=ci_only postgres:17
-# Wait until this returns "accepting connections":
-docker exec csd-ci-db pg_isready -U farm_ci -d farm_ci
-cd backend
-$env:TEST_DB_URL = 'jdbc:postgresql://127.0.0.1:15432/farm_ci'
-.\mvnw.cmd --batch-mode --no-transfer-progress clean verify
-docker rm --force --volumes csd-ci-db
-Remove-Item Env:TEST_DB_URL
-```
-
-Use only an empty disposable database named `farm_ci`. The tests create tables
-and clear their test accounts. The test profile ignores local Supabase settings
-and uses separate `TEST_DB_URL`, `TEST_DB_USERNAME`, and `TEST_DB_PASSWORD`
-variables, with defaults `localhost:5432/farm_ci`, `farm_ci`, and `ci_only`.
-
-## Run locally without Supabase
-
-Install **Java 17 or newer**. Maven is included through the Maven wrapper.
-From PowerShell:
+### Quick demo (in-memory database, no Supabase)
 
 ```powershell
 cd backend
+$env:GOOGLE_API_KEY = "your-gemini-key"
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=demo"
 ```
 
-Open <http://127.0.0.1:8080>, create an account, and add a crop. This explicit demo
-profile uses an **in-memory H2 database**: accounts and entries disappear when
-the app stops. No demo passwords or farmer records are seeded. On macOS/Linux,
-use `sh ./mvnw` instead of `.\mvnw.cmd`.
+Open <http://127.0.0.1:8080> and create an account. Data is lost when the app stops.
+Weather is still fetched live.
 
-If an older demo server starts rejecting crop entries after it has been running
-for a while, restart it with the updated project. H2 is pinned to 2.5.250 to fix
-[H2 issue #4302](https://github.com/h2database/h2database/issues/4302): the old
-version could reject valid crop types after a database connection closed.
-Restarting the in-memory demo also clears its accounts and entries.
+### With Supabase
 
-## Crop growing-condition research
+Create `backend/application-local.properties` (it is gitignored, so never commit it):
 
-For the machine-learning work, start with the [research and planning pack](docs/ml/README.md)
-(17 October 2026): 20 additional crop profiles, a ranked historical-dataset register,
-a prediction-confidence plan, and a dynamic farmer-advice plan. Its inspected
-current-code baseline also records where the older weather-integration description
-below differs from the current implementation.
-
-See [the crop reference guide](docs/crop-growing-conditions.md) for all ten crops:
-weather, temperature, air humidity, soil pH, soil moisture, and annual rainfall,
-with direct sources and guidance on interpreting the units. These references
-include the approved prototype temperature and sunlight comparison rules. See
-[the crop-health integration guide](docs/crop-health-integration.md) for the simple
-Java code map and the request format for your API-fetching teammate.
-
-## Connect your Supabase PostgreSQL database
-
-1. Create/open your Supabase project. In **Connect → Session pooler**, copy the
-   host, database name, port and username. Use your **database password**, not
-   an API key. The session pooler is suitable for an IPv4 development machine.
-2. Inside `backend`, copy `application-local.properties.example` to
-   `application-local.properties` and replace the placeholders. This file is
-   ignored by Git. The URL should look like:
-
-   ```properties
-   DB_URL=jdbc:postgresql://YOUR-SESSION-POOLER-HOST:5432/postgres?sslmode=require
-   DB_USERNAME=postgres.YOUR-PROJECT-REF
-   DB_PASSWORD=YOUR-DATABASE-PASSWORD
-   COOKIE_SECURE=false
-   ```
-
-3. Start the app **without** the demo profile:
-
-   ```powershell
-   .\mvnw.cmd spring-boot:run
-   ```
-
-Flyway automatically creates the `farm` schema and tables on first startup.
-The configured database user needs permission to create that schema and its
-tables. There is no silent fallback to demo storage: invalid Supabase settings
-make normal startup fail. No live Supabase connection is included in this repo.
-
-You may supply `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` as environment
-variables instead. The browser only calls Spring Boot; credentials are never
-sent to JavaScript. Keep the `farm` schema out of Supabase's exposed API schemas.
-For deployment, use HTTPS and set `COOKIE_SECURE=true` (the default). The example
-uses `sslmode=require`; for certificate verification, use `sslmode=verify-full`
-and the Supabase CA certificate as described in their connection documentation.
-
-This implementation stores application accounts in PostgreSQL and uses Spring
-Security for login. It does **not** use the separate Supabase Auth service.
-Sessions expire after 30 minutes of inactivity and are cleared on server restart.
-Password reset, email verification, login rate limiting, and shared sessions for
-multiple server instances are not implemented in this first version.
-
-Official references: [Supabase connection settings](https://supabase.com/docs/guides/database/connecting-to-postgres)
-and [Spring Security CSRF protection](https://docs.spring.io/spring-security/reference/servlet/exploits/csrf.html).
-
-## Data model and identity
-
-```text
-farmer_account (one) ──── (many) crop_entry
-  id (primary key)               farmer_id (foreign key)
-                               crop_type
-                               planted_at
-                               latitude / longitude
+```properties
+DB_URL=jdbc:postgresql://YOUR-SESSION-POOLER-HOST:5432/postgres?sslmode=require
+DB_USERNAME=postgres.YOUR-PROJECT-REF
+DB_PASSWORD=YOUR-DATABASE-PASSWORD
+COOKIE_SECURE=false
+MAIL_USERNAME=you@gmail.com
+MAIL_PASSWORD=your-gmail-app-password
 ```
 
-An entry has **one composite primary key** containing three columns:
-`(farmer_id, crop_type, planted_at)`. This implements the clarified requirement:
-two farmers planting the same crop at the same time still create separate entries.
-Within one farmer's account, the same crop and planting time cannot be entered twice.
-Farmer ID comes from the authenticated session, never a browser-supplied owner ID.
-The database enforces the foreign key and primary key, including concurrent writes.
+Then run `.\mvnw.cmd spring-boot:run` from `backend`. Use the **Session pooler**
+details from Supabase → Connect, and your database password (not an API key).
 
-Planting time is a timezone-aware timestamp stored at **one-second precision**.
-The browser accepts local time and sends UTC. Equivalent instants with different
-timezone offsets count as the same time; subsecond values are truncated before
-saving. A farmer cannot record two separate plots of the same crop at the same
-second with this key; supporting that later would require a plot/entry identifier.
+Flyway is disabled. The app expects the existing `public` schema in Supabase
+(`USERS`, `CROP_CYCLES`, `FARMS`, weather tables…). The test fixture
+[`public-schema.sql`](backend/src/test/resources/db/ci/public-schema.sql) documents
+the tables and columns the code relies on.
 
-The ten hardcoded choices are **Potato, Sugar cane, Apple, Rice, Wheat, Maize,
-Tomato, Carrot, Lettuce, and Soybean**. These are choices in the crop catalogue,
-not ten fabricated plantings. New accounts start with an empty dashboard.
+### Yield model (optional)
 
-The crop assessment compares Open-Meteo daily temperature and sunshine against the
-hardcoded references. Humidity and soil moisture remain **Not assessed**, even if
-readings are supplied. Pages fetch yesterday's weather for each planting's coordinates,
-reuse results for 15 minutes, and label their source and date. Soil water is displayed
-as percent by volume, not percent depleted. Missing data shows **Not assessed**;
-API outages show a warning and only verified API history may be used as a fallback.
-The demo profile still fetches real weather; it only changes database storage.
-Photos, health scores and AI/chatbot services remain unimplemented.
-Dashboard summaries and recommendations use simple rules, not AI output.
+The backend runs `ml/yield_predict.py` and auto-detects `ml/.venv`. Without it, the
+crop page shows "yield model unavailable" and everything else works.
+
+```powershell
+py -3.12 -m venv ml\.venv
+ml\.venv\Scripts\python.exe -m pip install -r ml\requirements.txt
+```
+
+### Configuration
+
+Set these as environment variables or in `application-local.properties`.
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | Yes (not demo) | Supabase PostgreSQL connection |
+| `GOOGLE_API_KEY` | Yes | Gemini key for AI recommendations |
+| `MAIL_USERNAME`, `MAIL_PASSWORD` | For email | Gmail SMTP for verification, 2FA and password reset |
+| `COOKIE_SECURE` | No (default `true`) | Set `false` for local HTTP |
+| `WEATHER_API_ENABLED` | No (default `true`) | `false` = enter weather manually |
+| `PORT` | No (default `8080`) | Server port |
+| `DB_USER_*` | No | Override `USERS` table/column names |
+
+## Run with Docker
+
+The image contains the backend and the Python yield model; this is how Render deploys it.
+
+```powershell
+docker build -t dome .
+docker run -p 8080:8080 -e DB_URL=... -e DB_USERNAME=... -e DB_PASSWORD=... -e GOOGLE_API_KEY=... dome
+```
+
+## How the biomass formula works
+
+The crop page shows two numbers for the crop's full-growth date (planting date + the
+crop's `maturity_days`):
+
+- **Full-growth target:** the crop's `mature_target`, i.e. biomass under ideal conditions.
+- **Estimate if recent weather continues:** `mature_target × factor`, where
+
+```
+factor = clip(1 − 0.025·|T − Tref| − 2·|M − Mref| − 0.12·|V − Vref| − 0.025·|S − Sref|, 0, 1)
+```
+
+| Symbol | Input (last 14-day average) | Unit |
+| --- | --- | --- |
+| T | Mean temperature | °C |
+| M | Soil moisture, 3–9 cm | m³/m³ |
+| V | Vapour pressure deficit | kPa |
+| S | Daily sunshine | hours |
+
+Each crop's ideal values (`ref`), target and maturity age are in
+[`crop-profiles.json`](backend/src/main/resources/crop-profiles.json). Each weather
+factor subtracts its own penalty, so the shortfall splits exactly by cause. For example:
+"18% below target: 12% from soil moisture too low, 4% from temperature too high…".
+If the penalties add up to more than 100%, each one is scaled down proportionally.
+
+- **Missing data:** if the 14-day averages are missing, stale or out of range, only the
+  target is shown (`REFERENCE_ONLY`). Crops without a profile return `UNSUPPORTED`.
+- **Limits:** the coefficients and ideal values are assumptions, not measurements.
+  Penalties are symmetric, so too wet counts the same as too dry. Earlier weather and
+  farm management are ignored. The result is an estimate, not a harvest forecast.
+
+Code: `BiomassFormula.java`, `BiomassEstimateService.java`, tests in
+`BiomassFormulaTest.java`. Full details and sources: [docs/biomass-formula.md](docs/biomass-formula.md).
+
+## Accounts and roles
+
+Spring Security with session cookies and CSRF protection. Passwords are hashed
+with PBKDF2. Sessions expire after 30 minutes. Optional email verification and
+2FA codes are sent by email.
+
+- **FARMER** (default): manages their own crops only.
+- **ADMIN**: user administration page. Set `USERS."Role"` to `ADMIN` in the database.
 
 ## API
 
-All crop endpoints require the login session cookie. Mutating requests also
-require a CSRF token. Fetch `GET /api/auth/csrf` and send the returned `token`
-using the returned `headerName`; fetch a fresh token after login or logout.
-The included frontend does this automatically.
+Every endpoint except `csrf`, `register`, `login`, `verify-email`, `forgot-password`
+and `reset-password` needs the session cookie. POST/DELETE requests also need a CSRF token: fetch `GET /api/auth/csrf`
+and send `token` in the returned `headerName`. The frontend's `api.js` does this for you.
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| GET | `/api/auth/csrf` | Get a CSRF token, including before login |
-| POST | `/api/auth/register` | JSON: `username`, `displayName`, `password` |
-| POST | `/api/auth/login` | Form-encoded `username` and `password`; sets session cookie |
-| GET | `/api/auth/me` | Current farmer, without password data |
-| POST | `/api/auth/logout` | Invalidate session |
-| GET | `/api/crop-types` | The 10 crop options |
-| GET | `/api/dashboard` | Summary and this farmer's entries |
-| GET | `/api/crops` | This farmer's entries |
-| POST | `/api/crops` | Save an entry |
-| GET | `/api/crops/{cropType}?plantedAt=…` | Details for an owned entry |
-| POST | `/api/crops/{cropType}/weather?plantedAt=…` | Manual readings, only when `WEATHER_API_ENABLED=false` |
-| GET | `/api/environment/latest?latitude=…&longitude=…` | Teammate's existing hourly environment endpoint |
+| Area | Endpoints |
+| --- | --- |
+| Auth `/api/auth` | `GET csrf`, `POST register` (JSON `username`, `email`, `password`), `POST login` (form `username`, `password`, optional `code`), `POST logout`, `GET me` |
+| Account `/api/auth` | `POST verification-code`, `verify-email`, `forgot-password`, `reset-password`, `username`, `email`, `password`, `two-factor` |
+| Crops `/api` (FARMER) | `GET crop-types`, `GET dashboard`, `GET/POST crops`, `GET/DELETE crops/{cropCycleId}` |
+| Crop analysis (FARMER) | `POST crops/{id}/weather` (manual reading), `POST crops/{id}/prediction` (biomass + yield), `POST crops/{id}/assessment` (AI recommendation) |
+| Admin `/api/admin` (ADMIN) | `GET check`, `GET users`, `POST users/{id}/password`, `POST users/{id}/unverify`, `POST users/{id}/disable2fa`, `DELETE users/{id}` |
+| Environment | `GET /api/environment/latest?latitude=…&longitude=…` |
 
-Example new-entry body:
+New crop body: `{"farmName": "North field", "cropType": "POTATO", "plantedAt": "2026-06-10T08:30:00Z", "latitude": 1.3521, "longitude": 103.8198}`
 
-```json
-{
-  "cropType": "POTATO",
-  "plantedAt": "2026-06-10T08:30:00Z",
-  "latitude": 1.3521,
-  "longitude": 103.8198
-}
-```
+Errors: `400` invalid input, `401` not logged in, `403` bad CSRF token or wrong
+role, `404` crop not found or not yours, `409` duplicate.
 
-Usernames contain 3–40 lowercase letters, digits, or underscores. Passwords are
-10–128 characters and stored using salted PBKDF2 hashes. Coordinates must be in
-range with at most six decimal places. Planting dates cannot be in the future.
-
-Common responses: `400` invalid input, `401` login required or incorrect
-credentials, `403` missing/expired CSRF token, `404` missing/unowned crop,
-`409` duplicate username or planting. Login/logout return `204`; creation
-returns `201`. Encode query parameters with `URLSearchParams`, especially when
-timestamps include a `+` timezone offset.
-
-## Code map
-
-Each screen has its own HTML file (layout) and JavaScript file (behaviour), all
-inside `backend/src/main/resources/static`. No Node.js or frontend build is needed.
-
-| Screen | HTML | JavaScript | Main backend requests |
-| --- | --- | --- | --- |
-| Login and sign-up | `login.html` | `login.js` | `/api/auth/me`, `/api/auth/register`, `/api/auth/login` |
-| Dashboard | `dashboard.html` | `dashboard.js` | `/api/dashboard`, `/api/crop-types` |
-| Crop details | `crop-details.html` | `crop-details.js` | `/api/crops/{cropType}?plantedAt=…`, `/api/crop-types` |
-| Add a crop | `new-entry.html` | `new-entry.js` | `/api/crop-types`, POST `/api/crops` |
-
-The page scripts import `api.js` for shared requests, login checks, logout, and
-small display helpers. All pages share `styles.css`. Each teammate can edit their
-own HTML/JavaScript pair while using the same Java backend.
-
-`/` and the old `/index.html` address redirect to `/login.html`. An already logged-in
-farmer goes straight to the dashboard. A dashboard card links to
-`/crop-details.html?type=POTATO&plantedAt=...`, so refreshing or bookmarking a crop
-works. If login is required, the app returns to that page after login. The former
-combined `index.html` and `app.js` have been replaced by these page files.
-
-For crop-details work, start with `crop-details.html` and `renderDetails()` in
-`crop-details.js`. Its `start()` function requests data from the existing Java
-`CropController.details()` endpoint. Frontend files call API URLs; they do not
-directly import or execute Java files. `CropHealthService.assess()` now supplies
-the condition comparisons; photos remain placeholders. Both pages refresh saved
-assessments every 60 seconds while visible.
+## Project layout
 
 ```text
-backend/
-  src/main/java/com/csd/farm/
-    auth/                 Farmer accounts and sign-up
-    config/               Homepage redirect, session authentication and request security
-    crop/                 Crop catalogue, input validation, queries and API
-    api/                  Friendly API errors
-  src/main/resources/
-    db/migration/         Versioned SQL table definitions
-    static/               Four HTML/JS page pairs, shared api.js and styles.css
-    application.properties
-    application-demo.properties
-  src/test/               Integration tests using H2 in PostgreSQL mode
+backend/src/main/java/com/csd/farm/
+  ai/            Gemini recommendation service
+  auth/          Accounts, login, email codes, 2FA
+  admin/         User administration API
+  crop/          Crops, weather, health check, biomass, yield model client
+  environment/   Open-Meteo client
+  config/        Security and page routing
+backend/src/main/resources/static/   Pages: login, dashboard, crop-details, new-entry, account, admin (+ api.js, styles.css)
+ml/              Yield model: training, prediction, tests
+docs/            Biomass formula, crop growing conditions, ML research
+frontend/        Unfinished Vue prototype (not used)
 ```
 
-The normal profile uses the PostgreSQL driver; the test/demo profiles use H2.
-H2 verifies the application flow and migration structure, but it does not replace
-testing a real Supabase connection with your project's credentials.
+## Tests and CI
 
-## Verify
+GitHub Actions ([backend-ci.yml](.github/workflows/backend-ci.yml)) runs on pushes to
+`main` and on every PR. It starts PostgreSQL 17, loads the test schema, runs
+`mvnw clean verify` and uploads the JAR and test reports. No Supabase credentials needed.
+
+To run the same tests locally (needs Docker; the database must be disposable):
 
 ```powershell
+docker run -d --name csd-ci-db -p 127.0.0.1:15432:5432 -e POSTGRES_DB=farm_ci -e POSTGRES_USER=farm_ci -e POSTGRES_PASSWORD=ci_only postgres:17
 cd backend
-.\mvnw.cmd test
-.\mvnw.cmd package
+$env:TEST_DB_URL = 'jdbc:postgresql://127.0.0.1:15432/farm_ci'
+.\mvnw.cmd clean verify
+docker rm -f -v csd-ci-db
 ```
 
-Tests cover registration and password hashing, login/logout, real CSRF tokens,
-validation, database round-trips, crop details, duplicate keys, timezone
-equivalence, and separation between farmers. `CropDatabaseTest` also closes the
-connection that created the tables, then saves all ten crop types using fresh
-connections. This catches the demo database regression without a long wait.
-The packaged app is
-`backend/target/farm-0.0.1-SNAPSHOT.jar` and can run with
-`java -jar target/farm-0.0.1-SNAPSHOT.jar` from the `backend` directory after
-configuring Supabase.
+ML tests: `ml\.venv\Scripts\python.exe -m pytest ml\tests -q`
 
+## Known limitations
+
+- The yield model does not beat a "normal year" baseline on the 2022–2024 test
+  years. It uses country-level data and one weather point per country (see [ml/README.md](ml/README.md)).
+- The weather tables keep only the latest reading and the latest 14-day average per crop.
+- The AI confidence score is a keyword check against the rule-based assessment, not a calibrated probability.
+
+## More docs
+
+- [Biomass formula](docs/biomass-formula.md)
+- [Crop growing conditions and sources](docs/crop-growing-conditions.md)
+- [Crop health integration](docs/crop-health-integration.md)
+- [ML research plan](docs/ml/README.md) · [Yield model](ml/README.md)

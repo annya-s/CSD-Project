@@ -3,134 +3,141 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#495f49">
-    <title>Dome · Account</title>
+    <meta name="theme-color" content="#F6F3EC">
+    <title>Dome · Manage account</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/styles.css">
     <script type="module" src="/account.js"></script>
 </head>
 <body>
     <header class="topbar">
-        <a class="brand" href="/dashboard.html" aria-label="Dome home">dome<span class="brand-leaf" aria-hidden="true">↗</span></a>
-        <nav id="navigation" aria-label="Main navigation">
-            <a id="overview-link" class="overview-link"></a>
-            <span id="welcome"></span>
-        </nav>
-        <details>
-            <summary class="text-button">Account</summary>
-            <div>
-                <a href="/account.html" class="text-button">Manage account</a>
-                <button id="logout" class="text-button" type="button">Log out</button>
-            </div>
-        </details>
+        <div class="topbar-inner">
+            <a class="brand" data-home href="/dashboard.html"><span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-leaf"></use></svg></span>Dome</a>
+            <button id="nav-toggle" class="icon-btn nav-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="site-nav"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-menu"></use></svg></button>
+            <nav id="site-nav" class="nav" aria-label="Main navigation">
+                <div class="nav-links">
+                    <a class="nav-link" data-home href="/dashboard.html">Dashboard</a>
+                    <a class="nav-link" href="/account.html"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-user"></use></svg>Manage account</a>
+                </div>
+                <div class="nav-end">
+                    <span id="welcome" class="welcome"></span>
+                    <button id="logout" class="nav-link logout" type="button"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-logout"></use></svg>Log out</button>
+                </div>
+            </nav>
+        </div>
     </header>
+
     <main id="main">
-        <p id="global-message" role="alert" hidden></p>
+        <div class="banner"><p id="global-message" role="alert" hidden></p></div>
 
-        <section id="account-page" class="page account" hidden aria-labelledby="account-title">
-            <section class="section">
-                <h2>Username</h2>
-                <div class="input-field">
-                    <label for="username">Username</label>
-                    <input id="username" type="text" autocomplete="username" maxlength="40">
-                </div>
-                <p id="username-error" class="form-error" role="alert" hidden></p>
-                <div class="button-row">
-                    <button id="update-username" class="primary" type="button"> Update username </button>
-                </div>
-            </section>
+        <div id="loading" class="page page-narrow" role="status">
+            <span class="visually-hidden">Loading your account…</span>
+            <div class="sk-stack" aria-hidden="true">
+                <div class="skeleton sk-line sk-w30"></div>
+                <div class="skeleton sk-title"></div>
+                <div class="skeleton sk-reading"></div><div class="skeleton sk-reading"></div><div class="skeleton sk-reading"></div>
+            </div>
+        </div>
 
-            <section class="section">
-                <h2>Email</h2>
-                <div class="email-row">
-                    <span id="email" class="email"></span>
-                    <span id="email-status" class="status"></span>
+        <section id="account-page" class="page page-narrow" hidden aria-labelledby="account-title">
+            <a class="text-link back-link" data-home href="/dashboard.html"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-chevron-left"></use></svg>Back to dashboard</a>
+            <div class="page-head">
+                <div>
+                    <span class="eyebrow">Personal settings</span>
+                    <h1 id="account-title" class="display" tabindex="-1">Manage account</h1>
+                    <p class="lede">Keep your account details current and your field records secure.</p>
                 </div>
-                <div class="input-field">
-                    <label for="new-email">New email</label>
-                    <input id="new-email" type="email" autocomplete="email" maxlength="254" placeholder=" ">
-                </div>
-                <p id="email-error" class="form-error" role="alert" hidden></p>
-                <div class="button-row">
-                    <button id="update-email" class="primary" type="button"> Update email </button>
-                </div>
-            </section>
+            </div>
 
-            <section id="verify-email-section" class="section" hidden>
-                <h2>Verify email</h2>
-                <p id="verify-email-description" class="section-description"></p>
-    
-                <div class="input-field">
-                    <label for="verification-code">Verification code</label>
-                    <input id="verification-code" type="text" inputmode="numeric"
-                        autocomplete="one-time-code" maxlength="6" placeholder=" ">
-                </div>
-
-                <div class="button-row">
-                    <button id="verify-email" class="primary" type="button">Verify email</button>
-                    <button id="resend-code" class="secondary" type="button">Resend code</button>
-                </div>
-            </section>
-
-            <section id="password-section" class="section" hidden>
-                <h2>Password</h2>
-
-                <form id="password-form">
-                    <div class="input-field">
-                        <label for="current-password">Current password</label>
-                        <input id="current-password" type="password"
-                            autocomplete="current-password" maxlength="128">
+            <div class="settings">
+                <section class="card setting" aria-labelledby="username-title">
+                    <div class="setting-intro">
+                        <span class="chip lg"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-user"></use></svg></span>
+                        <div><h2 id="username-title">Account details</h2><p>Your display name across Dome.</p></div>
                     </div>
+                    <form id="username-form" class="setting-body">
+                        <div class="setting-row">
+                            <div class="field">
+                                <label class="label" for="username">Username</label>
+                                <input id="username" class="input" type="text" autocomplete="username" maxlength="40" pattern="[a-z0-9_]{3,40}" autocapitalize="none" spellcheck="false" aria-describedby="username-error">
+                            </div>
+                            <button id="update-username" class="btn btn-primary btn-sm" type="submit">Save changes</button>
+                        </div>
+                        <p id="username-error" class="inline-msg is-error" role="alert" hidden></p>
+                    </form>
+                </section>
 
-                    <div class="input-field">
-                        <label for="new-password">New password</label>
-                        <input id="new-password" type="password"
-                            autocomplete="new-password" maxlength="128">
+                <section class="card setting" aria-labelledby="email-title">
+                    <div class="setting-intro">
+                        <span class="chip lg"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-mail"></use></svg></span>
+                        <div><h2 id="email-title">Email &amp; verification</h2><p>Used for security notices and field alerts.</p></div>
                     </div>
-
-                    <div class="input-field">
-                        <label for="confirm-password">Confirm new password</label>
-                        <input id="confirm-password" type="password"
-                            autocomplete="new-password" maxlength="128">
+                    <div class="setting-body">
+                        <form id="email-form" class="setting-row">
+                            <div class="field">
+                                <label class="label" for="new-email">Email address</label>
+                                <div class="input-wrap email-wrap">
+                                    <input id="new-email" class="input" type="email" autocomplete="email" maxlength="254" aria-describedby="email-status email-error">
+                                    <span id="email-status" class="pill email-pill"></span>
+                                </div>
+                            </div>
+                            <button id="update-email" class="btn btn-primary btn-sm" type="submit">Save email</button>
+                        </form>
+                        <p id="email-error" class="inline-msg is-error" role="alert" hidden></p>
+                        <div id="verify-email-section" class="verify-row" hidden>
+                            <p id="verify-email-description" class="hint"></p>
+                            <button id="resend-code" class="btn btn-outline btn-sm" type="button">Send code</button>
+                            <div class="field">
+                                <label class="visually-hidden" for="verification-code">Verification code</label>
+                                <input id="verification-code" class="input code-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code">
+                            </div>
+                            <button id="verify-email" class="btn btn-primary btn-sm" type="button">Verify</button>
+                        </div>
                     </div>
+                </section>
 
-                    <p id="password-error" class="form-error" role="alert" hidden></p>
+                <section class="card setting" aria-labelledby="password-title">
+                    <div class="setting-intro">
+                        <span class="chip lg"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-lock"></use></svg></span>
+                        <div><h2 id="password-title">Change password</h2><p>Use at least 10 characters.</p></div>
+                    </div>
+                    <form id="password-form" class="setting-body">
+                        <div class="field">
+                            <label class="label" for="current-password">Current password</label>
+                            <input id="current-password" class="input" type="password" autocomplete="current-password" maxlength="128" required>
+                        </div>
+                        <div class="setting-row two">
+                            <div class="field">
+                                <label class="label" for="new-password">New password</label>
+                                <input id="new-password" class="input" type="password" autocomplete="new-password" minlength="10" maxlength="128" required>
+                            </div>
+                            <div class="field">
+                                <label class="label" for="confirm-password">Confirm new password</label>
+                                <input id="confirm-password" class="input" type="password" autocomplete="new-password" maxlength="128" required>
+                            </div>
+                            <button id="update-password" class="btn btn-primary btn-sm" type="submit">Update password</button>
+                        </div>
+                        <p id="password-error" class="inline-msg is-error" role="alert" hidden></p>
+                    </form>
+                </section>
 
-                    <button id="update-password" class="primary" type="submit">
-                        Update password
-                    </button>
-                </form>
-            </section>
-
-            <section id="two-factor-section" class="section" hidden>
-                <h2>Two-factor authentication</h2>
-                <p id="two-factor-status" class="section-description"></p>
-                <p id="two-factor-error" class="form-error" role="alert" hidden></p>
-                <button id="two-factor-toggle" class="primary" type="button" disabled>
-                    Loading…
-                </button>
-            </section>
+                <section class="card setting" aria-labelledby="twofa-title">
+                    <div class="setting-intro">
+                        <span class="chip lg"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-shield"></use></svg></span>
+                        <div><h2 id="twofa-title">Two-factor authentication</h2><p>Extra protection at sign in.</p></div>
+                    </div>
+                    <div class="setting-body">
+                        <div class="twofa">
+                            <span class="twofa-state"><span id="two-factor-dot" class="status-dot" aria-hidden="true"></span><span id="two-factor-state">Disabled</span></span>
+                            <button id="two-factor-toggle" class="btn btn-primary btn-sm" type="button" disabled>Enable 2FA</button>
+                        </div>
+                        <p id="two-factor-status" class="hint"></p>
+                        <p id="two-factor-error" class="inline-msg is-error" role="alert" hidden></p>
+                    </div>
+                </section>
+            </div>
         </section>
-
-        <p id="loading" class="loading" role="status">Loading…</p>
-
-        <noscript>
-            <p class="loading">Please enable JavaScript to manage your account.</p>
-        </noscript>
+        <noscript><p class="page">Please enable JavaScript to manage your account.</p></noscript>
     </main>
-    
-    <footer id="site-footer">
-        <p class="footer-tagline">Made for a clearer view of your farm.</p>
-        <ul class="bottom-bar">
-            <li>
-                <a href="https://github.com/annya-s/CSD-Project" target="_blank" rel="noopener noreferrer">
-                    <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24">
-                        <use href="/icons.svg#github-icon"></use>
-                    </svg>
-                    <span>GitHub</span>
-                </a>
-            </li>
-        </ul>
-    </footer>
 </body>
 </html>

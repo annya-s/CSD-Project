@@ -3,68 +3,117 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#495f49">
-    <title>Dome · Your crops</title>
+    <meta name="theme-color" content="#F6F3EC">
+    <title>Dome · Crop health</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/styles.css">
     <script type="module" src="/dashboard.js"></script>
 </head>
 <body>
     <header class="topbar">
-        <a class="brand" href="/dashboard.html" aria-label="Dome home">dome<span class="brand-leaf" aria-hidden="true">↗</span></a>
-        <nav id="navigation" aria-label="Main navigation">
-            <a id="overview-link" class="overview-link"></a>
-            <span id="welcome"></span>
-        </nav>
-        <details>
-            <summary class="text-button">Account</summary>
-            <div class="account-menu">
-                <a href="/account.html" class="text-button" type="button">Manage account</a>
-                <button id="logout" class="text-button" type="button">Log out</button>
-            </div>
-        </details>
-    </header>
-    <main id="main">
-        <p id="global-message" role="alert" hidden></p>
-        <section id="dashboard-page" class="page workspace" hidden aria-labelledby="dashboard-title">
-            <div class="page-heading">
-                <div><span class="small-label">A view of your growing season</span><h1 id="dashboard-title" tabindex="-1">Your crops</h1></div>
-                <a class="button primary" href="/new-entry.html">+ Add new entry</a>
-            </div>
-            <p id="summary" class="summary" aria-live="polite"></p>
-            <section class="crop-filters" aria-labelledby="filter-title">
-                <div class="filter-heading"><h2 id="filter-title">Filter crops</h2><button id="clear-filters" class="secondary" type="button">Clear filters</button></div>
-                <div class="filter-controls">
-                    <label>Crop type<select id="filter-crop-type"><option value="">All crop types</option></select></label>
-                    <label>Farm name<select id="filter-farm"><option value="">All farms</option></select></label>
-                    <label>Health status<select id="filter-health"><option value="">All statuses</option><option value="healthy">Healthy</option><option value="attention">Needs attention</option></select></label>
-                    <label>Date planted<select id="filter-date"><option value="">Default order</option><option value="earliest">Earliest first</option><option value="latest">Latest first</option></select></label>
+        <div class="topbar-inner">
+            <a class="brand" data-home href="/dashboard.html"><span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-leaf"></use></svg></span>Dome</a>
+            <button id="nav-toggle" class="icon-btn nav-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="site-nav"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-menu"></use></svg></button>
+            <nav id="site-nav" class="nav" aria-label="Main navigation">
+                <div class="nav-links">
+                    <a class="nav-link" data-home href="/dashboard.html">Dashboard</a>
+                    <a class="nav-link" href="/account.html"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-user"></use></svg>Manage account</a>
                 </div>
-            </section>
-            <p id="filter-empty" class="filter-empty" role="status" hidden>No crops match the selected filters.</p>
+                <div class="nav-end">
+                    <span id="welcome" class="welcome"></span>
+                    <button id="logout" class="nav-link logout" type="button"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-logout"></use></svg>Log out</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main">
+        <div class="banner"><p id="global-message" role="alert" hidden></p></div>
+
+        <div id="loading" class="page" role="status">
+            <span class="visually-hidden">Loading your crops…</span>
+            <div class="sk-stack" aria-hidden="true">
+                <div class="skeleton sk-line sk-w30"></div>
+                <div class="skeleton sk-title"></div>
+                <div class="skeleton sk-input"></div>
+                <div class="sk-grid">
+                    <div class="skeleton sk-card"></div><div class="skeleton sk-card"></div><div class="skeleton sk-card"></div>
+                </div>
+            </div>
+        </div>
+
+        <section id="dashboard-page" class="page" hidden aria-labelledby="dashboard-title">
+            <div class="page-head">
+                <div>
+                    <span class="eyebrow">Your fields</span>
+                    <h1 id="dashboard-title" class="display" tabindex="-1">Crop health</h1>
+                    <p id="dash-sub" class="lede" aria-live="polite"></p>
+                </div>
+                <a class="btn btn-primary btn-lg" href="/new-entry.html"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-plus"></use></svg>Add crop</a>
+            </div>
+
+            <div id="summary-strip" class="summary-strip">
+                <div class="summary-cell">
+                    <span class="chip warn"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-alert"></use></svg></span>
+                    <div><p class="summary-label">Needs attention</p><p id="sum-attention" class="summary-value">—</p></div>
+                </div>
+                <div class="summary-cell">
+                    <span class="chip"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-leaf"></use></svg></span>
+                    <div><p class="summary-label">Healthy</p><p id="sum-healthy" class="summary-value">—</p></div>
+                </div>
+                <div class="summary-cell summary-weather">
+                    <span class="chip"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-sun"></use></svg></span>
+                    <div class="summary-text">
+                        <p id="sum-weather-label" class="summary-label">Weather</p>
+                        <p id="sum-weather" class="summary-value">—</p>
+                        <p id="sum-weather-note" class="summary-note"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="toolbar" role="search">
+                <div class="search">
+                    <svg class="icon" aria-hidden="true"><use href="/icons.svg#i-search"></use></svg>
+                    <input id="search" class="input" type="search" placeholder="Search crops or farms" aria-label="Search crops or farms" autocomplete="off">
+                </div>
+                <select id="filter-farm" class="select" aria-label="Filter by farm"><option value="">All farms</option></select>
+                <select id="filter-health" class="select" aria-label="Filter by health">
+                    <option value="">All health</option>
+                    <option value="attention">Needs attention</option>
+                    <option value="healthy">Healthy</option>
+                </select>
+                <select id="sort" class="select" aria-label="Sort crops">
+                    <option value="newest">Newest planted</option>
+                    <option value="oldest">Oldest planted</option>
+                    <option value="attention">Needs attention first</option>
+                    <option value="name">Crop A–Z</option>
+                </select>
+                <div class="view-toggle" role="group" aria-label="Layout">
+                    <button id="view-grid" type="button" aria-pressed="true" aria-label="Grid view"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-grid"></use></svg></button>
+                    <button id="view-list" type="button" aria-pressed="false" aria-label="List view"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-list"></use></svg></button>
+                </div>
+            </div>
+
+            <p id="filter-empty" class="filter-empty" role="status" hidden>
+                No crops match these filters. <button id="clear-filters" class="text-link" type="button">Clear filters</button>
+            </p>
             <div id="crop-grid" class="crop-grid"></div>
-            <div id="empty-state" class="empty-state" hidden>
-                <span class="empty-mark" aria-hidden="true">↗</span>
-                <h2>Your growing season starts here.</h2>
-                <p>Add a crop, its planting date, and its location. Each entry will appear here, ready to open for a closer look.</p>
-                <a class="button primary" href="/new-entry.html">Add your first crop</a>
+
+            <div id="empty-state" class="empty" hidden>
+                <svg class="empty-art" viewBox="0 0 140 104" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <ellipse cx="70" cy="88" rx="58" ry="9" fill="#E3ECDF" stroke="none"/>
+                    <path d="M22 88h96" stroke-dasharray="1 7"/>
+                    <path d="M70 88V44"/>
+                    <path d="M70 64c-15 0-25-8-27-23 15 0 25 8 27 23Z" fill="#fff"/>
+                    <path d="M70 53c2-17 13-27 30-28-1 17-13 27-30 28Z" fill="#fff"/>
+                    <path d="M56 50l6 4M84 38l-6 5"/>
+                </svg>
+                <h2>No crops yet</h2>
+                <p>Add a planting with its date and location. Dome will start tracking its weather and growing conditions right away.</p>
+                <a class="btn btn-primary" href="/new-entry.html"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-plus"></use></svg>Add your first crop</a>
             </div>
         </section>
-        <p id="loading" class="loading" role="status">Loading…</p>
-        <noscript><p class="loading">Please enable JavaScript to use your farm dashboard.</p></noscript>
+        <noscript><p class="page">Please enable JavaScript to use your farm dashboard.</p></noscript>
     </main>
-    <footer id="site-footer">
-        <p class="footer-tagline">Made for a clearer view of your farm.</p>
-        <ul class="bottom-bar">
-            <li>
-                <a href="https://github.com/annya-s/CSD-Project" target="_blank" rel="noopener noreferrer">
-                    <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24">
-                        <use href="/icons.svg#github-icon"></use>
-                    </svg>
-                    <span>GitHub</span>
-                </a>
-            </li>
-        </ul>
-    </footer>
 </body>
 </html>

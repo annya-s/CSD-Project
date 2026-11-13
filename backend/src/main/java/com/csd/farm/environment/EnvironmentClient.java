@@ -15,6 +15,8 @@ public class EnvironmentClient {
     private final RestClient restClient;
 
     public EnvironmentClient(RestClient.Builder builder) {
+        // Timeouts come from spring.http.clients.* in application.properties. Setting a request
+        // factory here would replace the mock server that @RestClientTest installs.
         this.restClient = builder.build();
     }
 
