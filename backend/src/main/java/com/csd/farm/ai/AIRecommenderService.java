@@ -79,6 +79,8 @@ public class AIRecommenderService {
         return """
                 You are an agricultural decision-support assistant.
 
+                The farmer is currently growing %s.
+
                 %s
 
                 First analyse the current weather conditions and assign an assessment
@@ -105,7 +107,7 @@ public class AIRecommenderService {
                 Do not invent missing measurements.
                 If information is unavailable, acknowledge it.
                 Keep your recommendation within three sentences.
-                """.formatted(latestReading, cropType.displayName(), historicalSummary);
+                """.formatted(cropType.displayName(), latestReading, historicalSummary);
         }
 
         private Map<String, Object> formulateSchema() {
