@@ -199,6 +199,29 @@ function renderActions(data) {
     if (!actions.length) list.replaceChildren(node('li', 'No actions needed from the current readings.', 'empty-line'));
 }
 
+const ACTION_TEXT = {
+    WATER: 'Water the crop',
+    REDUCE_WATER: 'Reduce watering',
+    SHADE: 'Provide shade',
+    PROTECT_FROM_COLD: 'Protect from cold',
+    SUPPLEMENT_LIGHT: 'Add supplementary light',
+    RELOCATE: 'Move the plants to a better spot',
+    REMOVE_DAMAGED: 'Remove damaged parts',
+    MONITOR: 'Keep monitoring'
+};
+const LEVEL_TEXT = { HIGH: 'High', MEDIUM: 'Medium', LOW: 'Low' };
+
+// Agreement with our hand-written crop guidelines, not a probability that the advice is right.
+function agreementLines(agreement) {
+    if (agreement == null) return [node('p', 'Guideline agreement unavailable', 'confidence')];
+    const expected = agreement.matched.length + agreement.missing.length;
+    const lines = [node('p', `Guideline agreement: ${LEVEL_TEXT[agreement.level]} (${Math.round(agreement.score * 100)}%) - matched ${agreement.matched.length} of ${expected} expected action${expected === 1 ? '' : 's'}`, 'confidence')];
+    if (agreement.missing.length) {
+        lines.push(node('p', 'Not mentioned: ' + agreement.missing.map(a => ACTION_TEXT[a] || a).join(', '), 'confidence'));
+    }
+    return lines;
+}
+
 async function runAssessment(cycleId) {
     const button = $('ai-button');
     const result = $('ai-result');
@@ -222,13 +245,8 @@ async function runAssessment(cycleId) {
             'recommendation'
         );
 
-        row.append(
-            tag,
-            recommendation,
-            node('p', response.confidencePercent == null
-                ? 'Confidence unavailable'
-                : `Confidence ${response.confidencePercent.toFixed(2)}%`, 'confidence')
-        );
+        if (response.recommendation == null) recommendation.textContent = 'The crop advisor did not return a usable recommendation. Please try again.';
+        row.append(tag, recommendation, ...agreementLines(response.agreement));
         result.replaceChildren(row);
     } catch (error) {
         if (error.status === 401) return showPageError(error);
