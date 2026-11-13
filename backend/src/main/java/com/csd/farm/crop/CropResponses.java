@@ -19,6 +19,8 @@ public final class CropResponses {
     public record CropDetails(CropEntry entry,Integer healthScore,List<Reading> readings,
             List<String> recommendedActions,String note,List<String> issues,boolean needsAttention,
             DailyWeather weather,String weatherSource,String weatherMessage,Prediction prediction){}
+    
+    public record AIRecommendation(String recommendation, Double confidencePercent) {}
             
     public record Prediction(String status,Double value,String unit,String message,
             Double currentEstimate, Double referenceEstimate, String projectionDate, List<Cause> causes,

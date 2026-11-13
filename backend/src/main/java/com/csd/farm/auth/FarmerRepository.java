@@ -118,6 +118,43 @@ public class FarmerRepository implements UserDetailsService {
             .orElse(null);
     }
 
+    // updateing username / email
+    public boolean usernameExists(String username) {
+        return jdbc.sql("SELECT 1 FROM " + table + " WHERE " + name + " = :value")
+            .param("value", username)
+            .query((rs, n) -> true)
+            .optional()
+            .isPresent();
+    }
+    public void updateUsername(Long userId, String username) {
+        jdbc.sql("UPDATE " + table + " SET " + name + " = :username WHERE " + id + " = :id")
+            .param("username", username)
+            .param("id", userId)
+            .update();
+    }
+    public boolean emailExists(String newEmail) {
+        return jdbc.sql("SELECT 1 FROM " + table + " WHERE " + email + " = :value")
+            .param("value", newEmail)
+            .query((rs, n) -> true)
+            .optional()
+            .isPresent();
+    }
+    @Transactional
+    public void updateEmail(Long userId, String newEmail) {
+        jdbc.sql("UPDATE " + table + " SET " + email + " = :email WHERE " + id + " = :id")
+                .param("email", newEmail)
+                .param("id", userId)
+                .update();
+        jdbc.sql("""
+                UPDATE public."ACCOUNT_STATUS"
+                SET "Email_Verified" = FALSE,
+                    "Two_Factor_Enabled" = FALSE
+                WHERE "User_ID" = :id
+                """)
+                .param("id", userId)
+                .update();
+    }
+
     @Override public UserDetails loadUserByUsername(String username) {
         return jdbc.sql("SELECT "+name+" AS username, "+hash+" AS password_hash, "+role+" AS account_role "
                         + "FROM "+table+" WHERE "+name+"=:name")
