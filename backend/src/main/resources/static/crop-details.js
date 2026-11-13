@@ -225,21 +225,21 @@ async function runAssessment(cycleId) {
     }
 }
 
-/* ---------- Biomass ---------- */
+/* ---------- Growth outlook (yield + biomass) ---------- */
 // Logistic growth shape normalised to 0 → 1 (illustrative curve between known end points).
 function growthShape(x) {
     const s = (t) => 1 / (1 + Math.exp(-9 * (t - 0.5)));
     return (s(x) - s(0)) / (s(1) - s(0));
 }
 
-function buildChart(prediction, plantedAt) {
+let chartCount = 0;
+// series: [{ value, cls: 'optimal' | 'current' | 'normal', area? }], each drawn from 0 at planting to value at endDate.
+function buildChart(plantedAt, endDate, series, label) {
     const W = 600;
     const H = 200;
-    const total = Math.max(1, daysBetween(plantedAt, prediction.projectionDate));
+    const total = Math.max(1, daysBetween(plantedAt, endDate));
     const elapsed = clamp(daysBetween(plantedAt, new Date()), 0, total);
-    const ref = prediction.referenceEstimate;
-    const cur = Number.isFinite(prediction.value) ? prediction.value : null;
-    const yMax = Math.max(ref, cur ?? 0) * 1.1 || 1;
+    const yMax = Math.max(...series.map((line) => line.value)) * 1.1 || 1;
     const points = (end) => Array.from({ length: 61 }, (_, i) => {
         const x = i / 60;
         return [x * W, H - (growthShape(x) * end / yMax) * H];
@@ -247,19 +247,20 @@ function buildChart(prediction, plantedAt) {
     const d = (pts) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
 
     const chart = node('div', undefined, 'chart');
-    const graph = svg('svg', { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'none', role: 'img',
-        'aria-label': `Projected biomass from planting to ${formatDay(prediction.projectionDate)}` });
+    const graph = svg('svg', { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'none', role: 'img', 'aria-label': label });
+    const fillId = `chart-fill-${++chartCount}`;
     const defs = svg('defs');
-    const gradient = svg('linearGradient', { id: 'optimal-fill', x1: '0', y1: '0', x2: '0', y2: '1' });
+    const gradient = svg('linearGradient', { id: fillId, x1: '0', y1: '0', x2: '0', y2: '1' });
     gradient.append(svg('stop', { offset: '0', 'stop-color': '#5E9466', 'stop-opacity': '.22' }),
         svg('stop', { offset: '1', 'stop-color': '#5E9466', 'stop-opacity': '0' }));
     defs.append(gradient);
     graph.append(defs);
     for (const f of [0.25, 0.5, 0.75]) graph.append(svg('line', { class: 'grid-line', x1: 0, x2: W, y1: H * f, y2: H * f }));
-    const optimal = points(ref);
-    graph.append(svg('path', { class: 'area-optimal', d: `${d(optimal)} L${W} ${H} L0 ${H} Z` }));
-    graph.append(svg('path', { class: 'line-optimal', d: d(optimal) }));
-    if (cur !== null) graph.append(svg('path', { class: 'line-current', d: d(points(cur)) }));
+    for (const line of series) {
+        const pts = points(line.value);
+        if (line.area) graph.append(svg('path', { d: `${d(pts)} L${W} ${H} L0 ${H} Z`, fill: `url(#${fillId})` }));
+        graph.append(svg('path', { class: `line-${line.cls}`, d: d(pts) }));
+    }
     const todayX = (elapsed / total) * W;
     graph.append(svg('line', { class: 'today-line', x1: todayX, x2: todayX, y1: 0, y2: H }));
     chart.append(graph);
@@ -267,12 +268,12 @@ function buildChart(prediction, plantedAt) {
     const axis = node('div', undefined, 'chart-axis');
     axis.append(node('span', `Planted · ${shortDay(plantedAt)}`));
     const share = elapsed / total;
-    if (share > 0.16 && share < 0.84) {
+    if (share > 0.26 && share < 0.74) { // keep clear of the end labels
         const today = node('span', 'Today', 'today');
         today.style.left = `${share * 100}%`;
         axis.append(today);
     }
-    axis.append(node('span', `Full growth · ${shortDay(prediction.projectionDate)}`));
+    axis.append(node('span', `Full growth · ${shortDay(endDate)}`));
 
     const wrap = node('div');
     wrap.append(chart, axis);
@@ -291,37 +292,39 @@ function legendItem(label, value, unit, keyClass, extraClass = '') {
     return item;
 }
 
-function renderYield(outlook) {
-    if (!outlook) return [];
-    const head = node('p', 'Yield outlook · machine learning', 'subhead');
-    const box = node('div', undefined, 'yield');
-    if (outlook.status === 'ML_ESTIMATE' && Number.isFinite(outlook.expectedYield)) {
-        const change = Math.round(100 * (outlook.ratio - 1));
-        const comparison = change === 0 ? 'About the same as a normal year'
-            : `${Math.abs(change)}% ${change > 0 ? 'above' : 'below'} a normal year`;
-        const left = node('div');
-        left.append(node('b', `${outlook.expectedYield.toFixed(1)} ${outlook.unit}`), node('p', comparison));
-        box.append(left, node('p', `Normal for ${outlook.region}: ${outlook.normalYield.toFixed(1)} ${outlook.unit} · ${outlook.model}`));
-    } else {
-        box.append(node('p', outlook.message || 'Yield outlook unavailable.'));
-    }
-    return [head, box];
+// Machine-learning yield outlook: expected vs a normal year, projected to the full-growth date.
+function yieldSection(prediction, plantedAt) {
+    const outlook = prediction.yieldOutlook;
+    const head = node('h3', 'Yield outlook · machine learning', 'subhead');
+    if (!outlook) return [head, node('p', 'Yield outlook unavailable for this crop.', 'panel-muted')];
+    const usable = outlook.status === 'ML_ESTIMATE' && Number.isFinite(outlook.expectedYield)
+        && Number.isFinite(outlook.normalYield) && prediction.projectionDate;
+    if (!usable) return [head, node('p', outlook.message || 'Yield outlook unavailable.', 'panel-muted')];
+
+    const layout = node('div', undefined, 'biomass-layout');
+    const legend = node('div', undefined, 'legend');
+    const change = Math.round(100 * (outlook.ratio - 1));
+    legend.append(
+        legendItem('Expected yield', outlook.expectedYield.toFixed(1), outlook.unit, 'opt'),
+        legendItem('Normal year', outlook.normalYield.toFixed(1), outlook.unit, 'normal'),
+        legendItem('vs normal year', change === 0 ? 'Same' : `${change > 0 ? '+' : '−'}${Math.abs(change)}%`, '', null, change < 0 ? 'loss' : 'gain')
+    );
+    layout.append(buildChart(plantedAt, prediction.projectionDate, [
+        { value: outlook.expectedYield, cls: 'optimal', area: true },
+        { value: outlook.normalYield, cls: 'normal' }
+    ], `Projected yield to ${formatDay(prediction.projectionDate)}: expected ${outlook.expectedYield.toFixed(1)}, normal ${outlook.normalYield.toFixed(1)} ${outlook.unit}`), legend);
+    const note = node('p', undefined, 'note-bar');
+    note.append(icon('i-sparkle'), node('span',
+        `Model: ${outlook.model}, nearest reference region ${outlook.region}. End-of-season yields come from the model; the curve between planting and full growth is illustrative.`));
+    return [head, layout, note];
 }
 
-function renderBiomass(data) {
-    const body = $('biomass-body');
-    const prediction = data.prediction;
-    const unit = prediction?.unit || '';
-    if (!prediction) {
-        body.replaceChildren(node('p', 'Run a prediction to compare likely growth under current and optimal conditions.', 'panel-muted'));
-        return;
+function biomassSection(prediction, plantedAt) {
+    const head = node('h3', 'Biomass · current vs optimal conditions', 'subhead');
+    const unit = prediction.unit || '';
+    if (!(Number.isFinite(prediction.referenceEstimate) && prediction.projectionDate)) {
+        return [head, node('p', prediction.message || 'Biomass estimate unavailable.', 'panel-muted')];
     }
-    const hasRef = Number.isFinite(prediction.referenceEstimate) && prediction.projectionDate;
-    if (!hasRef) {
-        body.replaceChildren(node('p', prediction.message || 'Biomass estimate unavailable.', 'panel-muted'), ...renderYield(prediction.yieldOutlook));
-        return;
-    }
-
     const cur = Number.isFinite(prediction.value) ? prediction.value : null;
     const ref = prediction.referenceEstimate;
     const layout = node('div', undefined, 'biomass-layout');
@@ -337,12 +340,15 @@ function renderBiomass(data) {
     if (Number.isFinite(prediction.currentEstimate)) {
         legend.append(legendItem('Estimated today', prediction.currentEstimate.toFixed(1), unit, null));
     }
-    layout.append(buildChart(prediction, data.entry.plantedAt), legend);
+    const series = [{ value: ref, cls: 'optimal', area: true }];
+    if (cur !== null) series.push({ value: cur, cls: 'current' });
+    layout.append(buildChart(plantedAt, prediction.projectionDate, series,
+        `Projected biomass from planting to ${formatDay(prediction.projectionDate)}`), legend);
 
-    const parts = [layout];
+    const parts = [head, layout];
     const causes = (prediction.causes || []).filter((cause) => cause.shortfallPercent >= 0.5);
     if (cur !== null && causes.length) {
-        parts.push(node('p', 'What’s holding growth back', 'subhead'));
+        parts.push(node('p', 'What’s holding growth back', 'subhead subhead-sm'));
         const list = node('ul', undefined, 'causes');
         for (const cause of causes) {
             const item = node('li');
@@ -364,8 +370,19 @@ function renderBiomass(data) {
         note.append(icon('i-leaf'), node('span', `Projected curves; the shape between planting and full growth is illustrative. ${prediction.message}`));
         parts.push(note);
     }
-    parts.push(...renderYield(prediction.yieldOutlook));
-    body.replaceChildren(...parts);
+    return parts;
+}
+
+function renderBiomass(data) {
+    const prediction = data.prediction;
+    if (!prediction) {
+        $('biomass-body').replaceChildren(node('p', 'Run a prediction to see the machine-learning yield outlook and the biomass projection.', 'panel-muted'));
+        return;
+    }
+    $('biomass-body').replaceChildren(
+        ...yieldSection(prediction, data.entry.plantedAt),
+        ...biomassSection(prediction, data.entry.plantedAt)
+    );
 }
 
 /* ---------- Timeline ---------- */

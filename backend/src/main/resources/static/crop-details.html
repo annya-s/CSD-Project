@@ -22,9 +22,11 @@
                 <div class="nav-links">
                     <a class="nav-link" data-home href="/dashboard.html">Dashboard</a>
                     <a class="nav-link" href="/account.html"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-user"></use></svg>Manage account</a>
+                </div>
+                <div class="nav-end">
+                    <span id="welcome" class="welcome"></span>
                     <button id="logout" class="nav-link logout" type="button"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-logout"></use></svg>Log out</button>
                 </div>
-                <span id="welcome" class="welcome"></span>
             </nav>
         </div>
     </header>
@@ -78,10 +80,10 @@
                         <div class="card-head">
                             <div>
                                 <span class="eyebrow">Growth outlook</span>
-                                <h2 id="biomass-title" class="serif-title">Biomass prediction</h2>
-                                <p class="card-desc">Compare likely growth under current and optimal field conditions.</p>
+                                <h2 id="biomass-title" class="serif-title">Yield &amp; biomass prediction</h2>
+                                <p class="card-desc">Machine-learning yield outlook, then likely growth under current and optimal field conditions.</p>
                             </div>
-                            <button id="run-prediction" class="btn btn-primary btn-sm" type="button"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-sprout"></use></svg>Predict biomass</button>
+                            <button id="run-prediction" class="btn btn-primary btn-sm" type="button"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-sprout"></use></svg>Run prediction</button>
                         </div>
                         <p id="prediction-run-status" class="run-status" role="status"></p>
                         <div id="biomass-body"></div>

@@ -18,9 +18,11 @@
                 <div class="nav-links">
                     <a class="nav-link" data-home href="/dashboard.html">Dashboard</a>
                     <a class="nav-link" href="/account.html"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-user"></use></svg>Manage account</a>
+                </div>
+                <div class="nav-end">
+                    <span id="welcome" class="welcome"></span>
                     <button id="logout" class="nav-link logout" type="button"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-logout"></use></svg>Log out</button>
                 </div>
-                <span id="welcome" class="welcome"></span>
             </nav>
         </div>
     </header>
@@ -61,8 +63,11 @@
                 </div>
                 <div class="summary-cell summary-weather">
                     <span class="chip"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-sun"></use></svg></span>
-                    <div><p id="sum-weather-label" class="summary-label">Weather</p><p id="sum-weather" class="summary-value">—</p></div>
-                    <p id="sum-weather-note" class="summary-aside"></p>
+                    <div class="summary-text">
+                        <p id="sum-weather-label" class="summary-label">Weather</p>
+                        <p id="sum-weather" class="summary-value">—</p>
+                        <p id="sum-weather-note" class="summary-note"></p>
+                    </div>
                 </div>
             </div>
 
