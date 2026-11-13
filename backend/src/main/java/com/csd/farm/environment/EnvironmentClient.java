@@ -1,10 +1,8 @@
 package com.csd.farm.environment;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -17,11 +15,9 @@ public class EnvironmentClient {
     private final RestClient restClient;
 
     public EnvironmentClient(RestClient.Builder builder) {
-        // Fail fast when Open-Meteo stalls; callers fall back to saved readings.
-        var factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(Duration.ofSeconds(3));
-        factory.setReadTimeout(Duration.ofSeconds(5));
-        this.restClient = builder.requestFactory(factory).build();
+        // Timeouts come from spring.http.clients.* in application.properties. Setting a request
+        // factory here would replace the mock server that @RestClientTest installs.
+        this.restClient = builder.build();
     }
 
     public OpenMeteoResponse fetchLatestMeteoData(double latitude, double longitude) {
