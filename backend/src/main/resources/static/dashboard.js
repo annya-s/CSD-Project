@@ -10,9 +10,9 @@ let dashboardData = { crops: [] };
 
 /* ---------- Pieces ---------- */
 
-// Readings within range out of all readings shown; ones without a reference range count as not in range.
+// Temperature and sunlight within range, out of 2 (the only readings with backend reference ranges).
 function rangeRing(crop) {
-    const assessed = crop.readings;
+    const assessed = crop.readings.filter((r) => r.name === 'Temperature' || r.name === 'Sunlight');
     if (!assessed.length) return null;
     const inRange = assessed.filter((r) => r.status === 'WITHIN_RANGE').length;
     const ring = node('div', undefined, `ring${crop.needsAttention ? ' warn' : ''}`);
