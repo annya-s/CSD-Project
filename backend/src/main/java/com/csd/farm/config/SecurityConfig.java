@@ -104,7 +104,7 @@ public class SecurityConfig {
 		.headers(headers -> headers
 			.contentSecurityPolicy(policy -> policy.policyDirectives(
 				"default-src 'self' https://unpkg.com; "
-				+ "img-src 'self' data: https://tile.openstreetmap.org https://unpkg.com https://stadiamaps.com "
+				+ "img-src 'self' data: https://tile.openstreetmap.org https://unpkg.com https://stadiamaps.com; "
 				+ "style-src 'self' https://unpkg.com; "
 				+ "script-src 'self' https://unpkg.com; "
 				+ "connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'")));

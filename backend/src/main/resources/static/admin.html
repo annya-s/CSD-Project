@@ -3,70 +3,86 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#495f49">
-    <title>Dome · Administration</title>
+    <meta name="theme-color" content="#F6F3EC">
+    <title>Dome · User administration</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/styles.css">
     <script type="module" src="/admin.js"></script>
 </head>
 <body>
     <header class="topbar">
-        <a class="brand" href="/admin.html" aria-label="Dome admin">dome<span class="brand-leaf" aria-hidden="true">↗</span></a>
-        <nav aria-label="Main navigation">
-            <a id="overview-link" class="overview-link"></a>
-            <span id="welcome"></span>
-        </nav>
-        <details>
-            <summary class="text-button">Account</summary>
-            <div class="account-menu">
-                <a href="/account.html" class="text-button" type="button">Manage account</a>
-                <button id="logout" class="text-button" type="button">Log out</button>
-            </div>
-        </details>
+        <div class="topbar-inner">
+            <a class="brand" data-home href="/admin.html"><span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-leaf"></use></svg></span>Dome</a>
+            <button id="nav-toggle" class="icon-btn nav-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="site-nav"><svg class="icon" aria-hidden="true"><use href="/icons.svg#i-menu"></use></svg></button>
+            <nav id="site-nav" class="nav" aria-label="Main navigation">
+                <div class="nav-links">
+                    <a class="nav-link" data-home href="/admin.html">Dashboard</a>
+                    <a class="nav-link" href="/account.html"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-user"></use></svg>Manage account</a>
+                </div>
+                <div class="nav-end">
+                    <span id="welcome" class="welcome"></span>
+                    <button id="logout" class="nav-link logout" type="button"><svg class="icon icon-sm" aria-hidden="true"><use href="/icons.svg#i-logout"></use></svg>Log out</button>
+                </div>
+            </nav>
+        </div>
     </header>
 
     <main id="main">
-        <p id="global-message" role="alert" hidden></p>
-        <p id="loading" class="loading" role="status">Checking administrator access…</p>
-        <section id="admin-page" class="page workspace" aria-labelledby="admin-title" hidden>
-            <div class="page-heading">
+        <div class="banner"><p id="global-message" role="alert" hidden></p></div>
+
+        <div id="loading" class="page" role="status">
+            <span class="visually-hidden">Checking administrator access…</span>
+            <div class="sk-stack" aria-hidden="true">
+                <div class="skeleton sk-line sk-w30"></div>
+                <div class="skeleton sk-title"></div>
+                <div class="skeleton sk-input"></div>
+                <div class="skeleton sk-card"></div>
+            </div>
+        </div>
+
+        <section id="admin-page" class="page" hidden aria-labelledby="admin-title">
+            <div class="page-head">
                 <div>
-                    <span class="small-label">Administration</span>
-                    <h1 id="admin-title">User management</h1>
+                    <span class="eyebrow">Account controls</span>
+                    <h1 id="admin-title" class="display" tabindex="-1">User administration</h1>
+                    <p id="admin-status" class="lede" aria-live="polite"></p>
                 </div>
             </div>
-            <p id="admin-status"></p>
-            <section id="users-section" hidden>
-                <h2>All accounts</h2>
-                <table>
+
+            <div class="admin-tools" role="search">
+                <div class="search">
+                    <svg class="icon" aria-hidden="true"><use href="/icons.svg#i-search"></use></svg>
+                    <input id="user-search" class="input" type="search" placeholder="Search users or email…" aria-label="Search users or email" autocomplete="off">
+                </div>
+                <select id="filter-verified" class="select" aria-label="Filter by verification">
+                    <option value="">All verification</option>
+                    <option value="yes">Verified</option>
+                    <option value="no">Unverified</option>
+                </select>
+                <select id="filter-2fa" class="select" aria-label="Filter by two-factor">
+                    <option value="">All 2FA</option>
+                    <option value="yes">2FA enabled</option>
+                    <option value="no">2FA disabled</option>
+                </select>
+            </div>
+
+            <div class="card table-card">
+                <table class="user-table">
                     <thead>
                         <tr>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Email verified</th>
-                            <th>Two-factor</th>
-                            <th>New password</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Verification</th>
+                            <th scope="col">2FA</th>
+                            <th scope="col">New password</th>
+                            <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="users-body"></tbody>
                 </table>
-            </section>
+                <p id="users-empty" class="admin-empty" hidden></p>
+            </div>
         </section>
-        <noscript><p class="loading">Please enable JavaScript to use the admin dashboard.</p></noscript>
+        <noscript><p class="page">Please enable JavaScript to use administration.</p></noscript>
     </main>
-
-    <footer id="site-footer">
-        <p class="footer-tagline">Made for a clearer view of your farm.</p>
-        <ul class="bottom-bar">
-            <li>
-                <a href="https://github.com/annya-s/CSD-Project" target="_blank" rel="noopener noreferrer">
-                    <svg class="button-icon" aria-hidden="true" viewBox="0 0 24 24">
-                        <use href="/icons.svg#github-icon"></use>
-                    </svg>
-                    <span>GitHub</span>
-                </a>
-            </li>
-        </ul>
-    </footer>
 </body>
 </html>
