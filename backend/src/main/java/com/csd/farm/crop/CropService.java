@@ -114,6 +114,7 @@ public class CropService {
         CropHealthService.Assessment assessment = health.assess(entry.cropType(), weather);
 
         List<EnvironmentReading> historicalReadings = environmentService.getHistoricalReading(cycleId.intValue());
+        historicalReadings.add(environmentService.getLatestReading(cycleId.intValue()));
 
         String recommendation = aiRecommender.getRecommendation(
                 entry.cropType(),
