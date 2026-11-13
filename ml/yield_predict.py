@@ -68,16 +68,11 @@ def predict(request):
     row = pd.DataFrame([dict(crop=crop, **weather, abs_latitude=abs(lat), **anomalies)])[metadata["features"]]
     ratio = float(model.predict(row)[0])
     location = LOCATIONS[nearest["location"]]
-    test = metadata["metrics"][metadata["selected_model"]]["test"]
     return dict(status="ML_ESTIMATE", ratio=round(ratio, 4),
                 expected_yield=round(ratio * nearest["normal_yield_t_ha"], 2),
                 normal_yield=nearest["normal_yield_t_ha"], unit="t/ha",
                 region=f"{location['region']}, {location['area']}",
-                model=MODEL_NAMES.get(metadata["selected_model"], metadata["selected_model"]),
-                message=(f"Machine-learning estimate from FAO national yields and weather for "
-                         f"{metadata['locations']} countries, {metadata['years'][0]}–{metadata['years'][1]}. "
-                         f"Typical error on unseen years: ±{test['mae_pct']:.0f}% of a normal yield. "
-                         "Assumes the last 14 days' weather is typical of the whole season."))
+                model=MODEL_NAMES.get(metadata["selected_model"], metadata["selected_model"]))
 
 
 if __name__ == "__main__":

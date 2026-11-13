@@ -132,9 +132,7 @@ function renderYield(outlook) {
     } else {
         $('yield-result').textContent = outlook.message || 'Yield outlook unavailable.';
         $('yield-normal').textContent = '';
-    }
-    $('yield-note').textContent = outlook.status === 'ML_ESTIMATE' ? outlook.message : '';
-}
+    }}
 
 // Only this file handles the crop-details screen.
 function renderDetails(data, cropTypes) {
