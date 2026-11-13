@@ -10,9 +10,9 @@ let dashboardData = { crops: [] };
 
 /* ---------- Pieces ---------- */
 
-// Readings within range out of those the backend could assess (the dashboard has no health score).
+// Readings within range out of all readings shown; ones without a reference range count as not in range.
 function rangeRing(crop) {
-    const assessed = crop.readings.filter((r) => r.status && r.status !== 'NOT_ASSESSED');
+    const assessed = crop.readings;
     if (!assessed.length) return null;
     const inRange = assessed.filter((r) => r.status === 'WITHIN_RANGE').length;
     const ring = node('div', undefined, `ring${crop.needsAttention ? ' warn' : ''}`);

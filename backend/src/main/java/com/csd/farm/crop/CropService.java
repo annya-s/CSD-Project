@@ -143,15 +143,15 @@ public class CropService {
             entry.latitude(),entry.longitude(),result.weather(),assessment.readings(),assessment.needsAttention(),result.source(),result.message());
     }
     private CropDetails cropDetails(Long owner,CropEntry entry){
-        // Page loading must never wait for Open-Meteo or a Python process.
-        DailyWeather w=weatherReadings.find(entry.cropCycleId()).orElse(null);
+        // Same weather source as the dashboard (15-minute cache, falls back to saved readings) so both pages agree.
+        // The Python model still only runs when the farmer presses Run prediction.
+        var result=weatherService.load(owner,entry);DailyWeather w=result.weather();
         var assessment=health.assess(entry.cropType(),w);
         var prediction=new CropResponses.Prediction("NOT_RUN",null,null,
                 "Press Run biomass prediction to calculate the estimate and target.");
         return new CropDetails(entry,null,assessment.readings(),assessment.recommendedActions(),
             DETAILS_NOTE,assessment.issues(),assessment.needsAttention(),
-            w,w==null?"UNAVAILABLE":"SAVED",
-            w==null?"No saved weather readings yet.":"Saved weather readings; check their date. Predictions use separate 14-day averages.",prediction);
+            w,result.source(),result.message(),prediction);
     }
     private String refreshHistoricalAverages(CropEntry entry){
         // Respect offline/manual-weather mode. Existing saved averages can still be used.

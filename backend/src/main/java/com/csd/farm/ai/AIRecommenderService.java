@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,9 +46,12 @@ public class AIRecommenderService {
     private static final Map<String, Object> RESPONSE_SCHEMA = Map.of(
             "type", "object",
             "properties", Map.of(
-                    "recommendation", Map.of("type", "string", "description", "At most three sentences."),
-                    "actions", Map.of("type", "array", "items", Map.of("type", "string", "enum", ACTION_NAMES))),
-            "required", List.of("recommendation", "actions"));
+                "recommendation", Map.of("type", "string", "description", "At most three sentences."),
+                "actions", Map.of("type", "array",
+                        "items", Map.of("type", "string", "enum", ACTION_NAMES)),
+                "vpd", Map.of("type", "string", "enum", Arrays.asList("WITHIN_RANGE", "ABOVE_RANGE", "ABOVE_RANGE_SEVERE")),
+                "soil_moisture", Map.of("type", "string", "enum", Arrays.asList("WITHIN_RANGE", "ABOVE_RANGE", "ABOVE_RANGE_SEVERE"))),
+        "required", List.of("recommendation", "actions"));
 
     /** The advisor's text plus the actions it prescribes, in the guideline vocabulary. */
     public record Advice(String recommendation, List<RecommendedAction> actions) {}
@@ -117,6 +121,7 @@ public class AIRecommenderService {
                 optimal range, and whether it has gone far outside it.
                 - Whether the daily sunshine has been below, within or above what the crop needs.
                 - Whether soil moisture has been increasing or decreasing.
+                - Whether the vpn has been below, within or above what the crop needs.
                 - Whether the stress is temporary (a few days) or sustained (most of the period).
 
                 Choose actions only from this list, using these definitions:
