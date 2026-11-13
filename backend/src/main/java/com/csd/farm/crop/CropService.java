@@ -113,7 +113,8 @@ public class CropService {
     public CropResponses.AIRecommendation assessWithAI(String username, Long cycleId) {
         CropEntry entry = findCrop(userId(username), cycleId);
         List<EnvironmentReading> historicalReadings = environmentService.getHistoricalReading(cycleId.intValue());
-        historicalReadings.add(environmentService.getLatestReading(cycleId.intValue()));
+        EnvironmentReading latestReading = environmentService.getLatestReading(cycleId.intValue());
+        if (latestReading != null) { historicalReadings.add(latestReading); }
 
         var advice = aiRecommender.getRecommendation(entry.cropType(), historicalReadings).orElse(null);
         if (advice == null) return new CropResponses.AIRecommendation(null, null);
