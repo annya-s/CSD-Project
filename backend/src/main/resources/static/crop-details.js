@@ -205,15 +205,12 @@ async function runAssessment(cycleId) {
         }
     );
 
-    actions.replaceChildren(
-        node('li', result.recommendation),
-        node(
-            'li',
+    const recommendations = result.recommendation.split(/\.(?=\s|$)/).map(sentence => sentence.trim()).filter(sentence => sentence.length > 0);
+    actions.replaceChildren(...recommendations.map(sentence => node('li', sentence + '.')),
+        node('li', 
             result.confidencePercent == null
-                ? 'Confidence unavailable for this crop.'
-                : `Confidence: ${result.confidencePercent.toFixed(2)}%`
-        )
-    );
+                ? 'Confidence unavailable for this crop.' : `Confidence: ${result.confidencePercent.toFixed(2)}%`
+        ));
     } catch (error) {
         actions.replaceChildren(
             node('li', 'Unable to generate crop recommendations. Please try again later.')
