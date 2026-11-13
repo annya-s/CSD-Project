@@ -1,22 +1,25 @@
 package com.csd.farm.crop;
 
-import java.time.OffsetDateTime;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import com.csd.farm.auth.FarmerRepository;
-import com.csd.farm.environment.EnvironmentService;
-import com.csd.farm.crop.CropResponses.CropDetails;
-import com.csd.farm.crop.CropResponses.CropOption;
-import com.csd.farm.crop.CropResponses.Dashboard;
-import com.csd.farm.crop.CropResponses.DashboardCrop;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
+import com.csd.farm.ai.AIRecommenderService;
+import com.csd.farm.auth.FarmerRepository;
+import com.csd.farm.crop.CropResponses.CropDetails;
+import com.csd.farm.crop.CropResponses.CropOption;
+import com.csd.farm.crop.CropResponses.Dashboard;
+import com.csd.farm.crop.CropResponses.DashboardCrop;
+import com.csd.farm.environment.EnvironmentService;
 
 @Service
 public class CropService {
@@ -28,15 +31,16 @@ public class CropService {
     private final CropWeatherRepository weatherReadings;
     private final CropHealthService health;
     private final CropWeatherService weatherService;
-    private final MLPredictionService predictions;
+    private final BiomassEstimateService predictions;
     private final EnvironmentService environmentService;
     private final JdbcClient jdbc;
+    private final AIRecommenderService aiRecommender;
     // Re-fetch once per application run so old, untagged soil-depth rows are not reused.
     private final java.util.Set<Long> refreshedSoilDepth = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     public CropService(CropRepository crops,CropTypeRepository cropTypes,FarmerRepository farmers,FarmRepository farms,
             CropWeatherRepository weatherReadings,CropHealthService health,CropWeatherService weatherService, 
-            MLPredictionService predictions,EnvironmentService environmentService,JdbcClient jdbc){
+            BiomassEstimateService predictions,EnvironmentService environmentService,JdbcClient jdbc, AIRecommenderService aiRecommender){
         this.crops=crops;
         this.cropTypes=cropTypes;
         this.farmers=farmers;
@@ -47,11 +51,8 @@ public class CropService {
         this.predictions=predictions;
         this.environmentService=environmentService;
         this.jdbc=jdbc;
+        this.aiRecommender=aiRecommender;
     }
-    CropResponses.Prediction synthetic(CropType crop, int age, String scenario){
-        return predictions.synthetic(crop, age, scenario);
-    }
-
     public List<CropOption> cropTypes(){
         return cropTypes.findAll();
     }
@@ -104,11 +105,54 @@ public class CropService {
             throw new ResponseStatusException(HttpStatus.CONFLICT,"A newer weather day is already saved for this crop.");
         return cropDetails(owner,entry);
     }
+
+    public CropResponses.AIRecommendation assessWithAI(String username, Long cycleId) {
+        CropEntry entry = findCrop(userId(username), cycleId);
+        DailyWeather weather = weatherReadings.find(cycleId).orElse(null);
+
+        CropHealthService.Assessment assessment = health.assess(entry.cropType(), weather);
+
+        String recommendation = aiRecommender.getRecommendation(
+                entry.cropType(),
+                weather == null ? null : weather.temperatureMeanC(),
+                weather == null ? null : weather.soilMoistureMeanM3M3(),
+                weather == null ? null : weather.vapourPressureDeficitMeanKpa();
+                weather == null ? null : weather.sunshineDurationSeconds()
+        );
+
+        Double confidencePercent = null;
+        var conditions = CropConditions.forCrop(entry.cropType());
+
+        if (conditions != null && recommendation != null && !recommendation.equals("No AI Response")) {
+            String temperatureStatus = assessment.readings().stream()
+                    .filter(r -> r.name().equals("Temperature"))
+                    .map(CropHealthService.Reading::status)
+                    .findFirst()
+                    .orElse("NOT_ASSESSED");
+
+            String sunshineStatus = assessment.readings().stream()
+                    .filter(r -> r.name().equals("Sunlight"))
+                    .map(CropHealthService.Reading::status)
+                    .findFirst()
+                    .orElse("NOT_ASSESSED");
+
+            Double confidence = conditions.checkAction(
+                    temperatureStatus,
+                    sunshineStatus,
+                    recommendation
+            );
+
+            confidencePercent = confidence == null ? null : confidence * 100;
+        }
+
+        return new CropResponses.AIRecommendation(recommendation, confidencePercent);
+    }
+
     private DashboardCrop dashboardCrop(Long owner,CropEntry entry){
         var result=weatherService.load(owner,entry);DailyWeather w=result.weather();
         var assessment=health.assess(entry.cropType(),w);
         return new DashboardCrop(entry.cropCycleId(),entry.farmName(),entry.cropType(),entry.plantedAt(),
-            entry.latitude(),entry.longitude(),w,assessment.readings(),assessment.needsAttention(),result.source(),result.message());
+            entry.latitude(),entry.longitude(),result.weather(),assessment.readings(),assessment.needsAttention(),result.source(),result.message());
     }
     private CropDetails cropDetails(Long owner,CropEntry entry){
         // Page loading must never wait for Open-Meteo or a Python process.
@@ -144,7 +188,7 @@ public class CropService {
             }
             return "";
         } catch(RuntimeException failure){
-            // Keep the page and synthetic target available if the API or database fails.
+            // Keep the page and full-growth target available if the API or database fails.
             org.slf4j.LoggerFactory.getLogger(CropService.class).warn(
                 "Historical weather refresh failed for crop cycle {} ({})",
                 entry.cropCycleId(),failure.getClass().getSimpleName());

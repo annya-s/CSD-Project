@@ -32,9 +32,12 @@
                 <h2>Username</h2>
                 <div class="input-field">
                     <label for="username">Username</label>
-                    <input id="username" type="text" autocomplete="username" disabled>
+                    <input id="username" type="text" autocomplete="username" maxlength="40">
                 </div>
-                <p class="field-hint">Username cannot be changed.</p>
+                <p id="username-error" class="form-error" role="alert" hidden></p>
+                <div class="button-row">
+                    <button id="update-username" class="primary" type="button"> Update username </button>
+                </div>
             </section>
 
             <section class="section">
@@ -43,7 +46,14 @@
                     <span id="email" class="email"></span>
                     <span id="email-status" class="status"></span>
                 </div>
-                <!-- <button id="change-email" class="secondary" type="button">Change email</button> -->
+                <div class="input-field">
+                    <label for="new-email">New email</label>
+                    <input id="new-email" type="email" autocomplete="email" maxlength="254" placeholder=" ">
+                </div>
+                <p id="email-error" class="form-error" role="alert" hidden></p>
+                <div class="button-row">
+                    <button id="update-email" class="primary" type="button"> Update email </button>
+                </div>
             </section>
 
             <section id="verify-email-section" class="section" hidden>

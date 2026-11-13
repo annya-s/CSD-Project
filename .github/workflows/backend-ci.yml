@@ -36,6 +36,7 @@ jobs:
       TEST_DB_URL: jdbc:postgresql://127.0.0.1:5432/farm_ci
       TEST_DB_USERNAME: farm_ci
       TEST_DB_PASSWORD: ci_only
+      GOOGLE_API_KEY: ci-placeholder-not-a-real-key
     defaults:
       run:
         working-directory: backend
