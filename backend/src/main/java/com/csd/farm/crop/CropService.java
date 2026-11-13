@@ -31,7 +31,7 @@ public class CropService {
     private final CropWeatherRepository weatherReadings;
     private final CropHealthService health;
     private final CropWeatherService weatherService;
-    private final MLPredictionService predictions;
+    private final BiomassEstimateService predictions;
     private final EnvironmentService environmentService;
     private final JdbcClient jdbc;
     private final AIRecommenderService aiRecommender;
@@ -40,7 +40,7 @@ public class CropService {
 
     public CropService(CropRepository crops,CropTypeRepository cropTypes,FarmerRepository farmers,FarmRepository farms,
             CropWeatherRepository weatherReadings,CropHealthService health,CropWeatherService weatherService, 
-            MLPredictionService predictions,EnvironmentService environmentService,JdbcClient jdbc, AIRecommenderService aiRecommender){
+            BiomassEstimateService predictions,EnvironmentService environmentService,JdbcClient jdbc, AIRecommenderService aiRecommender){
         this.crops=crops;
         this.cropTypes=cropTypes;
         this.farmers=farmers;
@@ -53,10 +53,6 @@ public class CropService {
         this.jdbc=jdbc;
         this.aiRecommender=aiRecommender;
     }
-    CropResponses.Prediction synthetic(CropType crop, int age, String scenario){
-        return predictions.synthetic(crop, age, scenario);
-    }
-
     public List<CropOption> cropTypes(){
         return cropTypes.findAll();
     }
@@ -191,7 +187,7 @@ public class CropService {
             }
             return "";
         } catch(RuntimeException failure){
-            // Keep the page and synthetic target available if the API or database fails.
+            // Keep the page and full-growth target available if the API or database fails.
             org.slf4j.LoggerFactory.getLogger(CropService.class).warn(
                 "Historical weather refresh failed for crop cycle {} ({})",
                 entry.cropCycleId(),failure.getClass().getSimpleName());

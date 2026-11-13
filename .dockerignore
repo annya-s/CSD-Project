@@ -15,4 +15,4 @@ ml/data
 ml/archive
 ml/ml
 ml/model/*
-!ml/model/averages/
+!ml/model/yield/

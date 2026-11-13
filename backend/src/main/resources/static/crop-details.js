@@ -112,13 +112,36 @@ function renderCropPhoto(cropType, cropName) {
     image.src = imagePath;
 }
 
+// Two significant figures for small readings (0.15 m³/m³), one decimal for larger ones (18.3 °C).
+function formatReading(value) {
+    return Math.abs(value) >= 10 ? value.toFixed(1) : String(Number(value.toPrecision(2)));
+}
+
+// The ML yield outlook: expected yield for the nearest training region, as t/ha and vs a normal year.
+function renderYield(outlook) {
+    $('yield-outlook').hidden = !outlook;
+    if (!outlook) return;
+    if (outlook.status === 'ML_ESTIMATE' && Number.isFinite(outlook.expectedYield)) {
+        const change = Math.round(100 * (outlook.ratio - 1));
+        const comparison = change === 0 ? 'about the same as a normal year'
+            : `${Math.abs(change)}% ${change > 0 ? 'above' : 'below'} a normal year`;
+        $('yield-result').textContent = `Expected yield: ${outlook.expectedYield.toFixed(1)} ${outlook.unit}, `
+            + `${comparison}.`;
+        $('yield-normal').textContent = `Normal yield for the nearest reference region (${outlook.region}): `
+            + `${outlook.normalYield.toFixed(1)} ${outlook.unit}. Model: ${outlook.model}.`;
+    } else {
+        $('yield-result').textContent = outlook.message || 'Yield outlook unavailable.';
+        $('yield-normal').textContent = '';
+    }}
+
 // Only this file handles the crop-details screen.
 function renderDetails(data, cropTypes) {
     const name = cropTypes.find((type) => type.code === data.entry.cropType)?.name || data.entry.cropType;
-    $('run-prediction').textContent = `Run ${name.toLowerCase()} biomass prediction`;
+    $('run-prediction').textContent = `Run ${name.toLowerCase()} yield and biomass prediction`;
     const prediction = data.prediction;
+    renderYield(prediction?.yieldOutlook);
     const comparison = $('biomass-comparison');
-    const available = prediction?.status === 'SYNTHETIC_DEMO'
+    const available = prediction?.status === 'ESTIMATE'
         && Number.isFinite(prediction.value) && Number.isFinite(prediction.referenceEstimate)
         && prediction.projectionDate;
     const hasTarget = Number.isFinite(prediction?.referenceEstimate) && prediction.projectionDate;
@@ -131,12 +154,20 @@ function renderDetails(data, cropTypes) {
         const unit = prediction.unit;
         $('biomass-result').textContent = 'Predicted biomass at full growth if recent conditions continue: '
             + prediction.value.toFixed(1) + ' ' + unit + ' on ' + prediction.projectionDate + '.';
-        const difference = prediction.referenceEstimate - prediction.value;
-        $('biomass-gap').textContent = 'Difference from full-growth target: '
-            + (difference > 0 ? '+' : '') + difference.toFixed(1) + ' ' + unit + '.';
+        const shortfall = prediction.referenceEstimate > 0
+            ? 100 * (1 - prediction.value / prediction.referenceEstimate) : 0;
+        $('biomass-gap').textContent = shortfall < 0.5
+            ? 'This matches the full-growth target: recent weather is close to optimal.'
+            : `This is ${shortfall.toFixed(0)}% below the full-growth target. What causes the gap:`;
+        $('biomass-causes').replaceChildren(...(prediction.causes || [])
+            .filter((cause) => cause.shortfallPercent >= 0.5)
+            .map((cause) => node('li', `${cause.shortfallPercent.toFixed(0)}% from ${cause.factor.toLowerCase()} `
+                + `${cause.direction} (${formatReading(cause.actual)} vs optimal `
+                + `${formatReading(cause.optimal)} ${cause.unit})`)));
     } else {
         $('biomass-result').textContent = prediction?.message || 'Biomass estimate unavailable.';
         $('biomass-gap').textContent = '';
+        $('biomass-causes').replaceChildren();
     }
     document.title = `Dome · ${name}`;
     $('detail-title').textContent = name;
@@ -222,7 +253,7 @@ async function start() {
                 });
                 const updated = { ...details, prediction };
                 renderDetails(updated, cropTypes);
-                if (manual) status.textContent = updated.prediction?.status === 'SYNTHETIC_DEMO'
+                if (manual) status.textContent = updated.prediction?.status === 'ESTIMATE'
                     ? 'Prediction updated. Compare the estimate and target below for the same date.'
                     : 'Prediction unavailable. See the explanation below.';
             } catch (error) {

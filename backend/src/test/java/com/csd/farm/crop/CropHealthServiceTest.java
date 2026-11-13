@@ -11,8 +11,11 @@ class CropHealthServiceTest {
 
     private final CropHealthService health = new CropHealthService();
 
+    // Crop types without reference conditions are covered by cropsWithoutConditionsAreNotAssessed.
     @ParameterizedTest
-    @EnumSource(CropType.class)
+    @EnumSource(value = CropType.class,
+            names = {"SUGAR_BEET", "SPRING_WHEAT", "FABA_BEAN", "WINTER_BARLEY", "RAPESEED", "SPELT"},
+            mode = EnumSource.Mode.EXCLUDE)
     void allCropsIncludeTheirBoundariesAndDetectValuesOutsideThem(CropType type) {
         var conditions = CropConditions.forCrop(type);
         double minimumTemperature = conditions.getTemperatureRange().getOptimalMinimum();
@@ -29,28 +32,46 @@ class CropHealthServiceTest {
         assertThat(atMinimum.needsAttention()).isFalse();
         assertThat(atMaximum.needsAttention()).isFalse();
 
+        // Just outside the optimum is ABOVE/BELOW_RANGE, or _SEVERE where a crop's severe limit
+        // sits at the optimum edge; temperature and sunshine each raise their own issue.
         var below = health.assess(type, weather(minimumTemperature - 0.01, minimumSeconds - 1));
-        assertThat(below.readings().get(0).status()).isEqualTo("BELOW_RANGE");
-        assertThat(below.readings().get(3).status()).isEqualTo("BELOW_RANGE");
+        assertThat(below.readings().get(0).status()).startsWith("BELOW_RANGE");
+        assertThat(below.readings().get(3).status()).startsWith("BELOW_RANGE");
         assertThat(below.needsAttention()).isTrue();
         assertThat(below.issues()).hasSize(2);
 
         var above = health.assess(type, weather(maximumTemperature + 0.01, maximumSeconds + 1));
-        assertThat(above.readings().get(0).status()).isEqualTo("ABOVE_RANGE");
-        assertThat(above.readings().get(3).status()).isEqualTo("ABOVE_RANGE");
+        assertThat(above.readings().get(0).status()).startsWith("ABOVE_RANGE");
+        assertThat(above.readings().get(3).status()).startsWith("ABOVE_RANGE");
         assertThat(above.needsAttention()).isTrue();
-        assertThat(above.issues()).hasSize(1);
+        assertThat(above.issues()).hasSize(2);
     }
 
     @Test
-    void secondsBecomeHoursAndLongSunshineAloneDoesNotFlagDamage() {
+    void secondsBecomeHoursAndLongSunshineIsFlagged() {
         var result = health.assess(CropType.POTATO, weather(20.0, 30600.0));
         assertThat(result.readings().get(3).value()).isEqualTo(8.5);
         assertThat(result.readings().get(3).status()).isEqualTo("ABOVE_RANGE");
+        assertThat(result.needsAttention()).isTrue();
+        assertThat(result.issues()).containsExactly("Daily sunshine is above this crop's reference range.");
+    }
+
+    @Test
+    void severeLimitsAreReported() {
+        // Potato: 15-25 °C optimum, severe beyond 7-30 °C.
+        assertThat(health.assess(CropType.POTATO, weather(31.0, 25200.0)).readings().get(0).status())
+                .isEqualTo("ABOVE_RANGE_SEVERE");
+        assertThat(health.assess(CropType.POTATO, weather(6.0, 25200.0)).readings().get(0).status())
+                .isEqualTo("BELOW_RANGE_SEVERE");
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = CropType.class,
+            names = {"SUGAR_BEET", "SPRING_WHEAT", "FABA_BEAN", "WINTER_BARLEY", "RAPESEED", "SPELT"})
+    void cropsWithoutConditionsAreNotAssessed(CropType type) {
+        var result = health.assess(type, weather(30.0, 30600.0));
+        assertThat(result.readings()).allMatch(reading -> reading.status().equals("NOT_ASSESSED"));
         assertThat(result.needsAttention()).isFalse();
-        assertThat(result.issues()).isEmpty();
-        assertThat(result.recommendedActions())
-        .anyMatch(action -> action.contains("Continue monitoring. Temperature and sunlight are within their reference ranges; vapour pressure deficit and soil moisture remain unassessed."));
     }
 
     @Test

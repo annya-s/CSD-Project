@@ -1,0 +1,2074 @@
+[
+ {
+  "crop": "APPLE",
+  "location": "ARG",
+  "lat": -34.5,
+  "lon": -61.0,
+  "normal_yield_t_ha": 27.914
+ },
+ {
+  "crop": "CARROT",
+  "location": "ARG",
+  "lat": -34.5,
+  "lon": -61.0,
+  "normal_yield_t_ha": 33.407
+ },
+ {
+  "crop": "MAIZE",
+  "location": "ARG",
+  "lat": -34.5,
+  "lon": -61.0,
+  "normal_yield_t_ha": 7.057
+ },
+ {
+  "crop": "POTATO",
+  "location": "ARG",
+  "lat": -34.5,
+  "lon": -61.0,
+  "normal_yield_t_ha": 35.657
+ },
+ {
+  "crop": "RICE",
+  "location": "ARG",
+  "lat": -34.5,
+  "lon": -61.0,
+  "normal_yield_t_ha": 7.02
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "ARG",
+  "lat": -34.5,
+  "lon": -61.0,
+  "normal_yield_t_ha": 2.793
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "ARG",
+  "lat": -34.5,
+  "lon": -61.0,
+  "normal_yield_t_ha": 34.194
+ },
+ {
+  "crop": "TOMATO",
+  "location": "ARG",
+  "lat": -34.5,
+  "lon": -61.0,
+  "normal_yield_t_ha": 73.991
+ },
+ {
+  "crop": "WHEAT",
+  "location": "ARG",
+  "lat": -34.5,
+  "lon": -61.0,
+  "normal_yield_t_ha": 3.09
+ },
+ {
+  "crop": "APPLE",
+  "location": "AUS",
+  "lat": -34.5,
+  "lon": 147.0,
+  "normal_yield_t_ha": 16.179
+ },
+ {
+  "crop": "CARROT",
+  "location": "AUS",
+  "lat": -34.5,
+  "lon": 147.0,
+  "normal_yield_t_ha": 61.217
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "AUS",
+  "lat": -34.5,
+  "lon": 147.0,
+  "normal_yield_t_ha": 16.61
+ },
+ {
+  "crop": "MAIZE",
+  "location": "AUS",
+  "lat": -34.5,
+  "lon": 147.0,
+  "normal_yield_t_ha": 7.045
+ },
+ {
+  "crop": "POTATO",
+  "location": "AUS",
+  "lat": -34.5,
+  "lon": 147.0,
+  "normal_yield_t_ha": 41.602
+ },
+ {
+  "crop": "RICE",
+  "location": "AUS",
+  "lat": -34.5,
+  "lon": 147.0,
+  "normal_yield_t_ha": 10.601
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "AUS",
+  "lat": -34.5,
+  "lon": 147.0,
+  "normal_yield_t_ha": 1.964
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "AUS",
+  "lat": -34.5,
+  "lon": 147.0,
+  "normal_yield_t_ha": 85.223
+ },
+ {
+  "crop": "TOMATO",
+  "location": "AUS",
+  "lat": -34.5,
+  "lon": 147.0,
+  "normal_yield_t_ha": 81.366
+ },
+ {
+  "crop": "WHEAT",
+  "location": "AUS",
+  "lat": -34.5,
+  "lon": 147.0,
+  "normal_yield_t_ha": 2.543
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "BGD",
+  "lat": 24.0,
+  "lon": 90.0,
+  "normal_yield_t_ha": 5.936
+ },
+ {
+  "crop": "MAIZE",
+  "location": "BGD",
+  "lat": 24.0,
+  "lon": 90.0,
+  "normal_yield_t_ha": 9.485
+ },
+ {
+  "crop": "POTATO",
+  "location": "BGD",
+  "lat": 24.0,
+  "lon": 90.0,
+  "normal_yield_t_ha": 23.27
+ },
+ {
+  "crop": "RICE",
+  "location": "BGD",
+  "lat": 24.0,
+  "lon": 90.0,
+  "normal_yield_t_ha": 5.229
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "BGD",
+  "lat": 24.0,
+  "lon": 90.0,
+  "normal_yield_t_ha": 1.81
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "BGD",
+  "lat": 24.0,
+  "lon": 90.0,
+  "normal_yield_t_ha": 42.583
+ },
+ {
+  "crop": "TOMATO",
+  "location": "BGD",
+  "lat": 24.0,
+  "lon": 90.0,
+  "normal_yield_t_ha": 16.066
+ },
+ {
+  "crop": "WHEAT",
+  "location": "BGD",
+  "lat": 24.0,
+  "lon": 90.0,
+  "normal_yield_t_ha": 3.574
+ },
+ {
+  "crop": "APPLE",
+  "location": "BRA",
+  "lat": -24.0,
+  "lon": -51.5,
+  "normal_yield_t_ha": 36.144
+ },
+ {
+  "crop": "MAIZE",
+  "location": "BRA",
+  "lat": -24.0,
+  "lon": -51.5,
+  "normal_yield_t_ha": 5.902
+ },
+ {
+  "crop": "POTATO",
+  "location": "BRA",
+  "lat": -24.0,
+  "lon": -51.5,
+  "normal_yield_t_ha": 35.022
+ },
+ {
+  "crop": "RICE",
+  "location": "BRA",
+  "lat": -24.0,
+  "lon": -51.5,
+  "normal_yield_t_ha": 7.092
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "BRA",
+  "lat": -24.0,
+  "lon": -51.5,
+  "normal_yield_t_ha": 3.362
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "BRA",
+  "lat": -24.0,
+  "lon": -51.5,
+  "normal_yield_t_ha": 75.911
+ },
+ {
+  "crop": "TOMATO",
+  "location": "BRA",
+  "lat": -24.0,
+  "lon": -51.5,
+  "normal_yield_t_ha": 73.52
+ },
+ {
+  "crop": "WHEAT",
+  "location": "BRA",
+  "lat": -24.0,
+  "lon": -51.5,
+  "normal_yield_t_ha": 2.891
+ },
+ {
+  "crop": "APPLE",
+  "location": "BGR",
+  "lat": 43.4,
+  "lon": 24.1,
+  "normal_yield_t_ha": 12.383
+ },
+ {
+  "crop": "CARROT",
+  "location": "BGR",
+  "lat": 43.4,
+  "lon": 24.1,
+  "normal_yield_t_ha": 22.337
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "BGR",
+  "lat": 43.4,
+  "lon": 24.1,
+  "normal_yield_t_ha": 23.1
+ },
+ {
+  "crop": "MAIZE",
+  "location": "BGR",
+  "lat": 43.4,
+  "lon": 24.1,
+  "normal_yield_t_ha": 6.223
+ },
+ {
+  "crop": "POTATO",
+  "location": "BGR",
+  "lat": 43.4,
+  "lon": 24.1,
+  "normal_yield_t_ha": 18.596
+ },
+ {
+  "crop": "RICE",
+  "location": "BGR",
+  "lat": 43.4,
+  "lon": 24.1,
+  "normal_yield_t_ha": 5.764
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "BGR",
+  "lat": 43.4,
+  "lon": 24.1,
+  "normal_yield_t_ha": 1.582
+ },
+ {
+  "crop": "TOMATO",
+  "location": "BGR",
+  "lat": 43.4,
+  "lon": 24.1,
+  "normal_yield_t_ha": 41.061
+ },
+ {
+  "crop": "WHEAT",
+  "location": "BGR",
+  "lat": 43.4,
+  "lon": 24.1,
+  "normal_yield_t_ha": 5.694
+ },
+ {
+  "crop": "APPLE",
+  "location": "CAN",
+  "lat": 50.5,
+  "lon": -105.0,
+  "normal_yield_t_ha": 25.756
+ },
+ {
+  "crop": "CARROT",
+  "location": "CAN",
+  "lat": 50.5,
+  "lon": -105.0,
+  "normal_yield_t_ha": 45.739
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "CAN",
+  "lat": 50.5,
+  "lon": -105.0,
+  "normal_yield_t_ha": 21.826
+ },
+ {
+  "crop": "MAIZE",
+  "location": "CAN",
+  "lat": 50.5,
+  "lon": -105.0,
+  "normal_yield_t_ha": 10.661
+ },
+ {
+  "crop": "POTATO",
+  "location": "CAN",
+  "lat": 50.5,
+  "lon": -105.0,
+  "normal_yield_t_ha": 48.337
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "CAN",
+  "lat": 50.5,
+  "lon": -105.0,
+  "normal_yield_t_ha": 3.188
+ },
+ {
+  "crop": "TOMATO",
+  "location": "CAN",
+  "lat": 50.5,
+  "lon": -105.0,
+  "normal_yield_t_ha": 86.783
+ },
+ {
+  "crop": "WHEAT",
+  "location": "CAN",
+  "lat": 50.5,
+  "lon": -105.0,
+  "normal_yield_t_ha": 3.508
+ },
+ {
+  "crop": "APPLE",
+  "location": "EGY",
+  "lat": 30.6,
+  "lon": 31.0,
+  "normal_yield_t_ha": 26.962
+ },
+ {
+  "crop": "CARROT",
+  "location": "EGY",
+  "lat": 30.6,
+  "lon": 31.0,
+  "normal_yield_t_ha": 29.207
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "EGY",
+  "lat": 30.6,
+  "lon": 31.0,
+  "normal_yield_t_ha": 19.393
+ },
+ {
+  "crop": "MAIZE",
+  "location": "EGY",
+  "lat": 30.6,
+  "lon": 31.0,
+  "normal_yield_t_ha": 7.35
+ },
+ {
+  "crop": "POTATO",
+  "location": "EGY",
+  "lat": 30.6,
+  "lon": 31.0,
+  "normal_yield_t_ha": 29.655
+ },
+ {
+  "crop": "RICE",
+  "location": "EGY",
+  "lat": 30.6,
+  "lon": 31.0,
+  "normal_yield_t_ha": 9.081
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "EGY",
+  "lat": 30.6,
+  "lon": 31.0,
+  "normal_yield_t_ha": 3.092
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "EGY",
+  "lat": 30.6,
+  "lon": 31.0,
+  "normal_yield_t_ha": 105.036
+ },
+ {
+  "crop": "TOMATO",
+  "location": "EGY",
+  "lat": 30.6,
+  "lon": 31.0,
+  "normal_yield_t_ha": 42.036
+ },
+ {
+  "crop": "WHEAT",
+  "location": "EGY",
+  "lat": 30.6,
+  "lon": 31.0,
+  "normal_yield_t_ha": 6.658
+ },
+ {
+  "crop": "APPLE",
+  "location": "FRA",
+  "lat": 48.3,
+  "lon": 1.8,
+  "normal_yield_t_ha": 34.391
+ },
+ {
+  "crop": "CARROT",
+  "location": "FRA",
+  "lat": 48.3,
+  "lon": 1.8,
+  "normal_yield_t_ha": 43.798
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "FRA",
+  "lat": 48.3,
+  "lon": 1.8,
+  "normal_yield_t_ha": 27.245
+ },
+ {
+  "crop": "MAIZE",
+  "location": "FRA",
+  "lat": 48.3,
+  "lon": 1.8,
+  "normal_yield_t_ha": 9.024
+ },
+ {
+  "crop": "POTATO",
+  "location": "FRA",
+  "lat": 48.3,
+  "lon": 1.8,
+  "normal_yield_t_ha": 42.092
+ },
+ {
+  "crop": "RICE",
+  "location": "FRA",
+  "lat": 48.3,
+  "lon": 1.8,
+  "normal_yield_t_ha": 5.173
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "FRA",
+  "lat": 48.3,
+  "lon": 1.8,
+  "normal_yield_t_ha": 2.593
+ },
+ {
+  "crop": "TOMATO",
+  "location": "FRA",
+  "lat": 48.3,
+  "lon": 1.8,
+  "normal_yield_t_ha": 129.076
+ },
+ {
+  "crop": "WHEAT",
+  "location": "FRA",
+  "lat": 48.3,
+  "lon": 1.8,
+  "normal_yield_t_ha": 6.877
+ },
+ {
+  "crop": "APPLE",
+  "location": "DEU",
+  "lat": 52.0,
+  "lon": 11.0,
+  "normal_yield_t_ha": 30.178
+ },
+ {
+  "crop": "CARROT",
+  "location": "DEU",
+  "lat": 52.0,
+  "lon": 11.0,
+  "normal_yield_t_ha": 61.006
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "DEU",
+  "lat": 52.0,
+  "lon": 11.0,
+  "normal_yield_t_ha": 31.35
+ },
+ {
+  "crop": "MAIZE",
+  "location": "DEU",
+  "lat": 52.0,
+  "lon": 11.0,
+  "normal_yield_t_ha": 9.726
+ },
+ {
+  "crop": "POTATO",
+  "location": "DEU",
+  "lat": 52.0,
+  "lon": 11.0,
+  "normal_yield_t_ha": 43.444
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "DEU",
+  "lat": 52.0,
+  "lon": 11.0,
+  "normal_yield_t_ha": 2.984
+ },
+ {
+  "crop": "TOMATO",
+  "location": "DEU",
+  "lat": 52.0,
+  "lon": 11.0,
+  "normal_yield_t_ha": 289.226
+ },
+ {
+  "crop": "WHEAT",
+  "location": "DEU",
+  "lat": 52.0,
+  "lon": 11.0,
+  "normal_yield_t_ha": 7.544
+ },
+ {
+  "crop": "APPLE",
+  "location": "IND",
+  "lat": 29.0,
+  "lon": 77.0,
+  "normal_yield_t_ha": 8.822
+ },
+ {
+  "crop": "CARROT",
+  "location": "IND",
+  "lat": 29.0,
+  "lon": 77.0,
+  "normal_yield_t_ha": 18.601
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "IND",
+  "lat": 29.0,
+  "lon": 77.0,
+  "normal_yield_t_ha": 6.266
+ },
+ {
+  "crop": "MAIZE",
+  "location": "IND",
+  "lat": 29.0,
+  "lon": 77.0,
+  "normal_yield_t_ha": 3.428
+ },
+ {
+  "crop": "POTATO",
+  "location": "IND",
+  "lat": 29.0,
+  "lon": 77.0,
+  "normal_yield_t_ha": 25.174
+ },
+ {
+  "crop": "RICE",
+  "location": "IND",
+  "lat": 29.0,
+  "lon": 77.0,
+  "normal_yield_t_ha": 4.319
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "IND",
+  "lat": 29.0,
+  "lon": 77.0,
+  "normal_yield_t_ha": 1.104
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "IND",
+  "lat": 29.0,
+  "lon": 77.0,
+  "normal_yield_t_ha": 81.046
+ },
+ {
+  "crop": "TOMATO",
+  "location": "IND",
+  "lat": 29.0,
+  "lon": 77.0,
+  "normal_yield_t_ha": 26.216
+ },
+ {
+  "crop": "WHEAT",
+  "location": "IND",
+  "lat": 29.0,
+  "lon": 77.0,
+  "normal_yield_t_ha": 3.545
+ },
+ {
+  "crop": "CARROT",
+  "location": "IDN",
+  "lat": -7.5,
+  "lon": 111.0,
+  "normal_yield_t_ha": 17.889
+ },
+ {
+  "crop": "MAIZE",
+  "location": "IDN",
+  "lat": -7.5,
+  "lon": 111.0,
+  "normal_yield_t_ha": 6.314
+ },
+ {
+  "crop": "POTATO",
+  "location": "IDN",
+  "lat": -7.5,
+  "lon": 111.0,
+  "normal_yield_t_ha": 19.452
+ },
+ {
+  "crop": "RICE",
+  "location": "IDN",
+  "lat": -7.5,
+  "lon": 111.0,
+  "normal_yield_t_ha": 5.412
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "IDN",
+  "lat": -7.5,
+  "lon": 111.0,
+  "normal_yield_t_ha": 1.64
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "IDN",
+  "lat": -7.5,
+  "lon": 111.0,
+  "normal_yield_t_ha": 62.683
+ },
+ {
+  "crop": "TOMATO",
+  "location": "IDN",
+  "lat": -7.5,
+  "lon": 111.0,
+  "normal_yield_t_ha": 19.545
+ },
+ {
+  "crop": "APPLE",
+  "location": "IRN",
+  "lat": 36.3,
+  "lon": 50.0,
+  "normal_yield_t_ha": 19.313
+ },
+ {
+  "crop": "CARROT",
+  "location": "IRN",
+  "lat": 36.3,
+  "lon": 50.0,
+  "normal_yield_t_ha": 25.173
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "IRN",
+  "lat": 36.3,
+  "lon": 50.0,
+  "normal_yield_t_ha": 30.663
+ },
+ {
+  "crop": "MAIZE",
+  "location": "IRN",
+  "lat": 36.3,
+  "lon": 50.0,
+  "normal_yield_t_ha": 6.684
+ },
+ {
+  "crop": "POTATO",
+  "location": "IRN",
+  "lat": 36.3,
+  "lon": 50.0,
+  "normal_yield_t_ha": 33.613
+ },
+ {
+  "crop": "RICE",
+  "location": "IRN",
+  "lat": 36.3,
+  "lon": 50.0,
+  "normal_yield_t_ha": 4.835
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "IRN",
+  "lat": 36.3,
+  "lon": 50.0,
+  "normal_yield_t_ha": 2.511
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "IRN",
+  "lat": 36.3,
+  "lon": 50.0,
+  "normal_yield_t_ha": 87.934
+ },
+ {
+  "crop": "TOMATO",
+  "location": "IRN",
+  "lat": 36.3,
+  "lon": 50.0,
+  "normal_yield_t_ha": 47.229
+ },
+ {
+  "crop": "WHEAT",
+  "location": "IRN",
+  "lat": 36.3,
+  "lon": 50.0,
+  "normal_yield_t_ha": 2.359
+ },
+ {
+  "crop": "APPLE",
+  "location": "ITA",
+  "lat": 45.0,
+  "lon": 10.5,
+  "normal_yield_t_ha": 44.195
+ },
+ {
+  "crop": "CARROT",
+  "location": "ITA",
+  "lat": 45.0,
+  "lon": 10.5,
+  "normal_yield_t_ha": 44.295
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "ITA",
+  "lat": 45.0,
+  "lon": 10.5,
+  "normal_yield_t_ha": 23.356
+ },
+ {
+  "crop": "MAIZE",
+  "location": "ITA",
+  "lat": 45.0,
+  "lon": 10.5,
+  "normal_yield_t_ha": 10.168
+ },
+ {
+  "crop": "POTATO",
+  "location": "ITA",
+  "lat": 45.0,
+  "lon": 10.5,
+  "normal_yield_t_ha": 29.106
+ },
+ {
+  "crop": "RICE",
+  "location": "ITA",
+  "lat": 45.0,
+  "lon": 10.5,
+  "normal_yield_t_ha": 6.619
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "ITA",
+  "lat": 45.0,
+  "lon": 10.5,
+  "normal_yield_t_ha": 3.433
+ },
+ {
+  "crop": "TOMATO",
+  "location": "ITA",
+  "lat": 45.0,
+  "lon": 10.5,
+  "normal_yield_t_ha": 62.698
+ },
+ {
+  "crop": "WHEAT",
+  "location": "ITA",
+  "lat": 45.0,
+  "lon": 10.5,
+  "normal_yield_t_ha": 4.087
+ },
+ {
+  "crop": "APPLE",
+  "location": "JPN",
+  "lat": 36.4,
+  "lon": 139.6,
+  "normal_yield_t_ha": 20.052
+ },
+ {
+  "crop": "CARROT",
+  "location": "JPN",
+  "lat": 36.4,
+  "lon": 139.6,
+  "normal_yield_t_ha": 35.463
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "JPN",
+  "lat": 36.4,
+  "lon": 139.6,
+  "normal_yield_t_ha": 27.954
+ },
+ {
+  "crop": "MAIZE",
+  "location": "JPN",
+  "lat": 36.4,
+  "lon": 139.6,
+  "normal_yield_t_ha": 2.733
+ },
+ {
+  "crop": "POTATO",
+  "location": "JPN",
+  "lat": 36.4,
+  "lon": 139.6,
+  "normal_yield_t_ha": 30.899
+ },
+ {
+  "crop": "RICE",
+  "location": "JPN",
+  "lat": 36.4,
+  "lon": 139.6,
+  "normal_yield_t_ha": 7.018
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "JPN",
+  "lat": 36.4,
+  "lon": 139.6,
+  "normal_yield_t_ha": 1.584
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "JPN",
+  "lat": 36.4,
+  "lon": 139.6,
+  "normal_yield_t_ha": 53.738
+ },
+ {
+  "crop": "TOMATO",
+  "location": "JPN",
+  "lat": 36.4,
+  "lon": 139.6,
+  "normal_yield_t_ha": 62.864
+ },
+ {
+  "crop": "WHEAT",
+  "location": "JPN",
+  "lat": 36.4,
+  "lon": 139.6,
+  "normal_yield_t_ha": 4.483
+ },
+ {
+  "crop": "APPLE",
+  "location": "KEN",
+  "lat": 0.5,
+  "lon": 35.3,
+  "normal_yield_t_ha": 4.938
+ },
+ {
+  "crop": "CARROT",
+  "location": "KEN",
+  "lat": 0.5,
+  "lon": 35.3,
+  "normal_yield_t_ha": 28.7
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "KEN",
+  "lat": 0.5,
+  "lon": 35.3,
+  "normal_yield_t_ha": 18.922
+ },
+ {
+  "crop": "MAIZE",
+  "location": "KEN",
+  "lat": 0.5,
+  "lon": 35.3,
+  "normal_yield_t_ha": 1.637
+ },
+ {
+  "crop": "POTATO",
+  "location": "KEN",
+  "lat": 0.5,
+  "lon": 35.3,
+  "normal_yield_t_ha": 11.251
+ },
+ {
+  "crop": "RICE",
+  "location": "KEN",
+  "lat": 0.5,
+  "lon": 35.3,
+  "normal_yield_t_ha": 5.441
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "KEN",
+  "lat": 0.5,
+  "lon": 35.3,
+  "normal_yield_t_ha": 1.126
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "KEN",
+  "lat": 0.5,
+  "lon": 35.3,
+  "normal_yield_t_ha": 73.504
+ },
+ {
+  "crop": "TOMATO",
+  "location": "KEN",
+  "lat": 0.5,
+  "lon": 35.3,
+  "normal_yield_t_ha": 22.261
+ },
+ {
+  "crop": "WHEAT",
+  "location": "KEN",
+  "lat": 0.5,
+  "lon": 35.3,
+  "normal_yield_t_ha": 2.707
+ },
+ {
+  "crop": "APPLE",
+  "location": "KOR",
+  "lat": 36.5,
+  "lon": 127.3,
+  "normal_yield_t_ha": 14.769
+ },
+ {
+  "crop": "CARROT",
+  "location": "KOR",
+  "lat": 36.5,
+  "lon": 127.3,
+  "normal_yield_t_ha": 34.235
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "KOR",
+  "lat": 36.5,
+  "lon": 127.3,
+  "normal_yield_t_ha": 25.253
+ },
+ {
+  "crop": "MAIZE",
+  "location": "KOR",
+  "lat": 36.5,
+  "lon": 127.3,
+  "normal_yield_t_ha": 5.761
+ },
+ {
+  "crop": "POTATO",
+  "location": "KOR",
+  "lat": 36.5,
+  "lon": 127.3,
+  "normal_yield_t_ha": 24.819
+ },
+ {
+  "crop": "RICE",
+  "location": "KOR",
+  "lat": 36.5,
+  "lon": 127.3,
+  "normal_yield_t_ha": 6.999
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "KOR",
+  "lat": 36.5,
+  "lon": 127.3,
+  "normal_yield_t_ha": 1.986
+ },
+ {
+  "crop": "TOMATO",
+  "location": "KOR",
+  "lat": 36.5,
+  "lon": 127.3,
+  "normal_yield_t_ha": 63.296
+ },
+ {
+  "crop": "WHEAT",
+  "location": "KOR",
+  "lat": 36.5,
+  "lon": 127.3,
+  "normal_yield_t_ha": 4.036
+ },
+ {
+  "crop": "APPLE",
+  "location": "MEX",
+  "lat": 20.5,
+  "lon": -102.5,
+  "normal_yield_t_ha": 14.798
+ },
+ {
+  "crop": "CARROT",
+  "location": "MEX",
+  "lat": 20.5,
+  "lon": -102.5,
+  "normal_yield_t_ha": 30.503
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "MEX",
+  "lat": 20.5,
+  "lon": -102.5,
+  "normal_yield_t_ha": 23.908
+ },
+ {
+  "crop": "MAIZE",
+  "location": "MEX",
+  "lat": 20.5,
+  "lon": -102.5,
+  "normal_yield_t_ha": 4.089
+ },
+ {
+  "crop": "POTATO",
+  "location": "MEX",
+  "lat": 20.5,
+  "lon": -102.5,
+  "normal_yield_t_ha": 31.983
+ },
+ {
+  "crop": "RICE",
+  "location": "MEX",
+  "lat": 20.5,
+  "lon": -102.5,
+  "normal_yield_t_ha": 6.866
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "MEX",
+  "lat": 20.5,
+  "lon": -102.5,
+  "normal_yield_t_ha": 1.757
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "MEX",
+  "lat": 20.5,
+  "lon": -102.5,
+  "normal_yield_t_ha": 70.161
+ },
+ {
+  "crop": "TOMATO",
+  "location": "MEX",
+  "lat": 20.5,
+  "lon": -102.5,
+  "normal_yield_t_ha": 52.316
+ },
+ {
+  "crop": "WHEAT",
+  "location": "MEX",
+  "lat": 20.5,
+  "lon": -102.5,
+  "normal_yield_t_ha": 5.816
+ },
+ {
+  "crop": "APPLE",
+  "location": "NLD",
+  "lat": 52.6,
+  "lon": 5.5,
+  "normal_yield_t_ha": 40.536
+ },
+ {
+  "crop": "CARROT",
+  "location": "NLD",
+  "lat": 52.6,
+  "lon": 5.5,
+  "normal_yield_t_ha": 63.323
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "NLD",
+  "lat": 52.6,
+  "lon": 5.5,
+  "normal_yield_t_ha": 27.537
+ },
+ {
+  "crop": "MAIZE",
+  "location": "NLD",
+  "lat": 52.6,
+  "lon": 5.5,
+  "normal_yield_t_ha": 9.99
+ },
+ {
+  "crop": "POTATO",
+  "location": "NLD",
+  "lat": 52.6,
+  "lon": 5.5,
+  "normal_yield_t_ha": 41.964
+ },
+ {
+  "crop": "TOMATO",
+  "location": "NLD",
+  "lat": 52.6,
+  "lon": 5.5,
+  "normal_yield_t_ha": 482.484
+ },
+ {
+  "crop": "WHEAT",
+  "location": "NLD",
+  "lat": 52.6,
+  "lon": 5.5,
+  "normal_yield_t_ha": 8.601
+ },
+ {
+  "crop": "APPLE",
+  "location": "NZL",
+  "lat": -43.6,
+  "lon": 172.0,
+  "normal_yield_t_ha": 60.888
+ },
+ {
+  "crop": "CARROT",
+  "location": "NZL",
+  "lat": -43.6,
+  "lon": 172.0,
+  "normal_yield_t_ha": 47.828
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "NZL",
+  "lat": -43.6,
+  "lon": 172.0,
+  "normal_yield_t_ha": 27.171
+ },
+ {
+  "crop": "MAIZE",
+  "location": "NZL",
+  "lat": -43.6,
+  "lon": 172.0,
+  "normal_yield_t_ha": 11.521
+ },
+ {
+  "crop": "POTATO",
+  "location": "NZL",
+  "lat": -43.6,
+  "lon": 172.0,
+  "normal_yield_t_ha": 52.07
+ },
+ {
+  "crop": "TOMATO",
+  "location": "NZL",
+  "lat": -43.6,
+  "lon": 172.0,
+  "normal_yield_t_ha": 116.385
+ },
+ {
+  "crop": "WHEAT",
+  "location": "NZL",
+  "lat": -43.6,
+  "lon": 172.0,
+  "normal_yield_t_ha": 10.026
+ },
+ {
+  "crop": "CARROT",
+  "location": "NGA",
+  "lat": 10.5,
+  "lon": 7.5,
+  "normal_yield_t_ha": 8.932
+ },
+ {
+  "crop": "MAIZE",
+  "location": "NGA",
+  "lat": 10.5,
+  "lon": 7.5,
+  "normal_yield_t_ha": 2.013
+ },
+ {
+  "crop": "POTATO",
+  "location": "NGA",
+  "lat": 10.5,
+  "lon": 7.5,
+  "normal_yield_t_ha": 4.023
+ },
+ {
+  "crop": "RICE",
+  "location": "NGA",
+  "lat": 10.5,
+  "lon": 7.5,
+  "normal_yield_t_ha": 2.17
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "NGA",
+  "lat": 10.5,
+  "lon": 7.5,
+  "normal_yield_t_ha": 1.046
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "NGA",
+  "lat": 10.5,
+  "lon": 7.5,
+  "normal_yield_t_ha": 15.378
+ },
+ {
+  "crop": "TOMATO",
+  "location": "NGA",
+  "lat": 10.5,
+  "lon": 7.5,
+  "normal_yield_t_ha": 3.738
+ },
+ {
+  "crop": "WHEAT",
+  "location": "NGA",
+  "lat": 10.5,
+  "lon": 7.5,
+  "normal_yield_t_ha": 1.806
+ },
+ {
+  "crop": "APPLE",
+  "location": "PAK",
+  "lat": 31.0,
+  "lon": 73.0,
+  "normal_yield_t_ha": 9.477
+ },
+ {
+  "crop": "CARROT",
+  "location": "PAK",
+  "lat": 31.0,
+  "lon": 73.0,
+  "normal_yield_t_ha": 21.936
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "PAK",
+  "lat": 31.0,
+  "lon": 73.0,
+  "normal_yield_t_ha": 1.094
+ },
+ {
+  "crop": "MAIZE",
+  "location": "PAK",
+  "lat": 31.0,
+  "lon": 73.0,
+  "normal_yield_t_ha": 6.383
+ },
+ {
+  "crop": "POTATO",
+  "location": "PAK",
+  "lat": 31.0,
+  "lon": 73.0,
+  "normal_yield_t_ha": 25.631
+ },
+ {
+  "crop": "RICE",
+  "location": "PAK",
+  "lat": 31.0,
+  "lon": 73.0,
+  "normal_yield_t_ha": 4.024
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "PAK",
+  "lat": 31.0,
+  "lon": 73.0,
+  "normal_yield_t_ha": 0.645
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "PAK",
+  "lat": 31.0,
+  "lon": 73.0,
+  "normal_yield_t_ha": 70.378
+ },
+ {
+  "crop": "TOMATO",
+  "location": "PAK",
+  "lat": 31.0,
+  "lon": 73.0,
+  "normal_yield_t_ha": 10.74
+ },
+ {
+  "crop": "WHEAT",
+  "location": "PAK",
+  "lat": 31.0,
+  "lon": 73.0,
+  "normal_yield_t_ha": 3.089
+ },
+ {
+  "crop": "CARROT",
+  "location": "PHL",
+  "lat": 15.6,
+  "lon": 120.8,
+  "normal_yield_t_ha": 14.262
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "PHL",
+  "lat": 15.6,
+  "lon": 120.8,
+  "normal_yield_t_ha": 7.981
+ },
+ {
+  "crop": "MAIZE",
+  "location": "PHL",
+  "lat": 15.6,
+  "lon": 120.8,
+  "normal_yield_t_ha": 3.492
+ },
+ {
+  "crop": "POTATO",
+  "location": "PHL",
+  "lat": 15.6,
+  "lon": 120.8,
+  "normal_yield_t_ha": 16.517
+ },
+ {
+  "crop": "RICE",
+  "location": "PHL",
+  "lat": 15.6,
+  "lon": 120.8,
+  "normal_yield_t_ha": 4.247
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "PHL",
+  "lat": 15.6,
+  "lon": 120.8,
+  "normal_yield_t_ha": 1.42
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "PHL",
+  "lat": 15.6,
+  "lon": 120.8,
+  "normal_yield_t_ha": 55.805
+ },
+ {
+  "crop": "TOMATO",
+  "location": "PHL",
+  "lat": 15.6,
+  "lon": 120.8,
+  "normal_yield_t_ha": 14.884
+ },
+ {
+  "crop": "APPLE",
+  "location": "POL",
+  "lat": 52.0,
+  "lon": 19.0,
+  "normal_yield_t_ha": 24.326
+ },
+ {
+  "crop": "CARROT",
+  "location": "POL",
+  "lat": 52.0,
+  "lon": 19.0,
+  "normal_yield_t_ha": 38.597
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "POL",
+  "lat": 52.0,
+  "lon": 19.0,
+  "normal_yield_t_ha": 23.516
+ },
+ {
+  "crop": "MAIZE",
+  "location": "POL",
+  "lat": 52.0,
+  "lon": 19.0,
+  "normal_yield_t_ha": 7.024
+ },
+ {
+  "crop": "POTATO",
+  "location": "POL",
+  "lat": 52.0,
+  "lon": 19.0,
+  "normal_yield_t_ha": 30.614
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "POL",
+  "lat": 52.0,
+  "lon": 19.0,
+  "normal_yield_t_ha": 2.501
+ },
+ {
+  "crop": "TOMATO",
+  "location": "POL",
+  "lat": 52.0,
+  "lon": 19.0,
+  "normal_yield_t_ha": 106.278
+ },
+ {
+  "crop": "WHEAT",
+  "location": "POL",
+  "lat": 52.0,
+  "lon": 19.0,
+  "normal_yield_t_ha": 5.182
+ },
+ {
+  "crop": "APPLE",
+  "location": "ROU",
+  "lat": 44.4,
+  "lon": 26.0,
+  "normal_yield_t_ha": 9.831
+ },
+ {
+  "crop": "CARROT",
+  "location": "ROU",
+  "lat": 44.4,
+  "lon": 26.0,
+  "normal_yield_t_ha": 13.614
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "ROU",
+  "lat": 44.4,
+  "lon": 26.0,
+  "normal_yield_t_ha": 16.664
+ },
+ {
+  "crop": "MAIZE",
+  "location": "ROU",
+  "lat": 44.4,
+  "lon": 26.0,
+  "normal_yield_t_ha": 5.021
+ },
+ {
+  "crop": "POTATO",
+  "location": "ROU",
+  "lat": 44.4,
+  "lon": 26.0,
+  "normal_yield_t_ha": 16.034
+ },
+ {
+  "crop": "RICE",
+  "location": "ROU",
+  "lat": 44.4,
+  "lon": 26.0,
+  "normal_yield_t_ha": 5.392
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "ROU",
+  "lat": 44.4,
+  "lon": 26.0,
+  "normal_yield_t_ha": 2.45
+ },
+ {
+  "crop": "TOMATO",
+  "location": "ROU",
+  "lat": 44.4,
+  "lon": 26.0,
+  "normal_yield_t_ha": 19.372
+ },
+ {
+  "crop": "WHEAT",
+  "location": "ROU",
+  "lat": 44.4,
+  "lon": 26.0,
+  "normal_yield_t_ha": 4.52
+ },
+ {
+  "crop": "APPLE",
+  "location": "RUS",
+  "lat": 52.0,
+  "lon": 40.0,
+  "normal_yield_t_ha": 10.944
+ },
+ {
+  "crop": "CARROT",
+  "location": "RUS",
+  "lat": 52.0,
+  "lon": 40.0,
+  "normal_yield_t_ha": 32.63
+ },
+ {
+  "crop": "MAIZE",
+  "location": "RUS",
+  "lat": 52.0,
+  "lon": 40.0,
+  "normal_yield_t_ha": 6.055
+ },
+ {
+  "crop": "POTATO",
+  "location": "RUS",
+  "lat": 52.0,
+  "lon": 40.0,
+  "normal_yield_t_ha": 18.066
+ },
+ {
+  "crop": "RICE",
+  "location": "RUS",
+  "lat": 52.0,
+  "lon": 40.0,
+  "normal_yield_t_ha": 6.235
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "RUS",
+  "lat": 52.0,
+  "lon": 40.0,
+  "normal_yield_t_ha": 1.726
+ },
+ {
+  "crop": "TOMATO",
+  "location": "RUS",
+  "lat": 52.0,
+  "lon": 40.0,
+  "normal_yield_t_ha": 38.76
+ },
+ {
+  "crop": "WHEAT",
+  "location": "RUS",
+  "lat": 52.0,
+  "lon": 40.0,
+  "normal_yield_t_ha": 3.136
+ },
+ {
+  "crop": "APPLE",
+  "location": "ZAF",
+  "lat": -27.0,
+  "lon": 27.5,
+  "normal_yield_t_ha": 43.358
+ },
+ {
+  "crop": "CARROT",
+  "location": "ZAF",
+  "lat": -27.0,
+  "lon": 27.5,
+  "normal_yield_t_ha": 30.004
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "ZAF",
+  "lat": -27.0,
+  "lon": 27.5,
+  "normal_yield_t_ha": 15.374
+ },
+ {
+  "crop": "MAIZE",
+  "location": "ZAF",
+  "lat": -27.0,
+  "lon": 27.5,
+  "normal_yield_t_ha": 5.872
+ },
+ {
+  "crop": "POTATO",
+  "location": "ZAF",
+  "lat": -27.0,
+  "lon": 27.5,
+  "normal_yield_t_ha": 37.967
+ },
+ {
+  "crop": "RICE",
+  "location": "ZAF",
+  "lat": -27.0,
+  "lon": 27.5,
+  "normal_yield_t_ha": 2.941
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "ZAF",
+  "lat": -27.0,
+  "lon": 27.5,
+  "normal_yield_t_ha": 2.013
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "ZAF",
+  "lat": -27.0,
+  "lon": 27.5,
+  "normal_yield_t_ha": 68.528
+ },
+ {
+  "crop": "TOMATO",
+  "location": "ZAF",
+  "lat": -27.0,
+  "lon": 27.5,
+  "normal_yield_t_ha": 68.722
+ },
+ {
+  "crop": "WHEAT",
+  "location": "ZAF",
+  "lat": -27.0,
+  "lon": 27.5,
+  "normal_yield_t_ha": 4.024
+ },
+ {
+  "crop": "APPLE",
+  "location": "ESP",
+  "lat": 41.6,
+  "lon": -4.7,
+  "normal_yield_t_ha": 19.415
+ },
+ {
+  "crop": "CARROT",
+  "location": "ESP",
+  "lat": 41.6,
+  "lon": -4.7,
+  "normal_yield_t_ha": 59.257
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "ESP",
+  "lat": 41.6,
+  "lon": -4.7,
+  "normal_yield_t_ha": 27.868
+ },
+ {
+  "crop": "MAIZE",
+  "location": "ESP",
+  "lat": 41.6,
+  "lon": -4.7,
+  "normal_yield_t_ha": 12.425
+ },
+ {
+  "crop": "POTATO",
+  "location": "ESP",
+  "lat": 41.6,
+  "lon": -4.7,
+  "normal_yield_t_ha": 33.365
+ },
+ {
+  "crop": "RICE",
+  "location": "ESP",
+  "lat": 41.6,
+  "lon": -4.7,
+  "normal_yield_t_ha": 7.216
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "ESP",
+  "lat": 41.6,
+  "lon": -4.7,
+  "normal_yield_t_ha": 3.221
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "ESP",
+  "lat": 41.6,
+  "lon": -4.7,
+  "normal_yield_t_ha": 12.617
+ },
+ {
+  "crop": "TOMATO",
+  "location": "ESP",
+  "lat": 41.6,
+  "lon": -4.7,
+  "normal_yield_t_ha": 88.222
+ },
+ {
+  "crop": "WHEAT",
+  "location": "ESP",
+  "lat": 41.6,
+  "lon": -4.7,
+  "normal_yield_t_ha": 3.408
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "THA",
+  "lat": 15.5,
+  "lon": 100.5,
+  "normal_yield_t_ha": 8.501
+ },
+ {
+  "crop": "MAIZE",
+  "location": "THA",
+  "lat": 15.5,
+  "lon": 100.5,
+  "normal_yield_t_ha": 4.713
+ },
+ {
+  "crop": "POTATO",
+  "location": "THA",
+  "lat": 15.5,
+  "lon": 100.5,
+  "normal_yield_t_ha": 19.02
+ },
+ {
+  "crop": "RICE",
+  "location": "THA",
+  "lat": 15.5,
+  "lon": 100.5,
+  "normal_yield_t_ha": 3.041
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "THA",
+  "lat": 15.5,
+  "lon": 100.5,
+  "normal_yield_t_ha": 1.656
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "THA",
+  "lat": 15.5,
+  "lon": 100.5,
+  "normal_yield_t_ha": 64.281
+ },
+ {
+  "crop": "TOMATO",
+  "location": "THA",
+  "lat": 15.5,
+  "lon": 100.5,
+  "normal_yield_t_ha": 20.667
+ },
+ {
+  "crop": "WHEAT",
+  "location": "THA",
+  "lat": 15.5,
+  "lon": 100.5,
+  "normal_yield_t_ha": 1.117
+ },
+ {
+  "crop": "APPLE",
+  "location": "TUR",
+  "lat": 38.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 24.586
+ },
+ {
+  "crop": "CARROT",
+  "location": "TUR",
+  "lat": 38.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 60.469
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "TUR",
+  "lat": 38.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 25.958
+ },
+ {
+  "crop": "MAIZE",
+  "location": "TUR",
+  "lat": 38.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 10.599
+ },
+ {
+  "crop": "POTATO",
+  "location": "TUR",
+  "lat": 38.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 37.176
+ },
+ {
+  "crop": "RICE",
+  "location": "TUR",
+  "lat": 38.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 8.44
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "TUR",
+  "lat": 38.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 4.512
+ },
+ {
+  "crop": "TOMATO",
+  "location": "TUR",
+  "lat": 38.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 82.709
+ },
+ {
+  "crop": "WHEAT",
+  "location": "TUR",
+  "lat": 38.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 3.057
+ },
+ {
+  "crop": "APPLE",
+  "location": "GBR",
+  "lat": 52.5,
+  "lon": 0.2,
+  "normal_yield_t_ha": 34.194
+ },
+ {
+  "crop": "CARROT",
+  "location": "GBR",
+  "lat": 52.5,
+  "lon": 0.2,
+  "normal_yield_t_ha": 59.882
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "GBR",
+  "lat": 52.5,
+  "lon": 0.2,
+  "normal_yield_t_ha": 22.225
+ },
+ {
+  "crop": "POTATO",
+  "location": "GBR",
+  "lat": 52.5,
+  "lon": 0.2,
+  "normal_yield_t_ha": 39.908
+ },
+ {
+  "crop": "TOMATO",
+  "location": "GBR",
+  "lat": 52.5,
+  "lon": 0.2,
+  "normal_yield_t_ha": 388.284
+ },
+ {
+  "crop": "WHEAT",
+  "location": "GBR",
+  "lat": 52.5,
+  "lon": 0.2,
+  "normal_yield_t_ha": 8.016
+ },
+ {
+  "crop": "APPLE",
+  "location": "UKR",
+  "lat": 48.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 16.544
+ },
+ {
+  "crop": "CARROT",
+  "location": "UKR",
+  "lat": 48.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 21.739
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "UKR",
+  "lat": 48.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 21.302
+ },
+ {
+  "crop": "MAIZE",
+  "location": "UKR",
+  "lat": 48.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 7.57
+ },
+ {
+  "crop": "POTATO",
+  "location": "UKR",
+  "lat": 48.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 18.184
+ },
+ {
+  "crop": "RICE",
+  "location": "UKR",
+  "lat": 48.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 5.571
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "UKR",
+  "lat": 48.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 2.6
+ },
+ {
+  "crop": "TOMATO",
+  "location": "UKR",
+  "lat": 48.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 33.347
+ },
+ {
+  "crop": "WHEAT",
+  "location": "UKR",
+  "lat": 48.5,
+  "lon": 33.0,
+  "normal_yield_t_ha": 4.466
+ },
+ {
+  "crop": "APPLE",
+  "location": "USA",
+  "lat": 40.5,
+  "lon": -89.5,
+  "normal_yield_t_ha": 42.406
+ },
+ {
+  "crop": "CARROT",
+  "location": "USA",
+  "lat": 40.5,
+  "lon": -89.5,
+  "normal_yield_t_ha": 48.78
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "USA",
+  "lat": 40.5,
+  "lon": -89.5,
+  "normal_yield_t_ha": 33.967
+ },
+ {
+  "crop": "MAIZE",
+  "location": "USA",
+  "lat": 40.5,
+  "lon": -89.5,
+  "normal_yield_t_ha": 11.382
+ },
+ {
+  "crop": "POTATO",
+  "location": "USA",
+  "lat": 40.5,
+  "lon": -89.5,
+  "normal_yield_t_ha": 51.612
+ },
+ {
+  "crop": "RICE",
+  "location": "USA",
+  "lat": 40.5,
+  "lon": -89.5,
+  "normal_yield_t_ha": 8.78
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "USA",
+  "lat": 40.5,
+  "lon": -89.5,
+  "normal_yield_t_ha": 3.515
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "USA",
+  "lat": 40.5,
+  "lon": -89.5,
+  "normal_yield_t_ha": 80.607
+ },
+ {
+  "crop": "TOMATO",
+  "location": "USA",
+  "lat": 40.5,
+  "lon": -89.5,
+  "normal_yield_t_ha": 102.457
+ },
+ {
+  "crop": "WHEAT",
+  "location": "USA",
+  "lat": 40.5,
+  "lon": -89.5,
+  "normal_yield_t_ha": 3.366
+ },
+ {
+  "crop": "MAIZE",
+  "location": "VNM",
+  "lat": 10.3,
+  "lon": 105.5,
+  "normal_yield_t_ha": 5.27
+ },
+ {
+  "crop": "POTATO",
+  "location": "VNM",
+  "lat": 10.3,
+  "lon": 105.5,
+  "normal_yield_t_ha": 16.978
+ },
+ {
+  "crop": "RICE",
+  "location": "VNM",
+  "lat": 10.3,
+  "lon": 105.5,
+  "normal_yield_t_ha": 6.28
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "VNM",
+  "lat": 10.3,
+  "lon": 105.5,
+  "normal_yield_t_ha": 1.639
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "VNM",
+  "lat": 10.3,
+  "lon": 105.5,
+  "normal_yield_t_ha": 69.045
+ },
+ {
+  "crop": "APPLE",
+  "location": "CHN",
+  "lat": 35.0,
+  "lon": 115.0,
+  "normal_yield_t_ha": 24.751
+ },
+ {
+  "crop": "CARROT",
+  "location": "CHN",
+  "lat": 35.0,
+  "lon": 115.0,
+  "normal_yield_t_ha": 50.878
+ },
+ {
+  "crop": "LETTUCE",
+  "location": "CHN",
+  "lat": 35.0,
+  "lon": 115.0,
+  "normal_yield_t_ha": 23.822
+ },
+ {
+  "crop": "MAIZE",
+  "location": "CHN",
+  "lat": 35.0,
+  "lon": 115.0,
+  "normal_yield_t_ha": 6.643
+ },
+ {
+  "crop": "POTATO",
+  "location": "CHN",
+  "lat": 35.0,
+  "lon": 115.0,
+  "normal_yield_t_ha": 20.812
+ },
+ {
+  "crop": "RICE",
+  "location": "CHN",
+  "lat": 35.0,
+  "lon": 115.0,
+  "normal_yield_t_ha": 7.235
+ },
+ {
+  "crop": "SOYBEAN",
+  "location": "CHN",
+  "lat": 35.0,
+  "lon": 115.0,
+  "normal_yield_t_ha": 1.975
+ },
+ {
+  "crop": "SUGAR_CANE",
+  "location": "CHN",
+  "lat": 35.0,
+  "lon": 115.0,
+  "normal_yield_t_ha": 81.749
+ },
+ {
+  "crop": "TOMATO",
+  "location": "CHN",
+  "lat": 35.0,
+  "lon": 115.0,
+  "normal_yield_t_ha": 61.854
+ },
+ {
+  "crop": "WHEAT",
+  "location": "CHN",
+  "lat": 35.0,
+  "lon": 115.0,
+  "normal_yield_t_ha": 6.08
+ }
+]
